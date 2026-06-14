@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập Quản Trị - Cơm Tấm Mỹ Hạnh</title>
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+
+  <div class="admin-login-wrap">
+    <div class="admin-login-box">
+
+      <div class="admin-logo">🍚</div>
+      <h1>Quản Trị Quán</h1>
+      <p>Cơm Tấm Mỹ Hạnh</p>
+
+      <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="admin-user" placeholder="admin">
+      </div>
+
+      <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" id="admin-pass" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') handleAdminLogin()">
+      </div>
+
+      <button class="btn-submit" onclick="handleAdminLogin()">
+        🔐 Đăng Nhập
+      </button>
+
+      <div class="account-msg" id="admin-msg"></div>
+
+    </div>
+  </div>
+
+  <script>
+    // Kiểm tra đã đăng nhập chưa → chuyển thẳng vào dashboard
+    if (localStorage.getItem('adminLoggedIn') === 'true') {
+      window.location.href = 'dashboard.html';
+    }
+
+    function handleAdminLogin() {
+      const user = document.getElementById('admin-user').value.trim();
+      const pass = document.getElementById('admin-pass').value;
+
+      // Tài khoản mặc định (sau này thay bằng Firebase Auth)
+      const ADMIN_USER = 'admin';
+      const ADMIN_PASS = 'myhanh2024';
+
+      if (user === ADMIN_USER && pass === ADMIN_PASS) {
+        localStorage.setItem('adminLoggedIn', 'true');
+        window.location.href = 'dashboard.html';
+      } else {
+        const msg = document.getElementById('admin-msg');
+        msg.textContent = '❌ Sai tên đăng nhập hoặc mật khẩu!';
+        msg.className = 'account-msg error';
+      }
+    }
+  </script>
+</body>
+</html>

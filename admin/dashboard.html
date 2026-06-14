@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Đơn Hàng - Cơm Tấm Mỹ Hạnh</title>
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+
+  <!-- ADMIN HEADER -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="admin-header-left">
+        <span class="logo">🍚 Cơm Tấm Mỹ Hạnh</span>
+        <span class="admin-badge">Quản trị</span>
+      </div>
+      <nav class="admin-nav">
+        <a href="dashboard.html" class="active">📋 Đơn hàng</a>
+        <a href="menu-manager.html">🍽️ Quản lý món</a>
+        <button onclick="adminLogout()">🚪 Đăng xuất</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-main">
+
+    <!-- THỐNG KÊ NHANH -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">🆕</span>
+        <div>
+          <div class="stat-num" id="stat-new">0</div>
+          <div class="stat-label">Đơn mới</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <div>
+          <div class="stat-num" id="stat-confirmed">0</div>
+          <div class="stat-label">Đã xác nhận</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎉</span>
+        <div>
+          <div class="stat-num" id="stat-done">0</div>
+          <div class="stat-label">Hoàn thành</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💰</span>
+        <div>
+          <div class="stat-num" id="stat-revenue">0đ</div>
+          <div class="stat-label">Doanh thu hôm nay</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BỘ LỌC TRẠNG THÁI -->
+    <div class="admin-filter">
+      <button class="filter-btn active" data-status="all">Tất cả</button>
+      <button class="filter-btn" data-status="new">🆕 Đơn mới</button>
+      <button class="filter-btn" data-status="confirmed">✅ Xác nhận</button>
+      <button class="filter-btn" data-status="done">🎉 Hoàn thành</button>
+      <button class="filter-btn" data-status="cancelled">❌ Đã hủy</button>
+    </div>
+
+    <!-- DANH SÁCH ĐƠN HÀNG -->
+    <div id="orders-container">
+      
+    </div>
+
+  </div>
+
+  <script>
+    // Bảo vệ trang admin
+    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    function adminLogout() {
+      localStorage.removeItem('adminLoggedIn');
+      window.location.href = 'login.html';
+    }
+
+    // Format tiền
+    function formatPrice(price) {
+      return price.toLocaleString('vi-VN') + 'đ';
+    }
+
+    // Nhãn trạng thái
+    const statusLabel = {
+      new:       '🆕 Đơn mới',
+      confirmed: '✅ Đã xác nhận',
+      done:      '🎉 Hoàn thành',
+      cancelled: '❌ Đã hủy'
+    };
+
+    let currentFilter = 'all';
+
+    function loadOrders() {
+  const orders = JSON.parse(localStorage.getItem('orders')) || [];
+  const reversed = [...orders].reverse();
+
+  // Thống kê
+  const today = new Date().toDateString();
+  document.getElementById('stat-new').textContent =
+    orders.filter(o => o.status === 'new').length;
+  document.getElementById('stat-confirmed').textContent =
+    orders.filter(o => o.status === 'confirmed').length;
+  document.getElementById('stat-done').textContent =
+    orders.filter(o => o.status === 'done').length;
+
+  const todayRevenue = orders
+    .filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === today)
+    .reduce((sum, o) => sum + o.total, 0);
+  document.getElementById('stat-revenue').textContent = formatPrice(todayRevenue);
+
+  // Lọc theo trạng thái
+  const filtered = currentFilter === 'all'
+    ? reversed
+    : reversed.filter(o => o.status === currentFilter);
+
+  const container = document.getElementById('orders-container');
+
+  // ===== SỬA: Không dùng appendChild, render trực tiếp bằng innerHTML =====
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-cart">
+        <p>📭 Chưa có đơn hàng nào</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(order => `
+    <div class="admin-order-card status-border-${order.status}">
+
+      <div class="admin-order-header">
+        <div>
+          <strong>${order.id}</strong>
+          <span class="order-status status-${order.status}">
+            ${statusLabel[order.status]}
+          </span>
+        </div>
+        <span class="order-time">
+          ${new Date(order.createdAt).toLocaleString('vi-VN')}
+        </span>
+      </div>
+
+      <div class="admin-order-body">
+        <div class="customer-info">
+          <p>👤 <strong>${order.customer.name}</strong></p>
+          <p>📞 <a href="tel:${order.customer.phone}">${order.customer.phone}</a></p>
+          <p>📍 ${order.customer.address || 'Không có địa chỉ'}</p>
+          ${order.customer.note
+            ? `<p>📝 <em>${order.customer.note}</em></p>`
+            : ''}
+          <p>💳 ${order.payment === 'cod' ? 'Tiền mặt' : 'Chuyển khoản QR'}</p>
+        </div>
+
+        <div class="order-items-list">
+          ${order.items.map(item => `
+            <div class="admin-item-row">
+              <span>${item.name} x${item.quantity}</span>
+              <span>${formatPrice(item.price * item.quantity)}</span>
+            </div>
+          `).join('')}
+          <div class="admin-item-row total-row total-final">
+            <span>Tổng cộng</span>
+            <span>${formatPrice(order.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-order-actions">
+        ${order.status === 'new' ? `
+          <button class="action-btn confirm"
+            onclick="updateStatus('${order.id}', 'confirmed')">
+            ✅ Xác nhận
+          </button>
+          <button class="action-btn cancel"
+            onclick="updateStatus('${order.id}', 'cancelled')">
+            ❌ Hủy đơn
+          </button>
+        ` : ''}
+        ${order.status === 'confirmed' ? `
+          <button class="action-btn done"
+            onclick="updateStatus('${order.id}', 'done')">
+            🎉 Hoàn thành
+          </button>
+          <button class="action-btn cancel"
+            onclick="updateStatus('${order.id}', 'cancelled')">
+            ❌ Hủy đơn
+          </button>
+        ` : ''}
+        ${order.status === 'done' || order.status === 'cancelled' ? `
+          <span class="action-done">Đơn đã kết thúc</span>
+        ` : ''}
+      </div>
+
+    </div>
+  `).join('');
+}
+      
+
+    // Cập nhật trạng thái đơn
+    function updateStatus(orderId, newStatus) {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const index  = orders.findIndex(o => o.id === orderId);
+      if (index === -1) return;
+
+      orders[index].status = newStatus;
+      localStorage.setItem('orders', JSON.stringify(orders));
+     // ===== THÊM THÔNG BÁO =====
+  const statusMsg = {
+    confirmed: '✅ Đã xác nhận đơn ' + orderId,
+    done:      '🎉 Đơn ' + orderId + ' đã hoàn thành! Đã cộng vào doanh thu',
+    cancelled: '❌ Đã hủy đơn ' + orderId
+  };
+  showAdminToast(statusMsg[newStatus]);
+  // ===========================
+
+  loadOrders();
+}
+// Hàm hiện toast cho admin
+function showAdminToast(message) {
+  let toast = document.getElementById('admin-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'admin-toast';
+    toast.className = 'admin-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+      
+    
+
+    // Bộ lọc
+    document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-filter .filter-btn')
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.status;
+        loadOrders();
+      });
+    });
+
+    // Auto reload mỗi 30 giây (realtime đơn mới)
+    loadOrders();
+    setInterval(loadOrders, 30000);
+  </script>
+</body>
+</html>

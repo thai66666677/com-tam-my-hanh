@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đặt Món - Cơm Tấm Mỹ Hạnh</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<!-- NÚT ZALO NỔI - NHẮN TIN ĐẶT MÓN -->
+<a href="https://zalo.me/0373717654"
+   target="_blank"
+   class="btn-zalo-float"
+   title="Nhắn Zalo đặt món">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+       alt="Zalo" width="26" height="26">
+  <span>Nhắn Zalo</span>
+</a>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+      <nav class="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="menu.html">Menu</a>
+         <a href="reviews.html">⭐ Đánh giá</a>  <!-- THÊM DÒNG NÀY -->
+        <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+      </nav>
+    </div>
+  </header>
+  <!-- TRẠNG THÁI MỞ CỬA -->
+<div class="business-status-bar">
+  <div class="container">
+    <div class="business-status"></div>
+  </div>
+</div>
+
+  <section class="page-title">
+    <div class="container">
+      <h1>🛒 Đặt Món</h1>
+      <p>Chọn món rồi điền thông tin giao hàng bên dưới</p>
+    </div>
+  </section>
+
+  <section class="order-section">
+    <div class="container">
+
+      <!-- MINI MENU CHỌN MÓN NHANH -->
+      <div class="mini-menu-box">
+        <h2>🍽️ Chọn Món</h2>
+        <div class="mini-menu-grid">
+          <div class="mini-item">
+            <span>🍚 Cơm Tấm Sườn Bì</span>
+            <div class="mini-item-right">
+              <span class="price">35.000đ</span>
+              <button class="btn-add" onclick="addToCart('Cơm Tấm Sườn Bì', 35000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🍗 Cơm Gà Xối Mỡ</span>
+            <div class="mini-item-right">
+              <span class="price">40.000đ</span>
+              <button class="btn-add" onclick="addToCart('Cơm Gà Xối Mỡ', 40000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🥩 Cơm Tấm Đặc Biệt</span>
+            <div class="mini-item-right">
+              <span class="price">50.000đ</span>
+              <button class="btn-add" onclick="addToCart('Cơm Tấm Đặc Biệt', 50000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🍜 Bún Bò Huế</span>
+            <div class="mini-item-right">
+              <span class="price">40.000đ</span>
+              <button class="btn-add" onclick="addToCart('Bún Bò Huế', 40000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🍝 Mì Xào Hải Sản</span>
+            <div class="mini-item-right">
+              <span class="price">45.000đ</span>
+              <button class="btn-add" onclick="addToCart('Mì Xào Hải Sản', 45000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🧃 Nước Mía</span>
+            <div class="mini-item-right">
+              <span class="price">15.000đ</span>
+              <button class="btn-add" onclick="addToCart('Nước Mía', 15000)">+ Thêm</button>
+            </div>
+          </div>
+          <div class="mini-item">
+            <span>🧋 Trà Sữa Trân Châu</span>
+            <div class="mini-item-right">
+              <span class="price">25.000đ</span>
+              <button class="btn-add" onclick="addToCart('Trà Sữa Trân Châu', 25000)">+ Thêm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-layout">
+
+        <!-- CỘT TRÁI: GIỎ HÀNG -->
+        <div class="order-left">
+          <h2>📋 Đơn hàng của bạn</h2>
+
+          <div id="cart-items"></div>
+
+          <div id="cart-empty" style="display:none;">
+            <div class="empty-cart">
+              <p>😕 Chưa có món nào</p>
+              <p style="color:#aaa;font-size:0.9rem;">Thêm món từ danh sách bên trên nhé!</p>
+            </div>
+          </div>
+
+          <div class="cart-total" id="cart-total" style="display:none;">
+            <div class="total-row">
+              <span>Tạm tính:</span>
+              <span id="subtotal">0đ</span>
+            </div>
+            <div class="total-row">
+              <span>Phí giao hàng:</span>
+              <span>15.000đ</span>
+            </div>
+            <div class="total-row total-final">
+              <span>Tổng cộng:</span>
+              <span id="total-price">0đ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: FORM ĐẶT MÓN -->
+        <div class="order-right">
+          <h2>📝 Thông tin giao hàng</h2>
+
+          <div class="order-form" id="order-form">
+
+            <div class="form-group">
+              <label>Họ và tên *</label>
+              <input type="text" id="customer-name" placeholder="Nguyễn Văn A">
+            </div>
+
+            <div class="form-group">
+              <label>Số điện thoại *</label>
+              <input type="tel" id="customer-phone" placeholder="090 123 4567">
+            </div>
+
+            <div class="form-group">
+              <label>Địa chỉ nhận hàng</label>
+              <input type="text" id="customer-address" placeholder="123 Đường Lê Lợi, Đức Hòa...">
+            </div>
+
+            <div class="form-group">
+              <label>Ghi chú món ăn</label>
+              <textarea id="order-note" placeholder="Ví dụ: Ít cay, không hành, thêm nước chấm..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Thanh toán</label>
+              <div class="payment-options">
+                <label class="payment-opt">
+                  <input type="radio" name="payment" value="cod" checked>
+                  <span>💵 Tiền mặt khi nhận hàng</span>
+                </label>
+                <label class="payment-opt">
+                  <input type="radio" name="payment" value="qr">
+                  <span>📱 Chuyển khoản QR</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="qr-section" id="qr-section" style="display:none;">
+              <h3>📱 Quét QR để thanh toán</h3>
+              <img id="qr-img" src="" alt="QR thanh toán" class="qr-image">
+              <p class="qr-info">Ngân hàng: <strong>Vietcombank</strong></p>
+              <p class="qr-info">Số TK: <strong>1234567890</strong></p>
+              <p class="qr-info">Tên: <strong>NGUYEN VAN A</strong></p>
+              <p class="qr-note">⚠️ Nội dung CK: <strong id="qr-content">DH-XXXXX</strong></p>
+            </div>
+
+            <button class="btn-submit" onclick="submitOrder()">
+              🚀 Đặt Món Ngay
+            </button>
+
+          </div>
+
+     <!-- THÀNH CÔNG -->
+<div class="order-success" id="order-success" style="display:none;">
+  <div class="success-icon">✅</div>
+  <h2>Đặt món thành công!</h2>
+  <p>Mã đơn hàng: <strong id="order-id"></strong></p>
+  <p>Chúng tôi sẽ gọi xác nhận trong vài phút.</p>
+  <p>⏱️ Thời gian giao: <strong>20–30 phút</strong></p>
+
+  <!-- THÊM ĐOẠN NÀY -->
+  <div class="success-contact">
+    <p>📲 Hoặc nhắn tin xác nhận đơn qua:</p>
+    <div class="contact-buttons">
+      <a href="https://zalo.me/0901234567"
+         target="_blank"
+         class="btn-contact-zalo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+             width="20" height="20" alt="Zalo">
+        Nhắn Zalo
+      </a>
+      <a href="tel:0901234567" class="btn-contact-call">
+        📞 Gọi ngay
+      </a>
+    </div>
+  </div>
+  <!-- KẾT THÚC THÊM -->
+
+  <a href="order.html" class="btn btn-primary" style="margin-top:16px;">
+    🍽️ Đặt thêm món
+  </a>
+</div>    
+ <!-- ⭐ THÊM PHẦN ĐÁNH GIÁ -->
+  <div class="review-prompt" id="review-prompt">
+    <p class="review-note">💡 Đánh giá sẽ mở sau khi nhận món xong</p>
+    <button class="btn-review-later" onclick="enableReviewDemo()">
+      🍽️ (Demo) Đã nhận món - Đánh giá ngay
+    </button>
+  </div>
+   <!-- FORM ĐÁNH GIÁ (ẩn mặc định) -->
+  <div class="review-form" id="review-form" style="display:none;">
+    <h3>⭐ Đánh giá đơn hàng của bạn</h3>
+    <p>Món ăn có ngon không? Giao hàng có nhanh không?</p>
+
+    <div class="star-rating" id="star-rating">
+      <span class="star" data-value="1">★</span>
+      <span class="star" data-value="2">★</span>
+      <span class="star" data-value="3">★</span>
+      <span class="star" data-value="4">★</span>
+      <span class="star" data-value="5">★</span>
+    </div>
+
+    <textarea id="review-comment" placeholder="Cảm nhận của bạn về món ăn, dịch vụ... (không bắt buộc)"></textarea>
+
+    <button class="btn-submit" onclick="submitReview()">
+      📤 Gửi đánh giá
+    </button>
+  </div>
+   <!-- CẢM ƠN SAU KHI ĐÁNH GIÁ -->
+  <div class="review-thanks" id="review-thanks" style="display:none;">
+    <div class="success-icon">🙏</div>
+    <h3>Cảm ơn bạn đã đánh giá!</h3>
+    <p>Ý kiến của bạn giúp quán phục vụ tốt hơn</p>
+  </div>
+
+  <a href="order.html" class="btn btn-primary" style="margin-top:16px;">
+    🍽️ Đặt thêm món
+  </a>
+</div>
+
+
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">✅ Đã thêm vào giỏ hàng!</div>
+
+  <a href="tel:0901234567" class="btn-call-float">📞 Gọi đặt món</a>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 Cơm Tấm Mỹ Hạnh | Hotline: <a href="tel:0901234567">090 123 4567</a></p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Món Ăn - Cơm Tấm Mỹ Hạnh</title>
+  <meta name="description" content="Xem menu món ăn tại Cơm Tấm Mỹ Hạnh. Cơm tấm, bún, mì, nước uống đa dạng.">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<!-- NÚT ZALO NỔI - NHẮN TIN ĐẶT MÓN -->
+<a href="https://zalo.me/0373717654"
+   target="_blank"
+   class="btn-zalo-float"
+   title="Nhắn Zalo đặt món">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+       alt="Zalo" width="26" height="26">
+  <span>Nhắn Zalo</span>
+</a>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+      <nav class="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="menu.html">Menu</a>
+         <a href="reviews.html">⭐ Đánh giá</a>  <!-- THÊM DÒNG NÀY -->
+        <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+      </nav>
+    </div>
+  </header>
+  <!-- TRẠNG THÁI MỞ CỬA -->
+<div class="business-status-bar">
+  <div class="container">
+    <div class="business-status"></div>
+  </div>
+</div>
+
+  <!-- TIÊU ĐỀ -->
+  <section class="page-title">
+    <div class="container">
+      <h1>🍽️ Thực Đơn</h1>
+      <p>Chọn món yêu thích, thêm vào giỏ hàng và đặt ngay!</p>
+    </div>
+  </section>
+
+  <!-- BỘ LỌC DANH MỤC -->
+  <section class="filter-section">
+    <div class="container">
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-category="all">🍱 Tất cả</button>
+        <button class="filter-btn" data-category="com">🍚 Cơm</button>
+        <button class="filter-btn" data-category="bun-mi">🍜 Bún & Mì</button>
+        <button class="filter-btn" data-category="nuoc">🥤 Nước uống</button>
+      </div>
+    </div>
+  </section>
+
+ <!-- GRID MÓN ĂN - CÓ BADGE -->
+<section class="menu-section">
+  <div class="container">
+    <div class="menu-grid" id="menu-grid">
+
+      <!-- 🔥 MÓN BÁN CHẠY -->
+      <div class="menu-card" data-category="com">
+        <div class="menu-img-wrap">
+          <img src="images/com-tam-suon-bi.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Com_tam.jpg/640px-Com_tam.jpg'"
+               alt="Cơm Tấm Sườn Bì" class="menu-img-real">
+          <!-- BADGE -->
+          <span class="badge badge-hot">🔥 Bán chạy</span>
+        </div>
+        <div class="menu-info">
+          <h3>Cơm Tấm Sườn Bì</h3>
+          <p>Sườn nướng mềm, bì trộn thơm, kèm cơm tấm dẻo</p>
+          <!-- SỐ LƯỢT ĐẶT -->
+          <div class="order-count">🛒 Đã bán 128 lần hôm nay</div>
+          <div class="menu-footer">
+            <span class="price">35.000đ</span>
+            <button class="btn-add" onclick="addToCart('Cơm Tấm Sườn Bì', 35000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⭐ MÓN NỔI BẬT -->
+      <div class="menu-card" data-category="com">
+        <div class="menu-img-wrap">
+          <img src="images/com-ga-xoi-mo.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Hainanese_chicken_rice.jpg/640px-Hainanese_chicken_rice.jpg'"
+               alt="Cơm Gà Xối Mỡ" class="menu-img-real">
+          <span class="badge badge-new">⭐ Nổi bật</span>
+        </div>
+        <div class="menu-info">
+          <h3>Cơm Gà Xối Mỡ</h3>
+          <p>Gà chiên giòn, cơm trắng dẻo, rau sống tươi</p>
+          <div class="menu-footer">
+            <span class="price">40.000đ</span>
+            <button class="btn-add" onclick="addToCart('Cơm Gà Xối Mỡ', 40000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🎁 MÓN ĐẶC BIỆT + GIÁ CŨ -->
+      <div class="menu-card" data-category="com">
+        <div class="menu-img-wrap">
+          <img src="images/com-tam-dac-biet.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Com_tam.jpg/640px-Com_tam.jpg'"
+               alt="Cơm Tấm Đặc Biệt" class="menu-img-real">
+          <span class="badge badge-special">🎁 Đặc biệt</span>
+        </div>
+        <div class="menu-info">
+          <h3>Cơm Tấm Đặc Biệt</h3>
+          <p>Sườn + bì + chả trứng + cơm tấm đặc biệt</p>
+          <div class="menu-footer">
+            <div class="price-wrap">
+              <span class="price">50.000đ</span>
+              <span class="price-old">65.000đ</span>
+            </div>
+            <button class="btn-add" onclick="addToCart('Cơm Tấm Đặc Biệt', 50000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bún & Mì -->
+      <div class="menu-card" data-category="bun-mi">
+        <div class="menu-img-wrap">
+          <img src="images/bun-bo-hue.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Bun_bo_Hue.jpg/640px-Bun_bo_Hue.jpg'"
+               alt="Bún Bò Huế" class="menu-img-real">
+          <span class="badge badge-hot">🔥 Bán chạy</span>
+        </div>
+        <div class="menu-info">
+          <h3>Bún Bò Huế</h3>
+          <p>Nước lèo đậm đà, thịt bò mềm, chả cua thơm</p>
+          <div class="order-count">🛒 Đã bán 64 lần hôm nay</div>
+          <div class="menu-footer">
+            <span class="price">40.000đ</span>
+            <button class="btn-add" onclick="addToCart('Bún Bò Huế', 40000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KHÔNG CÓ BADGE - MÓN THƯỜNG -->
+      <div class="menu-card" data-category="bun-mi">
+        <div class="menu-img-wrap">
+          <img src="images/mi-xao-hai-san.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Stir_fried_noodles.jpg/640px-Stir_fried_noodles.jpg'"
+               alt="Mì Xào Hải Sản" class="menu-img-real">
+        </div>
+        <div class="menu-info">
+          <h3>Mì Xào Hải Sản</h3>
+          <p>Tôm, mực, nghêu xào mì vàng giòn hấp dẫn</p>
+          <div class="menu-footer">
+            <span class="price">45.000đ</span>
+            <button class="btn-add" onclick="addToCart('Mì Xào Hải Sản', 45000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nước uống -->
+      <div class="menu-card" data-category="nuoc">
+        <div class="menu-img-wrap">
+          <img src="images/nuoc-mia.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sugarcane_juice.jpg/640px-Sugarcane_juice.jpg'"
+               alt="Nước Mía" class="menu-img-real">
+        </div>
+        <div class="menu-info">
+          <h3>Nước Mía</h3>
+          <p>Nước mía tươi mát, thêm tắc tùy chọn</p>
+          <div class="menu-footer">
+            <span class="price">15.000đ</span>
+            <button class="btn-add" onclick="addToCart('Nước Mía', 15000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card" data-category="nuoc">
+        <div class="menu-img-wrap">
+          <img src="images/tra-sua.jpg"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Bubble_tea_assortment.jpg/640px-Bubble_tea_assortment.jpg'"
+               alt="Trà Sữa Trân Châu" class="menu-img-real">
+          <span class="badge badge-new">✨ Mới có</span>
+        </div>
+        <div class="menu-info">
+          <h3>Trà Sữa Trân Châu</h3>
+          <p>Trà sữa béo ngậy, trân châu đen dai mềm</p>
+          <div class="menu-footer">
+            <span class="price">25.000đ</span>
+            <button class="btn-add" onclick="addToCart('Trà Sữa Trân Châu', 25000)">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+  <!-- THÔNG BÁO THÊM GIỎ HÀNG -->
+  <div class="toast" id="toast">✅ Đã thêm vào giỏ hàng!</div>
+
+  <!-- NÚT GỌI ĐIỆN -->
+  <a href="tel:0901234567" class="btn-call-float">📞 Gọi đặt món</a>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 Cơm Tấm Mỹ Hạnh | Hotline: <a href="tel:0901234567">090 123 4567</a></p>
+    </div>
+  </footer>
+
+  <!-- ✅ DÒNG NÀY QUAN TRỌNG - LOAD APP.JS -->
+  <script src="js/app.js"></script>
+</body>
+</html>

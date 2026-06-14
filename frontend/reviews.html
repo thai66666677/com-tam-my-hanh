@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đánh Giá Khách Hàng - Cơm Tấm Mỹ Hạnh</title>
+  <meta name="description" content="Xem đánh giá từ khách hàng về Cơm Tấm Mỹ Hạnh - quán ăn uy tín tại Đức Hòa, Long An">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+      <nav class="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="menu.html">Menu</a>
+        <a href="reviews.html">⭐ Đánh giá</a>
+        <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-title">
+    <div class="container">
+      <h1>⭐ Đánh Giá Từ Khách Hàng</h1>
+      <p>Cảm ơn quý khách đã tin tưởng và ủng hộ quán!</p>
+    </div>
+  </section>
+
+  <section class="reviews-section">
+    <div class="container">
+
+      <!-- TỔNG QUAN ĐÁNH GIÁ -->
+      <div class="review-summary">
+        <div class="review-score">
+          <div class="score-num" id="avg-score">5.0</div>
+          <div class="score-stars" id="avg-stars">★★★★★</div>
+          <div class="score-count" id="total-reviews">0 đánh giá</div>
+        </div>
+        <div class="score-breakdown" id="score-breakdown">
+          <!-- JS render -->
+        </div>
+      </div>
+
+      <!-- DANH SÁCH ĐÁNH GIÁ -->
+      <div class="reviews-list" id="reviews-list">
+        <!-- JS render -->
+      </div>
+
+      <!-- CHƯA CÓ ĐÁNH GIÁ -->
+      <div class="empty-cart" id="no-reviews" style="display:none;">
+        <p>📝 Chưa có đánh giá nào</p>
+        <p style="color:#aaa;font-size:0.9rem;">Hãy là người đầu tiên đặt món và đánh giá!</p>
+      </div>
+
+    </div>
+  </section>
+
+  <a href="https://zalo.me/0901234567" target="_blank" class="btn-zalo-float">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" width="26" height="26">
+    <span>Nhắn Zalo</span>
+  </a>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 Cơm Tấm Mỹ Hạnh | Hotline: <a href="tel:0901234567">090 123 4567</a></p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký / Đăng Nhập - Cơm Tấm Mỹ Hạnh</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+      <nav class="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="menu.html">Menu</a>
+         <a href="reviews.html">⭐ Đánh giá</a>  <!-- THÊM DÒNG NÀY -->
+        <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-title">
+    <div class="container">
+      <h1>👤 Tài Khoản</h1>
+      <p>Đăng nhập để xem lịch sử đơn hàng</p>
+    </div>
+  </section>
+
+  <section class="account-section">
+    <div class="container">
+      <div class="account-box">
+
+        <!-- TAB BUTTONS -->
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab('login')">Đăng nhập</button>
+          <button class="tab-btn" onclick="switchTab('register')">Đăng ký</button>
+        </div>
+
+        <!-- ĐĂNG NHẬP -->
+        <div class="tab-content" id="tab-login">
+          <div class="form-group">
+            <label>Số điện thoại</label>
+            <input type="tel" id="login-phone" placeholder="090 123 4567">
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="login-password" placeholder="Nhập mật khẩu">
+          </div>
+          <button class="btn-submit" onclick="handleLogin()">🔐 Đăng Nhập</button>
+          <p class="form-note">Chưa có tài khoản? <a onclick="switchTab('register')">Đăng ký ngay</a></p>
+        </div>
+
+        <!-- ĐĂNG KÝ -->
+        <div class="tab-content" id="tab-register" style="display:none;">
+          <div class="form-group">
+            <label>Họ và tên *</label>
+            <input type="text" id="reg-name" placeholder="Nguyễn Văn A">
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại *</label>
+            <input type="tel" id="reg-phone" placeholder="090 123 4567">
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu *</label>
+            <input type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự">
+          </div>
+          <div class="form-group">
+            <label>Xác nhận mật khẩu *</label>
+            <input type="password" id="reg-confirm" placeholder="Nhập lại mật khẩu">
+          </div>
+          <button class="btn-submit" onclick="handleRegister()">✅ Đăng Ký</button>
+          <p class="form-note">Đã có tài khoản? <a onclick="switchTab('login')">Đăng nhập</a></p>
+        </div>
+
+        <!-- ĐÃ ĐĂNG NHẬP -->
+        <div class="tab-content" id="tab-logged-in" style="display:none;">
+          <div class="logged-in-box">
+            <div class="user-avatar">👤</div>
+            <h3 id="user-name-display"></h3>
+            <p id="user-phone-display"></p>
+            <a href="history.html" class="btn btn-primary">📋 Xem lịch sử đơn hàng</a>
+            <button class="btn-logout" onclick="handleLogout()">🚪 Đăng xuất</button>
+          </div>
+        </div>
+
+        <!-- THÔNG BÁO -->
+        <div class="account-msg" id="account-msg"></div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 Cơm Tấm Mỹ Hạnh | Hotline: <a href="tel:0901234567">090 123 4567</a></p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
