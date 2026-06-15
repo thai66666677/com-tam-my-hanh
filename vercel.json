@@ -7,7 +7,7 @@
     { "source": "/history", "destination": "/frontend/history.html" },
     { "source": "/reviews", "destination": "/frontend/reviews.html" },
     { "source": "/admin", "destination": "/admin/login.html" },
-    { "source": "/admin/dashboard", "destination": "/admin/dashboard.html" },
-    { "source": "/admin/menu-manager", "destination": "/admin/menu-manager.html" }
+    { "source": "/admin/(.*)", "destination": "/admin/$1" },
+    { "source": "/frontend/(.*)", "destination": "/frontend/$1" }
   ]
 }
