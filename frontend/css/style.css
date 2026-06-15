@@ -1439,3 +1439,9 @@ a { text-decoration: none; color: inherit; }
   opacity: 1;
   transform: translateY(0);
 }
+/* ===== TÀI KHOẢN TRONG NAV ===== */
+@media (max-width: 768px) {
+  .nav a:not(.btn-order) {
+    display: none; /* ẩn các link phụ trên mobile, chỉ giữ nút Giỏ hàng */
+  }
+}

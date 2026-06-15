@@ -3,23 +3,22 @@
 // =====================
 const BUSINESS_HOURS = {
   // 0 = Chủ nhật, 1 = Thứ 2, ..., 6 = Thứ 7
-  0: { open: '06:00', close: '22:00' }, // Chủ nhật
-  1: { open: '06:00', close: '22:00' }, // Thứ 2
-  2: { open: '06:00', close: '22:00' }, // Thứ 3
-  3: { open: '06:00', close: '22:00' }, // Thứ 4
-  4: { open: '06:00', close: '22:00' }, // Thứ 5
-  5: { open: '06:00', close: '22:00' }, // Thứ 6
-  6: { open: '06:00', close: '22:00' }, // Thứ 7
+  0: { open: '06:00', close: '22:00' },
+  1: { open: '06:00', close: '22:00' },
+  2: { open: '06:00', close: '22:00' },
+  3: { open: '06:00', close: '22:00' },
+  4: { open: '06:00', close: '22:00' },
+  5: { open: '06:00', close: '22:00' },
+  6: { open: '06:00', close: '22:00' },
 };
 
 function checkBusinessHours() {
-  const now      = new Date();
-  const day      = now.getDay();
-  const hours    = BUSINESS_HOURS[day];
+  const now   = new Date();
+  const day   = now.getDay();
+  const hours = BUSINESS_HOURS[day];
 
   if (!hours) return { isOpen: false, message: 'Hôm nay quán nghỉ' };
 
-  // Tách giờ mở/đóng
   const [openH,  openM]  = hours.open.split(':').map(Number);
   const [closeH, closeM] = hours.close.split(':').map(Number);
 
@@ -29,7 +28,6 @@ function checkBusinessHours() {
 
   const isOpen = nowTime >= openTime && nowTime < closeTime;
 
-  // Tính thời gian còn lại
   let timeMsg = '';
   if (isOpen) {
     const remaining = closeTime - nowTime;
@@ -37,7 +35,6 @@ function checkBusinessHours() {
     const m = remaining % 60;
     timeMsg = h > 0 ? `Đóng cửa sau ${h} giờ ${m} phút` : `Đóng cửa sau ${m} phút`;
   } else {
-    // Tính giờ mở cửa tiếp theo
     if (nowTime < openTime) {
       const wait = openTime - nowTime;
       const h = Math.floor(wait / 60);
@@ -48,17 +45,12 @@ function checkBusinessHours() {
     }
   }
 
-  return {
-    isOpen,
-    openTime:  hours.open,
-    closeTime: hours.close,
-    timeMsg
-  };
+  return { isOpen, openTime: hours.open, closeTime: hours.close, timeMsg };
 }
 
 function renderBusinessStatus() {
-  const status  = checkBusinessHours();
-  const banners = document.querySelectorAll('.business-status');
+  const status    = checkBusinessHours();
+  const banners   = document.querySelectorAll('.business-status');
   const orderBtns = document.querySelectorAll('.btn-submit, .btn-add, .btn-order');
 
   banners.forEach(banner => {
@@ -77,7 +69,6 @@ function renderBusinessStatus() {
         <span class="status-time">${status.timeMsg}</span>
       `;
 
-      // Vô hiệu hóa nút đặt món khi đóng cửa
       orderBtns.forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = '0.5';
@@ -90,9 +81,10 @@ function renderBusinessStatus() {
   });
 }
 
-// Chạy ngay và cập nhật mỗi phút
 renderBusinessStatus();
 setInterval(renderBusinessStatus, 60000);
+
+
 // =====================
 // GIỎ HÀNG
 // =====================
@@ -126,8 +118,9 @@ function showToast() {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
+
 // =====================
-// TRANG ORDER.HTML
+// TRANG ORDER.HTML - GIỎ HÀNG
 // =====================
 function renderCart() {
   const cartItems = document.getElementById('cart-items');
@@ -137,13 +130,13 @@ function renderCart() {
 
   if (cart.length === 0) {
     cartItems.innerHTML = '';
-    cartEmpty.style.display = 'block';
-    cartTotal.style.display = 'none';
+    if (cartEmpty) cartEmpty.style.display = 'block';
+    if (cartTotal) cartTotal.style.display = 'none';
     return;
   }
 
-  cartEmpty.style.display = 'none';
-  cartTotal.style.display = 'block';
+  if (cartEmpty) cartEmpty.style.display = 'none';
+  if (cartTotal) cartTotal.style.display = 'block';
 
   cartItems.innerHTML = cart.map((item, index) => `
     <div class="cart-item">
@@ -183,13 +176,16 @@ function removeItem(index) {
 function updateTotal() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal + 15000; // phí ship 15k
-  document.getElementById('subtotal').textContent = formatPrice(subtotal);
-  document.getElementById('total-price').textContent = formatPrice(total);
+  const subEl = document.getElementById('subtotal');
+  const totEl = document.getElementById('total-price');
+  if (subEl) subEl.textContent = formatPrice(subtotal);
+  if (totEl) totEl.textContent = formatPrice(total);
 }
 
 function formatPrice(price) {
   return price.toLocaleString('vi-VN') + 'đ';
 }
+
 
 // =====================
 // THANH TOÁN QR
@@ -197,6 +193,7 @@ function formatPrice(price) {
 document.querySelectorAll('input[name="payment"]').forEach(radio => {
   radio.addEventListener('change', function () {
     const qrSection = document.getElementById('qr-section');
+    if (!qrSection) return;
     if (this.value === 'qr') {
       qrSection.style.display = 'block';
       generateQR();
@@ -209,61 +206,141 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
 function generateQR() {
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
   const orderId = 'DH' + Date.now().toString().slice(-5);
-  document.getElementById('qr-content').textContent = orderId;
+  const contentEl = document.getElementById('qr-content');
+  const imgEl     = document.getElementById('qr-img');
+  if (contentEl) contentEl.textContent = orderId;
 
-  // VietQR API - miễn phí, không cần đăng ký
-  // Thay BANK_ID và ACCOUNT_NO bằng thông tin thật của quán
-  const BANK_ID = 'VCB';           // Vietcombank
-  const ACCOUNT_NO = '1234567890'; // Số tài khoản
+  const BANK_ID      = 'VCB';
+  const ACCOUNT_NO   = '1234567890';
   const ACCOUNT_NAME = 'NGUYEN VAN A';
 
-  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
-  document.getElementById('qr-img').src = qrUrl;
+  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png` +
+    `?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+  if (imgEl) imgEl.src = qrUrl;
 }
 
-// =====================
-// GỬI ĐƠN HÀNG
-// =====================
-function submitOrder() {
-  const name = document.getElementById('customer-name').value.trim();
-  const phone = document.getElementById('customer-phone').value.trim();
-  const address = document.getElementById('customer-address').value.trim();
-  const note = document.getElementById('order-note').value.trim();
-  const payment = document.querySelector('input[name="payment"]:checked').value;
 
-  // Validate
-  if (!name) { alert('Vui lòng nhập họ tên!'); return; }
+// =====================
+// GỬI ĐƠN HÀNG (chỉ 1 phiên bản duy nhất)
+// =====================
+async function submitOrder() {
+  const nameEl    = document.getElementById('customer-name');
+  const phoneEl   = document.getElementById('customer-phone');
+  const addressEl = document.getElementById('customer-address');
+  const noteEl    = document.getElementById('order-note');
+  const payEl     = document.querySelector('input[name="payment"]:checked');
+
+  if (!nameEl || !phoneEl) return;
+
+  const name    = nameEl.value.trim();
+  const phone   = phoneEl.value.trim();
+  const address = addressEl ? addressEl.value.trim() : '';
+  const note    = noteEl    ? noteEl.value.trim()    : '';
+  const payment = payEl     ? payEl.value            : 'cod';
+
+  if (!name)  { alert('Vui lòng nhập họ tên!');        return; }
   if (!phone) { alert('Vui lòng nhập số điện thoại!'); return; }
-  if (cart.length === 0) { alert('Giỏ hàng trống!'); return; }
+  if (cart.length === 0) { alert('Giỏ hàng trống!');  return; }
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
-  const orderId = 'DH' + Date.now().toString().slice(-5);
 
   const orderData = {
-    id: orderId,
     customer: { name, phone, address, note },
-    items: cart,
+    items: [...cart],
     total,
-    payment,
-    status: 'new',
-    createdAt: new Date().toISOString()
+    payment
   };
 
-  // Lưu tạm vào localStorage (sau này gửi lên backend)
-  const orders = JSON.parse(localStorage.getItem('orders')) || [];
-  orders.push(orderData);
-  localStorage.setItem('orders', JSON.stringify(orders));
+  // ===== HIỆN LOADING (tránh khách bấm nhiều lần) =====
+  const submitBtn = document.querySelector('.btn-submit');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Đang gửi đơn...';
+  }
 
-  // Xóa giỏ hàng
-  cart = [];
-  saveCart();
-  updateCartCount();
+  try {
+    // ===== GỌI API BACKEND =====
+    const res = await fetch(`${API_URL}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
 
-  // Hiện thông báo thành công
-  document.getElementById('order-form').style.display = 'none';
-  document.getElementById('order-success').style.display = 'block';
-  document.getElementById('order-id').textContent = orderId;
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
+      // Bật lại nút bấm
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Đặt Món Ngay';
+      }
+      return;
+    }
+
+    // ===== THÀNH CÔNG =====
+    const orderId = data.orderId;
+
+    // Xóa giỏ hàng
+    cart = [];
+    saveCart();
+    updateCartCount();
+
+    // Hiện màn hình thành công
+    const formEl    = document.getElementById('order-form');
+    const successEl = document.getElementById('order-success');
+    const orderIdEl = document.getElementById('order-id');
+    if (formEl)    formEl.style.display    = 'none';
+    if (successEl) successEl.style.display = 'block';
+    if (orderIdEl) orderIdEl.textContent   = orderId;
+
+    // Cập nhật link Zalo với mã đơn
+    const zaloLinks = document.querySelectorAll('.btn-contact-zalo');
+    zaloLinks.forEach(link => {
+      link.title = `Nhắn Zalo kèm mã đơn: ${orderId}`;
+    });
+
+    // Cho phép bấm copy mã đơn
+    if (orderIdEl) {
+      orderIdEl.style.cursor = 'pointer';
+      orderIdEl.title = 'Bấm để copy';
+      orderIdEl.onclick = () => {
+        navigator.clipboard.writeText(orderId);
+        orderIdEl.textContent = orderId + ' ✅ Đã copy!';
+        setTimeout(() => orderIdEl.textContent = orderId, 2000);
+      };
+    }
+
+  } catch (err) {
+    console.error('Lỗi đặt món:', err);
+    alert('Không kết nối được server. Vui lòng kiểm tra mạng và thử lại!');
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '🚀 Đặt Món Ngay';
+    }
+  }
 }
+  // Cập nhật link Zalo
+  document.querySelectorAll('.btn-contact-zalo').forEach(link => {
+    link.href  = `https://zalo.me/0901234567`;
+    link.title = `Nhắn Zalo kèm mã đơn: ${orderId}`;
+  });
+
+  // Cho bấm copy mã đơn
+  if (orderIdEl) {
+    orderIdEl.style.fontSize = '1.3rem';
+    orderIdEl.style.color    = '#c0392b';
+    orderIdEl.style.cursor   = 'pointer';
+    orderIdEl.title          = 'Bấm để copy';
+    orderIdEl.onclick = () => {
+      navigator.clipboard.writeText(orderId);
+      orderIdEl.textContent = orderId + ' ✅ Đã copy!';
+      setTimeout(() => orderIdEl.textContent = orderId, 2000);
+    };
+  }
+
+
 
 // =====================
 // LỌC DANH MỤC MENU
@@ -280,23 +357,22 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// =====================
-// KHỞI ĐỘNG
-// =====================
-updateCartCount();
-renderCart();
+
 // =====================
 // TÀI KHOẢN KHÁCH HÀNG
 // =====================
 function switchTab(tab) {
-  document.getElementById('tab-login').style.display = 'none';
-  document.getElementById('tab-register').style.display = 'none';
-  document.getElementById('tab-logged-in').style.display = 'none';
-  document.getElementById(`tab-${tab}`).style.display = 'block';
+  ['login', 'register', 'logged-in'].forEach(t => {
+    const el = document.getElementById(`tab-${t}`);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById(`tab-${tab}`);
+  if (target) target.style.display = 'block';
 
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  const tabIndex = tab === 'login' ? 0 : 1;
-  document.querySelectorAll('.tab-btn')[tabIndex]?.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active',
+      (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
 }
 
 function showAccountMsg(msg, type = 'success') {
@@ -307,11 +383,11 @@ function showAccountMsg(msg, type = 'success') {
   setTimeout(() => el.textContent = '', 3000);
 }
 
-function handleRegister() {
-  const name     = document.getElementById('reg-name').value.trim();
-  const phone    = document.getElementById('reg-phone').value.trim();
-  const password = document.getElementById('reg-password').value;
-  const confirm  = document.getElementById('reg-confirm').value;
+async function handleRegister() {
+  const name     = document.getElementById('reg-name')?.value.trim();
+  const phone    = document.getElementById('reg-phone')?.value.trim();
+  const password = document.getElementById('reg-password')?.value;
+  const confirm  = document.getElementById('reg-confirm')?.value;
 
   if (!name || !phone || !password) {
     showAccountMsg('Vui lòng điền đầy đủ thông tin!', 'error'); return;
@@ -323,44 +399,86 @@ function handleRegister() {
     showAccountMsg('Mật khẩu không khớp!', 'error'); return;
   }
 
-  // Lưu user vào localStorage (tạm thời, sau dùng Firebase)
-  const users = JSON.parse(localStorage.getItem('users')) || [];
-  if (users.find(u => u.phone === phone)) {
-    showAccountMsg('Số điện thoại đã được đăng ký!', 'error'); return;
+  // Vô hiệu hóa nút bấm tránh spam
+  const btn = document.querySelector('#tab-register .btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xử lý...'; }
+
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAccountMsg(data.error || 'Đăng ký thất bại!', 'error');
+      return;
+    }
+
+    showAccountMsg('Đăng ký thành công! Vui lòng đăng nhập.');
+    setTimeout(() => switchTab('login'), 1500);
+
+  } catch (err) {
+    showAccountMsg('Không kết nối được server!', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Đăng Ký'; }
   }
-
-  users.push({ name, phone, password });
-  localStorage.setItem('users', JSON.stringify(users));
-
-  showAccountMsg('Đăng ký thành công! Vui lòng đăng nhập.');
-  setTimeout(() => switchTab('login'), 1500);
 }
 
-function handleLogin() {
-  const phone    = document.getElementById('login-phone').value.trim();
-  const password = document.getElementById('login-password').value;
 
-  const users = JSON.parse(localStorage.getItem('users')) || [];
-  const user  = users.find(u => u.phone === phone && u.password === password);
+async function handleLogin() {
+  const phone    = document.getElementById('login-phone')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
 
-  if (!user) {
-    showAccountMsg('Sai số điện thoại hoặc mật khẩu!', 'error'); return;
+  if (!phone || !password) {
+    showAccountMsg('Vui lòng nhập đầy đủ thông tin!', 'error'); return;
   }
 
-  // Lưu session
-  localStorage.setItem('currentUser', JSON.stringify(user));
-  showAccountMsg('Đăng nhập thành công!');
-  setTimeout(() => showLoggedIn(user), 1000);
+  const btn = document.querySelector('#tab-login .btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; }
+
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAccountMsg(data.error || 'Sai số điện thoại hoặc mật khẩu!', 'error');
+      return;
+    }
+
+    // Lưu session: thông tin user + token
+    localStorage.setItem('currentUser', JSON.stringify(data.user));
+    localStorage.setItem('authToken', data.token);
+
+    showAccountMsg('Đăng nhập thành công!');
+    setTimeout(() => showLoggedIn(data.user), 1000);
+
+  } catch (err) {
+    showAccountMsg('Không kết nối được server!', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 Đăng Nhập'; }
+  }
 }
+
 
 function showLoggedIn(user) {
-  document.getElementById('tab-login').style.display    = 'none';
-  document.getElementById('tab-register').style.display = 'none';
-  document.getElementById('tab-logged-in').style.display = 'block';
+  ['tab-login', 'tab-register'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const loggedIn = document.getElementById('tab-logged-in');
+  if (loggedIn) loggedIn.style.display = 'block';
   document.querySelectorAll('.tab-btn').forEach(b => b.style.display = 'none');
 
-  document.getElementById('user-name-display').textContent  = '👋 ' + user.name;
-  document.getElementById('user-phone-display').textContent = '📞 ' + user.phone;
+  const nameEl  = document.getElementById('user-name-display');
+  const phoneEl = document.getElementById('user-phone-display');
+  if (nameEl)  nameEl.textContent  = '👋 ' + user.name;
+  if (phoneEl) phoneEl.textContent = '📞 ' + user.phone;
 }
 
 function handleLogout() {
@@ -368,13 +486,13 @@ function handleLogout() {
   location.reload();
 }
 
-// Kiểm tra đã đăng nhập chưa khi mở account.html
 function checkLoginStatus() {
   const user = JSON.parse(localStorage.getItem('currentUser'));
   if (!user) return;
-  const loggedInTab = document.getElementById('tab-logged-in');
-  if (loggedInTab) showLoggedIn(user);
+  const el = document.getElementById('tab-logged-in');
+  if (el) showLoggedIn(user);
 }
+
 
 // =====================
 // LỊCH SỬ ĐƠN HÀNG
@@ -387,18 +505,16 @@ function renderHistory() {
 
   const user = JSON.parse(localStorage.getItem('currentUser'));
   if (!user) {
-    historyLoginRequired.style.display = 'block';
+    if (historyLoginRequired) historyLoginRequired.style.display = 'block';
     return;
   }
 
-  const orders = JSON.parse(localStorage.getItem('orders')) || [];
-  // Lọc đơn theo SĐT của user
-  const myOrders = orders
-    .filter(o => o.customer.phone === user.phone)
-    .reverse(); // mới nhất lên đầu
+  // ⚙️ KHI DEPLOY: thay bằng fetch GET /api/orders/phone/:phone
+  const orders   = JSON.parse(localStorage.getItem('orders')) || [];
+  const myOrders = orders.filter(o => o.customer.phone === user.phone).reverse();
 
   if (myOrders.length === 0) {
-    historyEmpty.style.display = 'block';
+    if (historyEmpty) historyEmpty.style.display = 'block';
     return;
   }
 
@@ -433,119 +549,19 @@ function renderHistory() {
   `).join('');
 }
 
-// Khởi động thêm
-checkLoginStatus();
-renderHistory();
-// =====================
-// TẠO LINK ZALO VỚI NỘI DUNG SẴN
-// =====================
-function generateZaloLink(orderId) {
-  const order = JSON.parse(localStorage.getItem('orders') || '[]')
-    .find(o => o.id === orderId);
 
-  if (!order) return 'https://zalo.me/0901234567';
-
-  const itemsList = order.items
-    .map(i => `${i.name} x${i.quantity}`)
-    .join(', ');
-
-  // Nội dung tin nhắn mẫu
-  const message =
-    `Xin chào quán! Tôi vừa đặt món:\n` +
-    `📋 Mã đơn: ${order.id}\n` +
-    `🍽️ Món: ${itemsList}\n` +
-    `💰 Tổng: ${order.total.toLocaleString('vi-VN')}đ\n` +
-    `👤 Tên: ${order.customer.name}\n` +
-    `📞 SĐT: ${order.customer.phone}\n` +
-    `📍 Địa chỉ: ${order.customer.address || 'Đến lấy tại quán'}`;
-
-  // Zalo không hỗ trợ pre-fill text
-  // nên chỉ mở chat, khách tự copy mã đơn
-  return 'https://zalo.me/0901234567';
-}
-
-// Cập nhật hàm submitOrder - thêm nút Zalo sau khi đặt xong
-function submitOrder() {
-  const nameEl    = document.getElementById('customer-name');
-  const phoneEl   = document.getElementById('customer-phone');
-  const addressEl = document.getElementById('customer-address');
-  const noteEl    = document.getElementById('order-note');
-  const payEl     = document.querySelector('input[name="payment"]:checked');
-
-  if (!nameEl || !phoneEl) return;
-
-  const name    = nameEl.value.trim();
-  const phone   = phoneEl.value.trim();
-  const address = addressEl ? addressEl.value.trim() : '';
-  const note    = noteEl    ? noteEl.value.trim()    : '';
-  const payment = payEl     ? payEl.value            : 'cod';
-
-  if (!name)  { alert('Vui lòng nhập họ tên!');        return; }
-  if (!phone) { alert('Vui lòng nhập số điện thoại!'); return; }
-  if (cart.length === 0) { alert('Giỏ hàng trống!');  return; }
-
-  const total   = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
-  const orderId = 'DH' + Date.now().toString().slice(-5);
-
-  const orderData = {
-    id: orderId,
-    customer: { name, phone, address, note },
-    items: [...cart],
-    total,
-    payment,
-    status:    'new',
-    createdAt: new Date().toISOString()
-  };
-
-  const orders = JSON.parse(localStorage.getItem('orders')) || [];
-  orders.push(orderData);
-  localStorage.setItem('orders', JSON.stringify(orders));
-
-  cart = [];
-  saveCart();
-  updateCartCount();
-
-  // Hiện thành công
-  const formEl    = document.getElementById('order-form');
-  const successEl = document.getElementById('order-success');
-  const orderIdEl = document.getElementById('order-id');
-  if (formEl)    formEl.style.display    = 'none';
-  if (successEl) successEl.style.display = 'block';
-  if (orderIdEl) orderIdEl.textContent   = orderId;
-
-  // Cập nhật link Zalo với mã đơn
-  const zaloLinks = document.querySelectorAll('.btn-contact-zalo');
-  zaloLinks.forEach(link => {
-    link.href = `https://zalo.me/0901234567`;
-    // Thêm mã đơn vào title để khách biết cần gửi gì
-    link.title = `Nhắn Zalo kèm mã đơn: ${orderId}`;
-  });
-
-  // Hiện mã đơn to để khách dễ copy gửi Zalo
-  if (orderIdEl) {
-    orderIdEl.style.fontSize   = '1.3rem';
-    orderIdEl.style.color      = '#c0392b';
-    orderIdEl.style.cursor     = 'pointer';
-    orderIdEl.title            = 'Bấm để copy';
-    orderIdEl.onclick = () => {
-      navigator.clipboard.writeText(orderId);
-      orderIdEl.textContent = orderId + ' ✅ Đã copy!';
-      setTimeout(() => orderIdEl.textContent = orderId, 2000);
-    };
-  }
-}
 // =====================
 // ĐÁNH GIÁ SAU ĐẶT MÓN
 // =====================
 let selectedRating = 0;
 
-// Demo: bấm để "giả lập" đã nhận món xong
 function enableReviewDemo() {
-  document.getElementById('review-prompt').style.display = 'none';
-  document.getElementById('review-form').style.display = 'block';
+  const prompt = document.getElementById('review-prompt');
+  const form    = document.getElementById('review-form');
+  if (prompt) prompt.style.display = 'none';
+  if (form)   form.style.display = 'block';
 }
 
-// Chọn số sao
 document.querySelectorAll('.star').forEach(star => {
   star.addEventListener('click', () => {
     selectedRating = parseInt(star.dataset.value);
@@ -554,7 +570,6 @@ document.querySelectorAll('.star').forEach(star => {
     });
   });
 
-  // Hover preview
   star.addEventListener('mouseenter', () => {
     document.querySelectorAll('.star').forEach(s => {
       s.classList.toggle('hover', parseInt(s.dataset.value) <= parseInt(star.dataset.value));
@@ -565,42 +580,39 @@ document.querySelectorAll('.star').forEach(star => {
   });
 });
 
-// Gửi đánh giá
 function submitReview() {
   if (selectedRating === 0) {
     alert('Vui lòng chọn số sao đánh giá!');
     return;
   }
 
-  const orderId  = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
-  const comment  = document.getElementById('review-comment')?.value.trim() || '';
+  const orderId = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
+  const comment = document.getElementById('review-comment')?.value.trim() || '';
 
-  // Lấy thông tin đơn để hiện tên khách
   const orders = JSON.parse(localStorage.getItem('orders')) || [];
   const order  = orders.find(o => o.id === orderId);
 
   const review = {
-    id:        'RV' + Date.now().toString().slice(-6),
-    orderId:   orderId,
+    id:           'RV' + Date.now().toString().slice(-6),
+    orderId:      orderId,
     customerName: order ? maskName(order.customer.name) : 'Khách hàng',
-    items:     order ? order.items.map(i => i.name).join(', ') : '',
-    rating:    selectedRating,
-    comment:   comment,
-    createdAt: new Date().toISOString()
+    items:        order ? order.items.map(i => i.name).join(', ') : '',
+    rating:       selectedRating,
+    comment:      comment,
+    createdAt:    new Date().toISOString()
   };
 
-  // ⚙️ KHI DEPLOY THẬT: thay localStorage bằng API call
-  // Ví dụ: await fetch('/api/reviews', { method: 'POST', body: JSON.stringify(review) })
+  // ⚙️ KHI DEPLOY: thay bằng fetch POST /api/reviews
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
   reviews.push(review);
   localStorage.setItem('reviews', JSON.stringify(reviews));
 
-  // Hiện cảm ơn
-  document.getElementById('review-form').style.display = 'none';
-  document.getElementById('review-thanks').style.display = 'block';
+  const formEl   = document.getElementById('review-form');
+  const thanksEl = document.getElementById('review-thanks');
+  if (formEl)   formEl.style.display = 'none';
+  if (thanksEl) thanksEl.style.display = 'block';
 }
 
-// Ẩn 1 phần tên để bảo mật: "Nguyễn Văn A" -> "Nguyễn V. A"
 function maskName(name) {
   const parts = name.trim().split(' ');
   if (parts.length <= 1) return name;
@@ -609,27 +621,26 @@ function maskName(name) {
   ).join(' ');
 }
 
+
 // =====================
 // TRANG REVIEWS.HTML
 // =====================
 function renderReviews() {
-  const list  = document.getElementById('reviews-list');
-  if (!list) return; // không phải trang reviews
+  const list = document.getElementById('reviews-list');
+  if (!list) return;
 
-  // ⚙️ KHI DEPLOY THẬT: thay bằng fetch('/api/reviews')
+  // ⚙️ KHI DEPLOY: thay bằng fetch GET /api/reviews
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
-
   const noReviews = document.getElementById('no-reviews');
 
   if (reviews.length === 0) {
-    noReviews.style.display = 'block';
+    if (noReviews) noReviews.style.display = 'block';
     renderSummary([]);
     return;
   }
 
-  noReviews.style.display = 'none';
+  if (noReviews) noReviews.style.display = 'none';
 
-  // Mới nhất lên đầu
   const sorted = [...reviews].reverse();
 
   list.innerHTML = sorted.map(r => `
@@ -670,7 +681,6 @@ function renderSummary(reviews) {
   starsEl.textContent = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
   countEl.textContent = `${reviews.length} đánh giá`;
 
-  // Breakdown từng mức sao
   breakEl.innerHTML = [5,4,3,2,1].map(star => {
     const count   = reviews.filter(r => r.rating === star).length;
     const percent = (count / reviews.length) * 100;
@@ -697,5 +707,12 @@ function formatReviewDate(dateStr) {
   return date.toLocaleDateString('vi-VN');
 }
 
-// Khởi động
+
+// =====================
+// KHỞI ĐỘNG TẤT CẢ
+// =====================
+updateCartCount();
+renderCart();
+checkLoginStatus();
+renderHistory();
 renderReviews();
