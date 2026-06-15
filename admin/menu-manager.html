@@ -29,47 +29,50 @@
     <div class="admin-card">
       <h2 id="form-title">➕ Thêm Món Mới</h2>
 
-      <div class="menu-form-grid">
-        <div class="form-group">
-          <label>Tên món *</label>
-          <input type="text" id="item-name" placeholder="Cơm Tấm Sườn Bì">
-        </div>
-        <div class="form-group">
-          <label>Giá (VNĐ) *</label>
-          <input type="number" id="item-price" placeholder="35000">
-        </div>
-       <div class="form-group">
-  <label>Badge</label>
-  <select id="item-badge">
-    <option value="">Không có badge</option>
-    <option value="hot">🔥 Bán chạy</option>
-    <option value="new">⭐ Nổi bật</option>
-    <option value="special">🎁 Đặc biệt</option>
-    <option value="fresh">✨ Mới có</option>
-  </select>
+     <div class="menu-form-grid">
+  <div class="form-group">
+    <label>Tên món *</label>
+    <input type="text" id="item-name" placeholder="Cơm Tấm Sườn Bì">
+  </div>
+  <div class="form-group">
+    <label>Giá (VNĐ) *</label>
+    <input type="number" id="item-price" placeholder="35000">
+  </div>
+  <div class="form-group">
+    <label>Danh mục *</label>
+    <select id="item-category">
+      <option value="com">🍚 Cơm</option>
+      <option value="bun-mi">🍜 Bún & Mì</option>
+      <option value="nuoc">🥤 Nước uống</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Icon (emoji)</label>
+    <input type="text" id="item-icon" placeholder="🍚">
+  </div>
+  <div class="form-group">
+    <label>Badge</label>
+    <select id="item-badge">
+      <option value="">Không có badge</option>
+      <option value="hot">🔥 Bán chạy</option>
+      <option value="new">⭐ Nổi bật</option>
+      <option value="special">🎁 Đặc biệt</option>
+      <option value="fresh">✨ Mới có</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Giá cũ (để trống nếu không có)</label>
+    <input type="number" id="item-old-price" placeholder="65000">
+  </div>
+  <div class="form-group">
+    <label>Số lượt đã bán hôm nay</label>
+    <input type="number" id="item-sold-count" placeholder="0">
+  </div>
+  <div class="form-group" style="grid-column: 1/-1;">
+    <label>Mô tả món</label>
+    <textarea id="item-desc" placeholder="Sườn nướng mềm, bì trộn thơm..."></textarea>
+  </div>
 </div>
-
-<div class="form-group">
-  <label>Giá cũ (để trống nếu không có)</label>
-  <input type="number" id="item-old-price" placeholder="65000">
-</div>
-
-<div class="form-group">
-  <label>Số lượt đã bán hôm nay</label>
-  <input type="number" id="item-sold-count" placeholder="0">
-</div>
-
-
-
-<div class="form-group">
-  <label>Số lượt đã bán hôm nay</label>
-  <input type="number" id="item-sold-count" placeholder="0">
-</div>
-        <div class="form-group" style="grid-column: 1/-1;">
-          <label>Mô tả món</label>
-          <textarea id="item-desc" placeholder="Sườn nướng mềm, bì trộn thơm..."></textarea>
-        </div>
-      </div>
 
       <div class="form-actions">
         <button class="action-btn confirm" onclick="saveMenuItem()">
@@ -169,69 +172,84 @@
       return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
     }
 
-    function saveMenuItem() {
-      const name     = document.getElementById('item-name').value.trim();
-      const price    = parseInt(document.getElementById('item-price').value);
-      const category = document.getElementById('item-category').value;
-      const icon     = document.getElementById('item-icon').value.trim() || '🍽️';
-      const desc     = document.getElementById('item-desc').value.trim();
-      const msg      = document.getElementById('menu-msg');
+  function saveMenuItem() {
+  const name      = document.getElementById('item-name').value.trim();
+  const price     = parseInt(document.getElementById('item-price').value);
+  const category  = document.getElementById('item-category').value;
+  const icon      = document.getElementById('item-icon').value.trim() || '🍽️';
+  const desc      = document.getElementById('item-desc').value.trim();
+  const badge     = document.getElementById('item-badge').value;
+  const oldPrice  = document.getElementById('item-old-price').value;
+  const soldCount = document.getElementById('item-sold-count').value;
+  const msg       = document.getElementById('menu-msg');
 
-      if (!name || !price) {
-        msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
-        msg.className = 'account-msg error'; return;
-      }
+  if (!name || !price) {
+    msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
+    msg.className = 'account-msg error'; return;
+  }
 
-      const menu = getMenu();
+  const menu = getMenu();
+  const itemData = {
+    name, price, category, icon, desc,
+    badge: badge || null,
+    oldPrice: oldPrice ? parseInt(oldPrice) : null,
+    soldCount: soldCount ? parseInt(soldCount) : 0
+  };
 
-      if (editingId) {
-        const idx = menu.findIndex(i => i.id === editingId);
-        menu[idx] = { ...menu[idx], name, price, category, icon, desc };
-        msg.textContent = '✅ Đã cập nhật món!';
-      } else {
-        const newId = Math.max(...menu.map(i => i.id), 0) + 1;
-        menu.push({ id: newId, name, price, category, icon, desc });
-        msg.textContent = '✅ Đã thêm món mới!';
-      }
+  if (editingId) {
+    const idx = menu.findIndex(i => i.id === editingId);
+    menu[idx] = { ...menu[idx], ...itemData };
+    msg.textContent = '✅ Đã cập nhật món!';
+  } else {
+    const newId = Math.max(...menu.map(i => i.id), 0) + 1;
+    menu.push({ id: newId, ...itemData });
+    msg.textContent = '✅ Đã thêm món mới!';
+  }
 
-      msg.className = 'account-msg success';
-      saveMenu(menu);
-      resetForm();
-      renderMenuList();
-      setTimeout(() => msg.textContent = '', 2000);
-    }
+  msg.className = 'account-msg success';
+  saveMenu(menu);
+  resetForm();
+  renderMenuList();
+  setTimeout(() => msg.textContent = '', 2000);
+}
 
-    function editItem(id) {
-      const menu = getMenu();
-      const item = menu.find(i => i.id === id);
-      if (!item) return;
+   function editItem(id) {
+  const menu = getMenu();
+  const item = menu.find(i => i.id === id);
+  if (!item) return;
 
-      editingId = id;
-      document.getElementById('item-name').value     = item.name;
-      document.getElementById('item-price').value    = item.price;
-      document.getElementById('item-category').value = item.category;
-      document.getElementById('item-icon').value     = item.icon || '';
-      document.getElementById('item-desc').value     = item.desc || '';
-      document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
+  editingId = id;
+  document.getElementById('item-name').value      = item.name;
+  document.getElementById('item-price').value     = item.price;
+  document.getElementById('item-category').value  = item.category;
+  document.getElementById('item-icon').value      = item.icon || '';
+  document.getElementById('item-desc').value      = item.desc || '';
+  document.getElementById('item-badge').value     = item.badge || '';
+  document.getElementById('item-old-price').value = item.oldPrice || '';
+  document.getElementById('item-sold-count').value = item.soldCount || '';
+  document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
     function deleteItem(id) {
       if (!confirm('Xóa món này?')) return;
       const menu = getMenu().filter(i => i.id !== id);
       saveMenu(menu);
       renderMenuList();
     }
-
     function resetForm() {
-      editingId = null;
-      document.getElementById('item-name').value     = '';
-      document.getElementById('item-price').value    = '';
-      document.getElementById('item-icon').value     = '';
-      document.getElementById('item-desc').value     = '';
-      document.getElementById('item-category').value = 'com';
-      document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
-    }
+  editingId = null;
+  document.getElementById('item-name').value      = '';
+  document.getElementById('item-price').value     = '';
+  document.getElementById('item-icon').value      = '';
+  document.getElementById('item-desc').value      = '';
+  document.getElementById('item-category').value  = 'com';
+  document.getElementById('item-badge').value     = '';
+  document.getElementById('item-old-price').value = '';
+  document.getElementById('item-sold-count').value = '';
+  document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
+}
+
+   
 
     // Filter danh mục
     document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
