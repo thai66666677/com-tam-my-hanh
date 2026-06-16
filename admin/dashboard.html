@@ -6,7 +6,7 @@
   <title>Quản Lý Đơn Hàng - Cơm Tấm Mỹ Hạnh</title>
   <link rel="stylesheet" href="../frontend/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="../frontend/js/config.js"></script>
+  <script src="../frontend/js/config.js"></script>
 </head>
 <body class="admin-body">
 
@@ -70,7 +70,7 @@
 
     <!-- DANH SÁCH ĐƠN HÀNG -->
     <div id="orders-container">
-      
+      <div class="empty-cart"><p>⏳ Đang tải đơn hàng...</p></div>
     </div>
 
   </div>
@@ -101,146 +101,169 @@
 
     let currentFilter = 'all';
 
-    function loadOrders() {
-  const orders = JSON.parse(localStorage.getItem('orders')) || [];
-  const reversed = [...orders].reverse();
+    // ===== HÀM TẢI ĐƠN HÀNG TỪ BACKEND (API) =====
+    async function loadOrders() {
+      let orders = [];
 
-  // Thống kê
-  const today = new Date().toDateString();
-  document.getElementById('stat-new').textContent =
-    orders.filter(o => o.status === 'new').length;
-  document.getElementById('stat-confirmed').textContent =
-    orders.filter(o => o.status === 'confirmed').length;
-  document.getElementById('stat-done').textContent =
-    orders.filter(o => o.status === 'done').length;
-
-  const todayRevenue = orders
-    .filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === today)
-    .reduce((sum, o) => sum + o.total, 0);
-  document.getElementById('stat-revenue').textContent = formatPrice(todayRevenue);
-
-  // Lọc theo trạng thái
-  const filtered = currentFilter === 'all'
-    ? reversed
-    : reversed.filter(o => o.status === currentFilter);
-
-  const container = document.getElementById('orders-container');
-
-  // ===== SỬA: Không dùng appendChild, render trực tiếp bằng innerHTML =====
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-cart">
-        <p>📭 Chưa có đơn hàng nào</p>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = filtered.map(order => `
-    <div class="admin-order-card status-border-${order.status}">
-
-      <div class="admin-order-header">
-        <div>
-          <strong>${order.id}</strong>
-          <span class="order-status status-${order.status}">
-            ${statusLabel[order.status]}
-          </span>
-        </div>
-        <span class="order-time">
-          ${new Date(order.createdAt).toLocaleString('vi-VN')}
-        </span>
-      </div>
-
-      <div class="admin-order-body">
-        <div class="customer-info">
-          <p>👤 <strong>${order.customer.name}</strong></p>
-          <p>📞 <a href="tel:${order.customer.phone}">${order.customer.phone}</a></p>
-          <p>📍 ${order.customer.address || 'Không có địa chỉ'}</p>
-          ${order.customer.note
-            ? `<p>📝 <em>${order.customer.note}</em></p>`
-            : ''}
-          <p>💳 ${order.payment === 'cod' ? 'Tiền mặt' : 'Chuyển khoản QR'}</p>
-        </div>
-
-        <div class="order-items-list">
-          ${order.items.map(item => `
-            <div class="admin-item-row">
-              <span>${item.name} x${item.quantity}</span>
-              <span>${formatPrice(item.price * item.quantity)}</span>
-            </div>
-          `).join('')}
-          <div class="admin-item-row total-row total-final">
-            <span>Tổng cộng</span>
-            <span>${formatPrice(order.total)}</span>
+      try {
+        const res = await fetch(`${API_URL}/orders`);
+        if (!res.ok) throw new Error('Response not OK: ' + res.status);
+        orders = await res.json();
+      } catch (err) {
+        console.error('Lỗi tải đơn hàng:', err);
+        document.getElementById('orders-container').innerHTML = `
+          <div class="empty-cart">
+            <p>⚠️ Không kết nối được server</p>
+            <p style="color:#aaa;font-size:0.85rem;">${err.message}</p>
           </div>
+        `;
+        return;
+      }
+
+      // API backend đã trả về mới nhất lên đầu (orders.js có .reverse())
+      // Thống kê
+      const today = new Date().toDateString();
+      document.getElementById('stat-new').textContent =
+        orders.filter(o => o.status === 'new').length;
+      document.getElementById('stat-confirmed').textContent =
+        orders.filter(o => o.status === 'confirmed').length;
+      document.getElementById('stat-done').textContent =
+        orders.filter(o => o.status === 'done').length;
+
+      const todayRevenue = orders
+        .filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === today)
+        .reduce((sum, o) => sum + o.total, 0);
+      document.getElementById('stat-revenue').textContent = formatPrice(todayRevenue);
+
+      // Lọc theo trạng thái
+      const filtered = currentFilter === 'all'
+        ? orders
+        : orders.filter(o => o.status === currentFilter);
+
+      const container = document.getElementById('orders-container');
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart">
+            <p>📭 Chưa có đơn hàng nào</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(order => `
+        <div class="admin-order-card status-border-${order.status}">
+
+          <div class="admin-order-header">
+            <div>
+              <strong>${order.id}</strong>
+              <span class="order-status status-${order.status}">
+                ${statusLabel[order.status]}
+              </span>
+            </div>
+            <span class="order-time">
+              ${new Date(order.createdAt).toLocaleString('vi-VN')}
+            </span>
+          </div>
+
+          <div class="admin-order-body">
+            <div class="customer-info">
+              <p>👤 <strong>${order.customer.name}</strong></p>
+              <p>📞 <a href="tel:${order.customer.phone}">${order.customer.phone}</a></p>
+              <p>📍 ${order.customer.address || 'Không có địa chỉ'}</p>
+              ${order.customer.note
+                ? `<p>📝 <em>${order.customer.note}</em></p>`
+                : ''}
+              <p>💳 ${order.payment === 'cod' ? 'Tiền mặt' : 'Chuyển khoản QR'}</p>
+            </div>
+
+            <div class="order-items-list">
+              ${order.items.map(item => `
+                <div class="admin-item-row">
+                  <span>${item.name} x${item.quantity}</span>
+                  <span>${formatPrice(item.price * item.quantity)}</span>
+                </div>
+              `).join('')}
+              <div class="admin-item-row total-row total-final">
+                <span>Tổng cộng</span>
+                <span>${formatPrice(order.total)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-order-actions">
+            ${order.status === 'new' ? `
+              <button class="action-btn confirm"
+                onclick="updateStatus('${order.id}', 'confirmed')">
+                ✅ Xác nhận
+              </button>
+              <button class="action-btn cancel"
+                onclick="updateStatus('${order.id}', 'cancelled')">
+                ❌ Hủy đơn
+              </button>
+            ` : ''}
+            ${order.status === 'confirmed' ? `
+              <button class="action-btn done"
+                onclick="updateStatus('${order.id}', 'done')">
+                🎉 Hoàn thành
+              </button>
+              <button class="action-btn cancel"
+                onclick="updateStatus('${order.id}', 'cancelled')">
+                ❌ Hủy đơn
+              </button>
+            ` : ''}
+            ${order.status === 'done' || order.status === 'cancelled' ? `
+              <span class="action-done">Đơn đã kết thúc</span>
+            ` : ''}
+          </div>
+
         </div>
-      </div>
+      `).join('');
+    }
 
-      <div class="admin-order-actions">
-        ${order.status === 'new' ? `
-          <button class="action-btn confirm"
-            onclick="updateStatus('${order.id}', 'confirmed')">
-            ✅ Xác nhận
-          </button>
-          <button class="action-btn cancel"
-            onclick="updateStatus('${order.id}', 'cancelled')">
-            ❌ Hủy đơn
-          </button>
-        ` : ''}
-        ${order.status === 'confirmed' ? `
-          <button class="action-btn done"
-            onclick="updateStatus('${order.id}', 'done')">
-            🎉 Hoàn thành
-          </button>
-          <button class="action-btn cancel"
-            onclick="updateStatus('${order.id}', 'cancelled')">
-            ❌ Hủy đơn
-          </button>
-        ` : ''}
-        ${order.status === 'done' || order.status === 'cancelled' ? `
-          <span class="action-done">Đơn đã kết thúc</span>
-        ` : ''}
-      </div>
+    // ===== CẬP NHẬT TRẠNG THÁI ĐƠN QUA API =====
+    async function updateStatus(orderId, newStatus) {
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
 
-    </div>
-  `).join('');
-}
-      
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Cập nhật thất bại!');
+          return;
+        }
 
-    // Cập nhật trạng thái đơn
-    function updateStatus(orderId, newStatus) {
-      const orders = JSON.parse(localStorage.getItem('orders')) || [];
-      const index  = orders.findIndex(o => o.id === orderId);
-      if (index === -1) return;
+        const statusMsg = {
+          confirmed: '✅ Đã xác nhận đơn ' + orderId,
+          done:      '🎉 Đơn ' + orderId + ' đã hoàn thành! Đã cộng vào doanh thu',
+          cancelled: '❌ Đã hủy đơn ' + orderId
+        };
+        showAdminToast(statusMsg[newStatus]);
 
-      orders[index].status = newStatus;
-      localStorage.setItem('orders', JSON.stringify(orders));
-     // ===== THÊM THÔNG BÁO =====
-  const statusMsg = {
-    confirmed: '✅ Đã xác nhận đơn ' + orderId,
-    done:      '🎉 Đơn ' + orderId + ' đã hoàn thành! Đã cộng vào doanh thu',
-    cancelled: '❌ Đã hủy đơn ' + orderId
-  };
-  showAdminToast(statusMsg[newStatus]);
-  // ===========================
+        loadOrders();
 
-  loadOrders();
-}
-// Hàm hiện toast cho admin
-function showAdminToast(message) {
-  let toast = document.getElementById('admin-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'admin-toast';
-    toast.className = 'admin-toast';
-    document.body.appendChild(toast);
-  }
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-      
-    
+      } catch (err) {
+        console.error('Lỗi cập nhật trạng thái:', err);
+        alert('Không kết nối được server!');
+      }
+    }
+
+    // Hàm hiện toast cho admin
+    function showAdminToast(message) {
+      let toast = document.getElementById('admin-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'admin-toast';
+        toast.className = 'admin-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
 
     // Bộ lọc
     document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
@@ -253,9 +276,9 @@ function showAdminToast(message) {
       });
     });
 
-    // Auto reload mỗi 30 giây (realtime đơn mới)
+    // Tải lần đầu + auto reload mỗi 15 giây (realtime đơn mới)
     loadOrders();
-    setInterval(loadOrders, 30000);
+    setInterval(loadOrders, 15000);
   </script>
 </body>
 </html>

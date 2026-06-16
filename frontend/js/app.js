@@ -2,7 +2,6 @@
 // GIỜ MỞ/ĐÓNG CỬA TỰ ĐỘNG
 // =====================
 const BUSINESS_HOURS = {
-  // 0 = Chủ nhật, 1 = Thứ 2, ..., 6 = Thứ 7
   0: { open: '06:00', close: '22:00' },
   1: { open: '06:00', close: '22:00' },
   2: { open: '06:00', close: '22:00' },
@@ -175,7 +174,7 @@ function removeItem(index) {
 
 function updateTotal() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = subtotal + 15000; // phí ship 15k
+  const total = subtotal + 15000;
   const subEl = document.getElementById('subtotal');
   const totEl = document.getElementById('total-price');
   if (subEl) subEl.textContent = formatPrice(subtotal);
@@ -221,7 +220,7 @@ function generateQR() {
 
 
 // =====================
-// GỬI ĐƠN HÀNG (chỉ 1 phiên bản duy nhất)
+// GỬI ĐƠN HÀNG — GỌI API BACKEND (CHỈ 1 BẢN DUY NHẤT)
 // =====================
 async function submitOrder() {
   const nameEl    = document.getElementById('customer-name');
@@ -251,7 +250,6 @@ async function submitOrder() {
     payment
   };
 
-  // ===== HIỆN LOADING (tránh khách bấm nhiều lần) =====
   const submitBtn = document.querySelector('.btn-submit');
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -259,18 +257,15 @@ async function submitOrder() {
   }
 
   try {
-    // ===== GỌI API BACKEND =====
     const res = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
     });
-
     const data = await res.json();
 
     if (!res.ok) {
       alert(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
-      // Bật lại nút bấm
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = '🚀 Đặt Món Ngay';
@@ -278,15 +273,12 @@ async function submitOrder() {
       return;
     }
 
-    // ===== THÀNH CÔNG =====
     const orderId = data.orderId;
 
-    // Xóa giỏ hàng
     cart = [];
     saveCart();
     updateCartCount();
 
-    // Hiện màn hình thành công
     const formEl    = document.getElementById('order-form');
     const successEl = document.getElementById('order-success');
     const orderIdEl = document.getElementById('order-id');
@@ -294,16 +286,16 @@ async function submitOrder() {
     if (successEl) successEl.style.display = 'block';
     if (orderIdEl) orderIdEl.textContent   = orderId;
 
-    // Cập nhật link Zalo với mã đơn
-    const zaloLinks = document.querySelectorAll('.btn-contact-zalo');
-    zaloLinks.forEach(link => {
+    document.querySelectorAll('.btn-contact-zalo').forEach(link => {
+      link.href  = 'https://zalo.me/0901234567';
       link.title = `Nhắn Zalo kèm mã đơn: ${orderId}`;
     });
 
-    // Cho phép bấm copy mã đơn
     if (orderIdEl) {
-      orderIdEl.style.cursor = 'pointer';
-      orderIdEl.title = 'Bấm để copy';
+      orderIdEl.style.fontSize = '1.3rem';
+      orderIdEl.style.color    = '#c0392b';
+      orderIdEl.style.cursor   = 'pointer';
+      orderIdEl.title          = 'Bấm để copy';
       orderIdEl.onclick = () => {
         navigator.clipboard.writeText(orderId);
         orderIdEl.textContent = orderId + ' ✅ Đã copy!';
@@ -313,33 +305,13 @@ async function submitOrder() {
 
   } catch (err) {
     console.error('Lỗi đặt món:', err);
-    alert('Không kết nối được server. Vui lòng kiểm tra mạng và thử lại!');
-
+    alert('Không kết nối được server. Vui lòng thử lại sau ít giây!');
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = '🚀 Đặt Món Ngay';
     }
   }
 }
-  // Cập nhật link Zalo
-  document.querySelectorAll('.btn-contact-zalo').forEach(link => {
-    link.href  = `https://zalo.me/0901234567`;
-    link.title = `Nhắn Zalo kèm mã đơn: ${orderId}`;
-  });
-
-  // Cho bấm copy mã đơn
-  if (orderIdEl) {
-    orderIdEl.style.fontSize = '1.3rem';
-    orderIdEl.style.color    = '#c0392b';
-    orderIdEl.style.cursor   = 'pointer';
-    orderIdEl.title          = 'Bấm để copy';
-    orderIdEl.onclick = () => {
-      navigator.clipboard.writeText(orderId);
-      orderIdEl.textContent = orderId + ' ✅ Đã copy!';
-      setTimeout(() => orderIdEl.textContent = orderId, 2000);
-    };
-  }
-
 
 
 // =====================
@@ -399,7 +371,6 @@ async function handleRegister() {
     showAccountMsg('Mật khẩu không khớp!', 'error'); return;
   }
 
-  // Vô hiệu hóa nút bấm tránh spam
   const btn = document.querySelector('#tab-register .btn-submit');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xử lý...'; }
 
@@ -426,7 +397,6 @@ async function handleRegister() {
   }
 }
 
-
 async function handleLogin() {
   const phone    = document.getElementById('login-phone')?.value.trim();
   const password = document.getElementById('login-password')?.value;
@@ -451,7 +421,6 @@ async function handleLogin() {
       return;
     }
 
-    // Lưu session: thông tin user + token
     localStorage.setItem('currentUser', JSON.stringify(data.user));
     localStorage.setItem('authToken', data.token);
 
@@ -464,7 +433,6 @@ async function handleLogin() {
     if (btn) { btn.disabled = false; btn.textContent = '🔐 Đăng Nhập'; }
   }
 }
-
 
 function showLoggedIn(user) {
   ['tab-login', 'tab-register'].forEach(id => {
@@ -483,6 +451,7 @@ function showLoggedIn(user) {
 
 function handleLogout() {
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('authToken');
   location.reload();
 }
 
@@ -495,13 +464,13 @@ function checkLoginStatus() {
 
 
 // =====================
-// LỊCH SỬ ĐƠN HÀNG
+// LỊCH SỬ ĐƠN HÀNG — GỌI API BACKEND
 // =====================
-function renderHistory() {
+async function renderHistory() {
   const historyList          = document.getElementById('history-list');
   const historyEmpty         = document.getElementById('history-empty');
   const historyLoginRequired = document.getElementById('history-login-required');
-  if (!historyList) return;
+  if (!historyList) return; // không phải trang history.html
 
   const user = JSON.parse(localStorage.getItem('currentUser'));
   if (!user) {
@@ -509,49 +478,59 @@ function renderHistory() {
     return;
   }
 
-  // ⚙️ KHI DEPLOY: thay bằng fetch GET /api/orders/phone/:phone
-  const orders   = JSON.parse(localStorage.getItem('orders')) || [];
-  const myOrders = orders.filter(o => o.customer.phone === user.phone).reverse();
+  try {
+    const res = await fetch(`${API_URL}/orders/phone/${user.phone}`);
+    const myOrders = await res.json();
 
-  if (myOrders.length === 0) {
-    if (historyEmpty) historyEmpty.style.display = 'block';
-    return;
+    if (!myOrders || myOrders.length === 0) {
+      if (historyEmpty) historyEmpty.style.display = 'block';
+      return;
+    }
+
+    const statusLabel = {
+      new:       '🆕 Đơn mới',
+      confirmed: '✅ Đã xác nhận',
+      done:      '🎉 Hoàn thành',
+      cancelled: '❌ Đã hủy'
+    };
+
+    historyList.innerHTML = myOrders.map(order => `
+      <div class="history-card">
+        <div class="history-header">
+          <span class="order-id">Mã đơn: <strong>${order.id}</strong></span>
+          <span class="order-status status-${order.status}">
+            ${statusLabel[order.status] || order.status}
+          </span>
+        </div>
+        <div class="history-items">
+          ${order.items.map(item =>
+            `<div class="history-item">
+              <span>${item.name} x${item.quantity}</span>
+              <span>${formatPrice(item.price * item.quantity)}</span>
+            </div>`
+          ).join('')}
+        </div>
+        <div class="history-footer">
+          <span>📅 ${new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+          <span class="history-total">Tổng: <strong>${formatPrice(order.total)}</strong></span>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error('Lỗi tải lịch sử đơn hàng:', err);
+    if (historyEmpty) {
+      historyEmpty.style.display = 'block';
+      historyEmpty.querySelector('p').textContent = '⚠️ Không kết nối được server';
+    }
   }
-
-  const statusLabel = {
-    new:       '🆕 Đơn mới',
-    confirmed: '✅ Đã xác nhận',
-    done:      '🎉 Hoàn thành',
-    cancelled: '❌ Đã hủy'
-  };
-
-  historyList.innerHTML = myOrders.map(order => `
-    <div class="history-card">
-      <div class="history-header">
-        <span class="order-id">Mã đơn: <strong>${order.id}</strong></span>
-        <span class="order-status status-${order.status}">
-          ${statusLabel[order.status] || order.status}
-        </span>
-      </div>
-      <div class="history-items">
-        ${order.items.map(item =>
-          `<div class="history-item">
-            <span>${item.name} x${item.quantity}</span>
-            <span>${formatPrice(item.price * item.quantity)}</span>
-          </div>`
-        ).join('')}
-      </div>
-      <div class="history-footer">
-        <span>📅 ${new Date(order.createdAt).toLocaleString('vi-VN')}</span>
-        <span class="history-total">Tổng: <strong>${formatPrice(order.total)}</strong></span>
-      </div>
-    </div>
-  `).join('');
 }
 
 
 // =====================
 // ĐÁNH GIÁ SAU ĐẶT MÓN
+// (⚠️ Vẫn dùng localStorage — backend chưa có API reviews,
+//  sẽ chuyển sang API sau khi tạo route /api/reviews)
 // =====================
 let selectedRating = 0;
 
@@ -589,20 +568,15 @@ function submitReview() {
   const orderId = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
   const comment = document.getElementById('review-comment')?.value.trim() || '';
 
-  const orders = JSON.parse(localStorage.getItem('orders')) || [];
-  const order  = orders.find(o => o.id === orderId);
-
   const review = {
     id:           'RV' + Date.now().toString().slice(-6),
     orderId:      orderId,
-    customerName: order ? maskName(order.customer.name) : 'Khách hàng',
-    items:        order ? order.items.map(i => i.name).join(', ') : '',
+    customerName: 'Khách hàng',
     rating:       selectedRating,
     comment:      comment,
     createdAt:    new Date().toISOString()
   };
 
-  // ⚙️ KHI DEPLOY: thay bằng fetch POST /api/reviews
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
   reviews.push(review);
   localStorage.setItem('reviews', JSON.stringify(reviews));
@@ -629,7 +603,6 @@ function renderReviews() {
   const list = document.getElementById('reviews-list');
   if (!list) return;
 
-  // ⚙️ KHI DEPLOY: thay bằng fetch GET /api/reviews
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
   const noReviews = document.getElementById('no-reviews');
 
