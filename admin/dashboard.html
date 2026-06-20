@@ -112,14 +112,14 @@
       btn.textContent = '🔊 Đã bật âm thanh';
       btn.disabled = true;
       // Phát thử 1 lần để "mở khóa" autoplay trên trình duyệt
-      const audio = new Audio('sounds/notification.wav');
+      const audio = new Audio('sounds/notification.mp3');
       audio.volume = 0.3;
       audio.play().catch(() => {});
     }
 
     function playNotificationSound() {
       if (!soundEnabled) return;
-      const audio = new Audio('sounds/notification.wav');
+      const audio = new Audio('sounds/notification.mp3');
       audio.volume = 0.6;
       audio.play().catch(err => {
         console.log('Không phát được âm thanh:', err.message);
