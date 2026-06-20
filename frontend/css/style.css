@@ -1445,3 +1445,75 @@ a { text-decoration: none; color: inherit; }
     display: none; /* ẩn các link phụ trên mobile, chỉ giữ nút Giỏ hàng */
   }
 }
+#btn-enable-sound {
+  background: rgba(243, 156, 18, 0.3);
+  color: #f39c12;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+#btn-enable-sound:disabled {
+  background: rgba(39, 174, 96, 0.3);
+  color: #27ae60;
+  cursor: default;
+}
+/* ===== Ô TÌM KIẾM MENU ===== */
+.search-box {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 1.1rem;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 14px 44px;
+  border: 2px solid #eee;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+.search-clear {
+  position: absolute;
+  right: 14px;
+  background: #eee;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear:hover {
+  background: #ddd;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .search-box { max-width: 100%; }
+}

@@ -315,22 +315,69 @@ async function submitOrder() {
 
 
 // =====================
-// LỌC DANH MỤC MENU
 // =====================
+// TÌM KIẾM + LỌC DANH MỤC MENU
+// =====================
+let currentCategory = 'all';
+let currentSearchTerm = '';
+
+function applyMenuFilters() {
+  const cards = document.querySelectorAll('.menu-card');
+  const noResultEl = document.getElementById('search-no-result');
+  let visibleCount = 0;
+
+  cards.forEach(card => {
+    const category = card.dataset.category;
+    const nameEl = card.querySelector('h3');
+    const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+
+    const matchCategory = currentCategory === 'all' || category === currentCategory;
+    const matchSearch    = currentSearchTerm === '' || name.includes(currentSearchTerm);
+
+    if (matchCategory && matchSearch) {
+      card.style.display = 'block';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Hiện thông báo nếu không có kết quả
+  if (noResultEl) {
+    noResultEl.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+}
+
+// Bộ lọc danh mục
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const category = btn.dataset.category;
-    document.querySelectorAll('.menu-card').forEach(card => {
-      card.style.display =
-        (category === 'all' || card.dataset.category === category) ? 'block' : 'none';
-    });
+    currentCategory = btn.dataset.category;
+    applyMenuFilters();
   });
 });
 
+// Ô tìm kiếm
+const searchInput = document.getElementById('menu-search');
+const searchClearBtn = document.getElementById('search-clear');
 
-// =====================
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    currentSearchTerm = searchInput.value.trim().toLowerCase();
+    if (searchClearBtn) {
+      searchClearBtn.style.display = currentSearchTerm ? 'block' : 'none';
+    }
+    applyMenuFilters();
+  });
+}
+
+function clearSearch() {
+  if (searchInput) searchInput.value = '';
+  currentSearchTerm = '';
+  if (searchClearBtn) searchClearBtn.style.display = 'none';
+  applyMenuFilters();
+}
 // TÀI KHOẢN KHÁCH HÀNG
 // =====================
 function switchTab(tab) {
