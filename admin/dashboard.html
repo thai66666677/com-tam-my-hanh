@@ -20,6 +20,7 @@
       <nav class="admin-nav">
         <a href="dashboard.html" class="active">📋 Đơn hàng</a>
         <a href="menu-manager.html">🍽️ Quản lý món</a>
+        <button id="btn-enable-sound" onclick="enableSound()">🔇 Bật âm thanh</button>
         <button onclick="adminLogout()">🚪 Đăng xuất</button>
       </nav>
     </div>
@@ -101,6 +102,30 @@
 
     let currentFilter = 'all';
 
+    // ===== ÂM THANH BÁO ĐƠN MỚI =====
+    let soundEnabled    = false;
+    let previousNewCount = -1; // -1 = lần đầu tải, chưa so sánh
+
+    function enableSound() {
+      soundEnabled = true;
+      const btn = document.getElementById('btn-enable-sound');
+      btn.textContent = '🔊 Đã bật âm thanh';
+      btn.disabled = true;
+      // Phát thử 1 lần để "mở khóa" autoplay trên trình duyệt
+      const audio = new Audio('sounds/notification.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(() => {});
+    }
+
+    function playNotificationSound() {
+      if (!soundEnabled) return;
+      const audio = new Audio('sounds/notification.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(err => {
+        console.log('Không phát được âm thanh:', err.message);
+      });
+    }
+
     // ===== HÀM TẢI ĐƠN HÀNG TỪ BACKEND (API) =====
     async function loadOrders() {
       let orders = [];
@@ -120,11 +145,18 @@
         return;
       }
 
-      // API backend đã trả về mới nhất lên đầu (orders.js có .reverse())
-      // Thống kê
       const today = new Date().toDateString();
-      document.getElementById('stat-new').textContent =
-        orders.filter(o => o.status === 'new').length;
+      const newCount = orders.filter(o => o.status === 'new').length;
+
+      // ===== PHÁT ÂM THANH NẾU CÓ ĐƠN MỚI VỪA XUẤT HIỆN =====
+      if (previousNewCount !== -1 && newCount > previousNewCount) {
+        playNotificationSound();
+        showAdminToast(`🔔 Có ${newCount - previousNewCount} đơn mới!`);
+      }
+      previousNewCount = newCount;
+
+      // Thống kê
+      document.getElementById('stat-new').textContent = newCount;
       document.getElementById('stat-confirmed').textContent =
         orders.filter(o => o.status === 'confirmed').length;
       document.getElementById('stat-done').textContent =
