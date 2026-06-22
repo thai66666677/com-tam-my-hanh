@@ -26,23 +26,20 @@
 <body>
 
   <!-- ===== HEADER / NAVBAR ===== -->
-  <header class="header">
-    <div class="container">
-      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
-      <nav class="nav">
-        <a href="/frontend/index.html">Trang chủ</a>
-
-       <a href="/frontend/menu.html">Menu</a>
-
-       <a href="/frontend/reviews.html">Đánh giá</a>
-
-       <a href="/frontend/account.html">Tài khoản</a>
-
-      <a href="/frontend/order.html">Đặt món</a>
-        
-      </nav>
-    </div>
-  </header>
+   <header class="header">
+  <div class="container">
+    <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Mở menu">☰</button>
+    <nav class="nav" id="main-nav">
+      <a href="index.html">Trang chủ</a>
+      <a href="menu.html">Menu</a>
+      <a href="reviews.html">⭐ Đánh giá</a>
+      <a href="account.html">👤 Tài khoản</a>
+      <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+    </nav>
+  </div>
+</header>
+  
 
   <!-- ===== HERO / BANNER ===== -->
   <section class="hero">

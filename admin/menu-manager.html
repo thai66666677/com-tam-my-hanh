@@ -102,168 +102,186 @@
     </div>
 
   </div>
-
+/////////
   <script>
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
-      window.location.href = 'login.html';
-    }
+   if (localStorage.getItem('adminLoggedIn') !== 'true') {
+  window.location.href = 'login.html';
+}
 
-    function adminLogout() {
-      localStorage.removeItem('adminLoggedIn');
-      window.location.href = 'login.html';
-    }
+function adminLogout() {
+  localStorage.removeItem('adminLoggedIn');
+  window.location.href = 'login.html';
+}
 
-    function formatPrice(p) {
-      return p.toLocaleString('vi-VN') + 'đ';
-    }
+function formatPrice(p) {
+  return p.toLocaleString('vi-VN') + 'đ';
+}
 
-    // Dữ liệu món mặc định nếu chưa có
-    const defaultMenu = [
-      { id: 1, name: 'Cơm Tấm Sườn Bì',   price: 35000, category: 'com',    icon: '🍚', desc: 'Sườn nướng mềm, bì trộn thơm' },
-      { id: 2, name: 'Cơm Gà Xối Mỡ',     price: 40000, category: 'com',    icon: '🍗', desc: 'Gà chiên giòn, cơm trắng dẻo' },
-      { id: 3, name: 'Cơm Tấm Đặc Biệt',  price: 50000, category: 'com',    icon: '🥩', desc: 'Sườn + bì + chả trứng' },
-      { id: 4, name: 'Bún Bò Huế',         price: 40000, category: 'bun-mi', icon: '🍜', desc: 'Nước lèo đậm đà, thịt bò mềm' },
-      { id: 5, name: 'Mì Xào Hải Sản',     price: 45000, category: 'bun-mi', icon: '🍝', desc: 'Tôm, mực, nghêu xào mì vàng' },
-      { id: 6, name: 'Nước Mía',            price: 15000, category: 'nuoc',   icon: '🧃', desc: 'Nước mía tươi mát, thêm tắc' },
-      { id: 7, name: 'Trà Sữa Trân Châu',  price: 25000, category: 'nuoc',   icon: '🧋', desc: 'Trà sữa béo, trân châu đen dai' },
-    ];
+let editingId  = null;
+let currentCat = 'all';
+let menuItems  = [];
 
-    function getMenu() {
-      const saved = localStorage.getItem('menuItems');
-      return saved ? JSON.parse(saved) : defaultMenu;
-    }
+// ===== TẢI MENU TỪ API =====
+async function loadMenuItems() {
+  try {
+    const res = await fetch(`${API_URL}/menu`);
+    menuItems = await res.json();
+    renderMenuList();
+  } catch (err) {
+    alert('Không kết nối được server!');
+  }
+}
 
-    function saveMenu(menu) {
-      localStorage.setItem('menuItems', JSON.stringify(menu));
-    }
+// ===== RENDER DANH SÁCH MÓN =====
+function renderMenuList() {
+  const filtered = currentCat === 'all'
+    ? menuItems
+    : menuItems.filter(item => item.category === currentCat);
 
-    let editingId   = null;
-    let currentCat  = 'all';
+  const list = document.getElementById('menu-list');
 
-    function renderMenuList() {
-      const menu     = getMenu();
-      const filtered = currentCat === 'all'
-        ? menu
-        : menu.filter(item => item.category === currentCat);
-      const list = document.getElementById('menu-list');
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Chưa có món nào</p>';
+    return;
+  }
 
-      if (filtered.length === 0) {
-        list.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Chưa có món nào</p>';
-        return;
-      }
+  list.innerHTML = filtered.map(item => `
+    <div class="menu-manage-row">
+      <span class="menu-icon">${item.icon || '🍽️'}</span>
+      <div class="menu-manage-info">
+        <strong>${item.name}</strong>
+        <span>${item.desc || ''}</span>
+      </div>
+      <span class="menu-manage-cat">${getCatLabel(item.category)}</span>
+      <span class="menu-manage-price">${formatPrice(item.price)}</span>
+      <div class="menu-manage-actions">
+        <button class="action-btn confirm" onclick="editItem('${item.id}')">✏️ Sửa</button>
+        <button class="action-btn cancel"  onclick="deleteItem('${item.id}', '${item.name}')">🗑️ Xóa</button>
+      </div>
+    </div>
+  `).join('');
+}
 
-      list.innerHTML = filtered.map(item => `
-        <div class="menu-manage-row">
-          <span class="menu-icon">${item.icon || '🍽️'}</span>
-          <div class="menu-manage-info">
-            <strong>${item.name}</strong>
-            <span>${item.desc || ''}</span>
-          </div>
-          <span class="menu-manage-cat">${getCatLabel(item.category)}</span>
-          <span class="menu-manage-price">${formatPrice(item.price)}</span>
-          <div class="menu-manage-actions">
-            <button class="action-btn confirm" onclick="editItem(${item.id})">✏️ Sửa</button>
-            <button class="action-btn cancel" onclick="deleteItem(${item.id})">🗑️ Xóa</button>
-          </div>
-        </div>
-      `).join('');
-    }
+function getCatLabel(cat) {
+  return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
+}
 
-    function getCatLabel(cat) {
-      return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
-    }
-
-  function saveMenuItem() {
-  const name      = document.getElementById('item-name').value.trim();
-  const price     = parseInt(document.getElementById('item-price').value);
-  const category  = document.getElementById('item-category').value;
-  const icon      = document.getElementById('item-icon').value.trim() || '🍽️';
-  const desc      = document.getElementById('item-desc').value.trim();
-  const badge     = document.getElementById('item-badge').value;
-  const oldPrice  = document.getElementById('item-old-price').value;
-  const soldCount = document.getElementById('item-sold-count').value;
-  const msg       = document.getElementById('menu-msg');
+// ===== LƯU MÓN (Thêm hoặc Sửa) =====
+async function saveMenuItem() {
+  const name     = document.getElementById('item-name').value.trim();
+  const price    = document.getElementById('item-price').value;
+  const category = document.getElementById('item-category').value;
+  const icon     = document.getElementById('item-icon').value.trim()     || '🍽️';
+  const desc     = document.getElementById('item-desc').value.trim();
+  const badge    = document.getElementById('item-badge').value;
+  const oldPrice = document.getElementById('item-old-price').value;
+  const msg      = document.getElementById('menu-msg');
 
   if (!name || !price) {
     msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
-    msg.className = 'account-msg error'; return;
+    msg.className = 'account-msg error';
+    return;
   }
 
-  const menu = getMenu();
-  const itemData = {
-    name, price, category, icon, desc,
-    badge: badge || null,
-    oldPrice: oldPrice ? parseInt(oldPrice) : null,
-    soldCount: soldCount ? parseInt(soldCount) : 0
-  };
+  const body = { name, price: parseInt(price), category, icon, desc, badge, oldPrice: oldPrice ? parseInt(oldPrice) : null };
 
-  if (editingId) {
-    const idx = menu.findIndex(i => i.id === editingId);
-    menu[idx] = { ...menu[idx], ...itemData };
-    msg.textContent = '✅ Đã cập nhật món!';
-  } else {
-    const newId = Math.max(...menu.map(i => i.id), 0) + 1;
-    menu.push({ id: newId, ...itemData });
-    msg.textContent = '✅ Đã thêm món mới!';
+  try {
+    let res;
+    if (editingId) {
+      res = await fetch(`${API_URL}/menu/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    } else {
+      res = await fetch(`${API_URL}/menu`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'Có lỗi xảy ra!';
+      msg.className = 'account-msg error';
+      return;
+    }
+
+    msg.textContent = editingId ? '✅ Đã cập nhật món!' : '✅ Đã thêm món mới!';
+    msg.className = 'account-msg success';
+
+    resetForm();
+    await loadMenuItems(); // Reload danh sách từ Firestore
+    setTimeout(() => msg.textContent = '', 2000);
+
+  } catch (err) {
+    msg.textContent = 'Không kết nối được server!';
+    msg.className = 'account-msg error';
   }
-
-  msg.className = 'account-msg success';
-  saveMenu(menu);
-  resetForm();
-  renderMenuList();
-  setTimeout(() => msg.textContent = '', 2000);
 }
 
-   function editItem(id) {
-  const menu = getMenu();
-  const item = menu.find(i => i.id === id);
+// ===== SỬA MÓN =====
+function editItem(id) {
+  const item = menuItems.find(i => i.id === id);
   if (!item) return;
 
   editingId = id;
-  document.getElementById('item-name').value      = item.name;
-  document.getElementById('item-price').value     = item.price;
-  document.getElementById('item-category').value  = item.category;
-  document.getElementById('item-icon').value      = item.icon || '';
-  document.getElementById('item-desc').value      = item.desc || '';
-  document.getElementById('item-badge').value     = item.badge || '';
+  document.getElementById('item-name').value     = item.name;
+  document.getElementById('item-price').value    = item.price;
+  document.getElementById('item-category').value = item.category;
+  document.getElementById('item-icon').value     = item.icon || '';
+  document.getElementById('item-desc').value     = item.desc || '';
+  document.getElementById('item-badge').value    = item.badge || '';
   document.getElementById('item-old-price').value = item.oldPrice || '';
-  document.getElementById('item-sold-count').value = item.soldCount || '';
   document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-    function deleteItem(id) {
-      if (!confirm('Xóa món này?')) return;
-      const menu = getMenu().filter(i => i.id !== id);
-      saveMenu(menu);
-      renderMenuList();
+
+// ===== XÓA MÓN =====
+async function deleteItem(id, name) {
+  if (!confirm(`Xóa món "${name}" khỏi menu?`)) return;
+
+  try {
+    const res = await fetch(`${API_URL}/menu/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || 'Xóa thất bại!');
+      return;
     }
-    function resetForm() {
+
+    await loadMenuItems();
+  } catch (err) {
+    alert('Không kết nối được server!');
+  }
+}
+
+// ===== RESET FORM =====
+function resetForm() {
   editingId = null;
-  document.getElementById('item-name').value      = '';
-  document.getElementById('item-price').value     = '';
-  document.getElementById('item-icon').value      = '';
-  document.getElementById('item-desc').value      = '';
-  document.getElementById('item-category').value  = 'com';
-  document.getElementById('item-badge').value     = '';
-  document.getElementById('item-old-price').value = '';
-  document.getElementById('item-sold-count').value = '';
+  ['item-name','item-price','item-icon','item-desc','item-old-price'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('item-category').value = 'com';
+  document.getElementById('item-badge').value    = '';
   document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
 }
 
-   
-
-    // Filter danh mục
-    document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.admin-filter .filter-btn')
-          .forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentCat = btn.dataset.cat;
-        renderMenuList();
-      });
-    });
-
+// ===== BỘ LỌC DANH MỤC =====
+document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.admin-filter .filter-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCat = btn.dataset.cat;
     renderMenuList();
-  </script>
+  });
+});
+
+// ===== KHỞI ĐỘNG =====
+loadMenuItems();
+  </script>/////
 </body>
 </html>

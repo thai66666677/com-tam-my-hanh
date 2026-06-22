@@ -11,18 +11,20 @@
 <body>
 
   <!-- HEADER -->
-  <header class="header">
-    <div class="container">
-      <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
-      <nav class="nav">
-        <a href="index.html">Trang chủ</a>
-        <a href="menu.html">Menu</a>
-        <a href="reviews.html">⭐ Đánh giá</a>
-        <a href="account.html">👤 Tài khoản</a>
-        <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
-      </nav>
-    </div>
-  </header>
+   <header class="header">
+  <div class="container">
+    <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Mở menu">☰</button>
+    <nav class="nav" id="main-nav">
+      <a href="index.html">Trang chủ</a>
+      <a href="menu.html">Menu</a>
+      <a href="reviews.html">⭐ Đánh giá</a>
+      <a href="account.html">👤 Tài khoản</a>
+      <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+    </nav>
+  </div>
+</header>
+ 
 
   <!-- TRẠNG THÁI MỞ CỬA -->
   <div class="business-status-bar">
@@ -67,10 +69,23 @@
     <p style="color:#aaa;font-size:0.9rem;">Thử từ khóa khác hoặc xem toàn bộ menu</p>
   </div>
 
-  <!-- GRID MÓN ĂN - CÓ BADGE -->
-  <section class="menu-section">
-    <div class="container">
-      <div class="menu-grid" id="menu-grid">
+  
+   <!-- GRID MÓN ĂN - LOAD ĐỘNG TỪ API -->
+<section class="menu-section">
+  <div class="container">
+
+    <!-- Loading state -->
+    <div id="menu-loading" style="text-align:center;padding:40px;color:#999;">
+      <p>⏳ Đang tải thực đơn...</p>
+    </div>
+
+    <div class="menu-grid" id="menu-grid" style="display:none;">
+      <!-- JS sẽ render vào đây -->
+    </div>
+
+  </div>
+</section>
+  
 
         <!-- 🔥 MÓN BÁN CHẠY -->
         <div class="menu-card" data-category="com">

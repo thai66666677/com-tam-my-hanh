@@ -60,6 +60,17 @@ function renderBusinessStatus() {
         <span>🟢 Đang mở cửa · ${status.openTime} – ${status.closeTime}</span>
         <span class="status-time">${status.timeMsg}</span>
       `;
+
+      // ✅ FIX: Mở khóa lại nút nếu trước đó bị khóa do đóng cửa
+      orderBtns.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '';
+        btn.style.cursor  = '';
+        if (btn.classList.contains('btn-submit') && btn.textContent.includes('đóng cửa')) {
+          btn.textContent = '🚀 Đặt Món Ngay';
+        }
+      });
+
     } else {
       banner.className = 'business-status status-closed';
       banner.innerHTML = `
@@ -80,6 +91,7 @@ function renderBusinessStatus() {
   });
 }
 
+////////////////////
 renderBusinessStatus();
 setInterval(renderBusinessStatus, 60000);
 
@@ -274,7 +286,9 @@ async function submitOrder() {
     }
 
     const orderId = data.orderId;
-
+    // ✅ FIX: Lưu tạm thông tin để dùng cho phần đánh giá
+     sessionStorage.setItem('lastOrderCustomerName', name);
+    sessionStorage.setItem('lastOrderItems', JSON.stringify(cart.map(i => i.name)));
     cart = [];
     saveCart();
     updateCartCount();
@@ -341,6 +355,67 @@ function applyMenuFilters() {
       card.style.display = 'none';
     }
   });
+   // =====================
+// LOAD MENU TỪ API (Firestore)
+// =====================
+async function loadMenu() {
+  const grid    = document.getElementById('menu-grid');
+  const loading = document.getElementById('menu-loading');
+  if (!grid) return; // không phải trang menu.html
+
+  try {
+    const res   = await fetch(`${API_URL}/menu`);
+    const items = await res.json();
+
+    loading.style.display = 'none';
+    grid.style.display    = 'grid';
+
+    if (!items || items.length === 0) {
+      grid.innerHTML = '<p style="text-align:center;color:#999;padding:40px">Chưa có món ăn nào</p>';
+      return;
+    }
+
+    grid.innerHTML = items.map(item => `
+      <div class="menu-card" data-category="${item.category}">
+        <div class="menu-img-wrap">
+          <img src="images/${item.id}.jpg"
+               onerror="this.src='https://via.placeholder.com/400x300/fff5f5/c0392b?text=${encodeURIComponent(item.icon || '🍽️')}'"
+               alt="${item.name}" class="menu-img-real">
+          ${item.badge ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
+        </div>
+        <div class="menu-info">
+          <h3>${item.name}</h3>
+          <p>${item.desc || ''}</p>
+          ${item.soldCount > 0 ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>` : ''}
+          <div class="menu-footer">
+            <div class="price-wrap">
+              <span class="price">${formatPrice(item.price)}</span>
+              ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
+            </div>
+            <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Khởi chạy lại bộ lọc sau khi render xong
+    applyMenuFilters();
+
+  } catch (err) {
+    console.error('Lỗi tải menu:', err);
+    loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn. Vui lòng thử lại!</p>';
+  }
+}
+
+function getBadgeLabel(badge) {
+  const labels = {
+    hot:     '🔥 Bán chạy',
+    new:     '⭐ Nổi bật',
+    special: '🎁 Đặc biệt',
+    fresh:   '✨ Mới có'
+  };
+  return labels[badge] || '';
+}
 
   // Hiện thông báo nếu không có kết quả
   if (noResultEl) {
@@ -615,14 +690,19 @@ function submitReview() {
   const orderId = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
   const comment = document.getElementById('review-comment')?.value.trim() || '';
 
-  const review = {
-    id:           'RV' + Date.now().toString().slice(-6),
-    orderId:      orderId,
-    customerName: 'Khách hàng',
-    rating:       selectedRating,
-    comment:      comment,
-    createdAt:    new Date().toISOString()
-  };
+  const savedName  = sessionStorage.getItem('lastOrderCustomerName');
+const savedItems = JSON.parse(sessionStorage.getItem('lastOrderItems') || '[]');
+
+const review = {
+  id:           'RV' + Date.now().toString().slice(-6),
+  orderId:      orderId,
+  customerName: savedName ? maskName(savedName) : 'Khách hàng',
+  items:        savedItems.join(', '),
+  rating:       selectedRating,
+  comment:      comment,
+  createdAt:    new Date().toISOString()
+};
+ /////
 
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
   reviews.push(review);
@@ -726,7 +806,22 @@ function formatReviewDate(dateStr) {
   if (diffDays < 7)   return `${diffDays} ngày trước`;
   return date.toLocaleDateString('vi-VN');
 }
+// =====================
+// MOBILE HAMBURGER MENU
+// =====================
+const navToggle = document.getElementById('nav-toggle');
+const mainNav    = document.getElementById('main-nav');
 
+if (navToggle && mainNav) {
+  navToggle.addEventListener('click', () => {
+    mainNav.classList.toggle('open');
+  });
+
+  // Tự đóng menu khi bấm chọn 1 link
+  mainNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => mainNav.classList.remove('open'));
+  });
+}
 
 // =====================
 // KHỞI ĐỘNG TẤT CẢ
@@ -736,3 +831,4 @@ renderCart();
 checkLoginStatus();
 renderHistory();
 renderReviews();
+loadMenu();
