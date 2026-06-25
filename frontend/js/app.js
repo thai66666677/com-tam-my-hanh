@@ -15,17 +15,14 @@ function checkBusinessHours() {
   const now   = new Date();
   const day   = now.getDay();
   const hours = BUSINESS_HOURS[day];
-
   if (!hours) return { isOpen: false, message: 'Hôm nay quán nghỉ' };
 
   const [openH,  openM]  = hours.open.split(':').map(Number);
   const [closeH, closeM] = hours.close.split(':').map(Number);
-
   const openTime  = openH  * 60 + openM;
   const closeTime = closeH * 60 + closeM;
   const nowTime   = now.getHours() * 60 + now.getMinutes();
-
-  const isOpen = nowTime >= openTime && nowTime < closeTime;
+  const isOpen    = nowTime >= openTime && nowTime < closeTime;
 
   let timeMsg = '';
   if (isOpen) {
@@ -43,7 +40,6 @@ function checkBusinessHours() {
       timeMsg = `Mở cửa lúc ${hours.open} ngày mai`;
     }
   }
-
   return { isOpen, openTime: hours.open, closeTime: hours.close, timeMsg };
 }
 
@@ -60,8 +56,6 @@ function renderBusinessStatus() {
         <span>🟢 Đang mở cửa · ${status.openTime} – ${status.closeTime}</span>
         <span class="status-time">${status.timeMsg}</span>
       `;
-
-      // ✅ FIX: Mở khóa lại nút nếu trước đó bị khóa do đóng cửa
       orderBtns.forEach(btn => {
         btn.disabled = false;
         btn.style.opacity = '';
@@ -70,7 +64,6 @@ function renderBusinessStatus() {
           btn.textContent = '🚀 Đặt Món Ngay';
         }
       });
-
     } else {
       banner.className = 'business-status status-closed';
       banner.innerHTML = `
@@ -78,7 +71,6 @@ function renderBusinessStatus() {
         <span>🔴 Đã đóng cửa · Mở lại lúc ${status.openTime}</span>
         <span class="status-time">${status.timeMsg}</span>
       `;
-
       orderBtns.forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = '0.5';
@@ -91,7 +83,6 @@ function renderBusinessStatus() {
   });
 }
 
-////////////////////
 renderBusinessStatus();
 setInterval(renderBusinessStatus, 60000);
 
@@ -169,9 +160,7 @@ function renderCart() {
 
 function changeQty(index, delta) {
   cart[index].quantity += delta;
-  if (cart[index].quantity <= 0) {
-    cart.splice(index, 1);
-  }
+  if (cart[index].quantity <= 0) cart.splice(index, 1);
   saveCart();
   updateCartCount();
   renderCart();
@@ -186,9 +175,9 @@ function removeItem(index) {
 
 function updateTotal() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = subtotal + 15000;
-  const subEl = document.getElementById('subtotal');
-  const totEl = document.getElementById('total-price');
+  const total    = subtotal + 15000;
+  const subEl    = document.getElementById('subtotal');
+  const totEl    = document.getElementById('total-price');
   if (subEl) subEl.textContent = formatPrice(subtotal);
   if (totEl) totEl.textContent = formatPrice(total);
 }
@@ -215,10 +204,10 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
 });
 
 function generateQR() {
-  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
-  const orderId = 'DH' + Date.now().toString().slice(-5);
-  const contentEl = document.getElementById('qr-content');
-  const imgEl     = document.getElementById('qr-img');
+  const total      = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
+  const orderId    = 'DH' + Date.now().toString().slice(-5);
+  const contentEl  = document.getElementById('qr-content');
+  const imgEl      = document.getElementById('qr-img');
   if (contentEl) contentEl.textContent = orderId;
 
   const BANK_ID      = 'VCB';
@@ -232,7 +221,7 @@ function generateQR() {
 
 
 // =====================
-// GỬI ĐƠN HÀNG — GỌI API BACKEND (CHỈ 1 BẢN DUY NHẤT)
+// GỬI ĐƠN HÀNG
 // =====================
 async function submitOrder() {
   const nameEl    = document.getElementById('customer-name');
@@ -253,23 +242,14 @@ async function submitOrder() {
   if (!phone) { alert('Vui lòng nhập số điện thoại!'); return; }
   if (cart.length === 0) { alert('Giỏ hàng trống!');  return; }
 
-  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
-
-  const orderData = {
-    customer: { name, phone, address, note },
-    items: [...cart],
-    total,
-    payment
-  };
+  const total     = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
+  const orderData = { customer: { name, phone, address, note }, items: [...cart], total, payment };
 
   const submitBtn = document.querySelector('.btn-submit');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Đang gửi đơn...';
-  }
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Đang gửi đơn...'; }
 
   try {
-    const res = await fetch(`${API_URL}/orders`, {
+    const res  = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
@@ -277,18 +257,17 @@ async function submitOrder() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '🚀 Đặt Món Ngay';
-      }
+      alert(data.error || 'Có lỗi xảy ra!');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Đặt Món Ngay'; }
       return;
     }
 
     const orderId = data.orderId;
-    // ✅ FIX: Lưu tạm thông tin để dùng cho phần đánh giá
-     sessionStorage.setItem('lastOrderCustomerName', name);
+
+    // Lưu tạm cho phần đánh giá
+    sessionStorage.setItem('lastOrderCustomerName', name);
     sessionStorage.setItem('lastOrderItems', JSON.stringify(cart.map(i => i.name)));
+
     cart = [];
     saveCart();
     updateCartCount();
@@ -319,34 +298,30 @@ async function submitOrder() {
 
   } catch (err) {
     console.error('Lỗi đặt món:', err);
-    alert('Không kết nối được server. Vui lòng thử lại sau ít giây!');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = '🚀 Đặt Món Ngay';
-    }
+    alert('Không kết nối được server. Vui lòng thử lại!');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Đặt Món Ngay'; }
   }
 }
 
 
 // =====================
-// =====================
 // TÌM KIẾM + LỌC DANH MỤC MENU
 // =====================
-let currentCategory = 'all';
+let currentCategory  = 'all';
 let currentSearchTerm = '';
 
 function applyMenuFilters() {
-  const cards = document.querySelectorAll('.menu-card');
+  const cards      = document.querySelectorAll('.menu-card');
   const noResultEl = document.getElementById('search-no-result');
   let visibleCount = 0;
 
   cards.forEach(card => {
     const category = card.dataset.category;
-    const nameEl = card.querySelector('h3');
-    const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+    const nameEl   = card.querySelector('h3');
+    const name     = nameEl ? nameEl.textContent.toLowerCase() : '';
 
     const matchCategory = currentCategory === 'all' || category === currentCategory;
-    const matchSearch    = currentSearchTerm === '' || name.includes(currentSearchTerm);
+    const matchSearch   = currentSearchTerm === '' || name.includes(currentSearchTerm);
 
     if (matchCategory && matchSearch) {
       card.style.display = 'block';
@@ -355,69 +330,7 @@ function applyMenuFilters() {
       card.style.display = 'none';
     }
   });
-   // =====================
-// LOAD MENU TỪ API (Firestore)
-// =====================
-async function loadMenu() {
-  const grid    = document.getElementById('menu-grid');
-  const loading = document.getElementById('menu-loading');
-  if (!grid) return; // không phải trang menu.html
 
-  try {
-    const res   = await fetch(`${API_URL}/menu`);
-    const items = await res.json();
-
-    loading.style.display = 'none';
-    grid.style.display    = 'grid';
-
-    if (!items || items.length === 0) {
-      grid.innerHTML = '<p style="text-align:center;color:#999;padding:40px">Chưa có món ăn nào</p>';
-      return;
-    }
-
-    grid.innerHTML = items.map(item => `
-      <div class="menu-card" data-category="${item.category}">
-        <div class="menu-img-wrap">
-          <img src="images/${item.id}.jpg"
-               onerror="this.src='https://via.placeholder.com/400x300/fff5f5/c0392b?text=${encodeURIComponent(item.icon || '🍽️')}'"
-               alt="${item.name}" class="menu-img-real">
-          ${item.badge ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
-        </div>
-        <div class="menu-info">
-          <h3>${item.name}</h3>
-          <p>${item.desc || ''}</p>
-          ${item.soldCount > 0 ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>` : ''}
-          <div class="menu-footer">
-            <div class="price-wrap">
-              <span class="price">${formatPrice(item.price)}</span>
-              ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
-            </div>
-            <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    // Khởi chạy lại bộ lọc sau khi render xong
-    applyMenuFilters();
-
-  } catch (err) {
-    console.error('Lỗi tải menu:', err);
-    loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn. Vui lòng thử lại!</p>';
-  }
-}
-
-function getBadgeLabel(badge) {
-  const labels = {
-    hot:     '🔥 Bán chạy',
-    new:     '⭐ Nổi bật',
-    special: '🎁 Đặc biệt',
-    fresh:   '✨ Mới có'
-  };
-  return labels[badge] || '';
-}
-
-  // Hiện thông báo nếu không có kết quả
   if (noResultEl) {
     noResultEl.style.display = visibleCount === 0 ? 'block' : 'none';
   }
@@ -434,7 +347,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // Ô tìm kiếm
-const searchInput = document.getElementById('menu-search');
+const searchInput    = document.getElementById('menu-search');
 const searchClearBtn = document.getElementById('search-clear');
 
 if (searchInput) {
@@ -453,6 +366,75 @@ function clearSearch() {
   if (searchClearBtn) searchClearBtn.style.display = 'none';
   applyMenuFilters();
 }
+
+
+// =====================
+// LOAD MENU TỪ API FIRESTORE  ← ✅ NẰM NGOÀI, ĐÚNG VỊ TRÍ
+// =====================
+async function loadMenu() {
+  const grid    = document.getElementById('menu-grid');
+  const loading = document.getElementById('menu-loading');
+  if (!grid) return;
+
+  try {
+    const res   = await fetch(`${API_URL}/menu`);
+    const items = await res.json();
+
+    if (loading) loading.style.display = 'none';
+    grid.style.display = 'grid';
+
+    if (!items || items.length === 0) {
+      grid.innerHTML = '<p style="text-align:center;color:#999;padding:40px">Chưa có món ăn nào</p>';
+      return;
+    }
+
+    grid.innerHTML = items.map(item => `
+      <div class="menu-card" data-category="${item.category}">
+        <div class="menu-img-wrap">
+          <img src="images/${item.id}.jpg"
+               onerror="this.src='https://via.placeholder.com/400x300/fff5f5/c0392b?text=${encodeURIComponent(item.icon || '🍽️')}'"
+               alt="${item.name}" class="menu-img-real">
+          ${item.badge ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
+        </div>
+        <div class="menu-info">
+          <h3>${item.name}</h3>
+          <p>${item.desc || ''}</p>
+          ${item.soldCount > 0
+            ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>`
+            : ''}
+          <div class="menu-footer">
+            <div class="price-wrap">
+              <span class="price">${formatPrice(item.price)}</span>
+              ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
+            </div>
+            <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    applyMenuFilters();
+
+  } catch (err) {
+    console.error('Lỗi tải menu:', err);
+    if (loading) {
+      loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn. Vui lòng thử lại!</p>';
+    }
+  }
+}
+
+function getBadgeLabel(badge) {
+  const labels = {
+    hot:     '🔥 Bán chạy',
+    new:     '⭐ Nổi bật',
+    special: '🎁 Đặc biệt',
+    fresh:   '✨ Mới có'
+  };
+  return labels[badge] || '';
+}
+
+
+// =====================
 // TÀI KHOẢN KHÁCH HÀNG
 // =====================
 function switchTab(tab) {
@@ -473,7 +455,7 @@ function showAccountMsg(msg, type = 'success') {
   const el = document.getElementById('account-msg');
   if (!el) return;
   el.textContent = msg;
-  el.className = `account-msg ${type}`;
+  el.className   = `account-msg ${type}`;
   setTimeout(() => el.textContent = '', 3000);
 }
 
@@ -497,21 +479,15 @@ async function handleRegister() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xử lý...'; }
 
   try {
-    const res = await fetch(`${API_URL}/auth/register`, {
+    const res  = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, phone, password })
     });
     const data = await res.json();
-
-    if (!res.ok) {
-      showAccountMsg(data.error || 'Đăng ký thất bại!', 'error');
-      return;
-    }
-
+    if (!res.ok) { showAccountMsg(data.error || 'Đăng ký thất bại!', 'error'); return; }
     showAccountMsg('Đăng ký thành công! Vui lòng đăng nhập.');
     setTimeout(() => switchTab('login'), 1500);
-
   } catch (err) {
     showAccountMsg('Không kết nối được server!', 'error');
   } finally {
@@ -531,24 +507,17 @@ async function handleLogin() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; }
 
   try {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const res  = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, password })
     });
     const data = await res.json();
-
-    if (!res.ok) {
-      showAccountMsg(data.error || 'Sai số điện thoại hoặc mật khẩu!', 'error');
-      return;
-    }
-
+    if (!res.ok) { showAccountMsg(data.error || 'Sai số điện thoại hoặc mật khẩu!', 'error'); return; }
     localStorage.setItem('currentUser', JSON.stringify(data.user));
     localStorage.setItem('authToken', data.token);
-
     showAccountMsg('Đăng nhập thành công!');
     setTimeout(() => showLoggedIn(data.user), 1000);
-
   } catch (err) {
     showAccountMsg('Không kết nối được server!', 'error');
   } finally {
@@ -586,13 +555,13 @@ function checkLoginStatus() {
 
 
 // =====================
-// LỊCH SỬ ĐƠN HÀNG — GỌI API BACKEND
+// LỊCH SỬ ĐƠN HÀNG
 // =====================
 async function renderHistory() {
   const historyList          = document.getElementById('history-list');
   const historyEmpty         = document.getElementById('history-empty');
   const historyLoginRequired = document.getElementById('history-login-required');
-  if (!historyList) return; // không phải trang history.html
+  if (!historyList) return;
 
   const user = JSON.parse(localStorage.getItem('currentUser'));
   if (!user) {
@@ -601,7 +570,7 @@ async function renderHistory() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/orders/phone/${user.phone}`);
+    const res      = await fetch(`${API_URL}/orders/phone/${user.phone}`);
     const myOrders = await res.json();
 
     if (!myOrders || myOrders.length === 0) {
@@ -610,10 +579,8 @@ async function renderHistory() {
     }
 
     const statusLabel = {
-      new:       '🆕 Đơn mới',
-      confirmed: '✅ Đã xác nhận',
-      done:      '🎉 Hoàn thành',
-      cancelled: '❌ Đã hủy'
+      new: '🆕 Đơn mới', confirmed: '✅ Đã xác nhận',
+      done: '🎉 Hoàn thành', cancelled: '❌ Đã hủy'
     };
 
     historyList.innerHTML = myOrders.map(order => `
@@ -640,10 +607,11 @@ async function renderHistory() {
     `).join('');
 
   } catch (err) {
-    console.error('Lỗi tải lịch sử đơn hàng:', err);
+    console.error('Lỗi tải lịch sử:', err);
     if (historyEmpty) {
       historyEmpty.style.display = 'block';
-      historyEmpty.querySelector('p').textContent = '⚠️ Không kết nối được server';
+      const p = historyEmpty.querySelector('p');
+      if (p) p.textContent = '⚠️ Không kết nối được server';
     }
   }
 }
@@ -651,16 +619,14 @@ async function renderHistory() {
 
 // =====================
 // ĐÁNH GIÁ SAU ĐẶT MÓN
-// (⚠️ Vẫn dùng localStorage — backend chưa có API reviews,
-//  sẽ chuyển sang API sau khi tạo route /api/reviews)
 // =====================
 let selectedRating = 0;
 
 function enableReviewDemo() {
   const prompt = document.getElementById('review-prompt');
-  const form    = document.getElementById('review-form');
+  const form   = document.getElementById('review-form');
   if (prompt) prompt.style.display = 'none';
-  if (form)   form.style.display = 'block';
+  if (form)   form.style.display   = 'block';
 }
 
 document.querySelectorAll('.star').forEach(star => {
@@ -670,7 +636,6 @@ document.querySelectorAll('.star').forEach(star => {
       s.classList.toggle('active', parseInt(s.dataset.value) <= selectedRating);
     });
   });
-
   star.addEventListener('mouseenter', () => {
     document.querySelectorAll('.star').forEach(s => {
       s.classList.toggle('hover', parseInt(s.dataset.value) <= parseInt(star.dataset.value));
@@ -682,27 +647,22 @@ document.querySelectorAll('.star').forEach(star => {
 });
 
 function submitReview() {
-  if (selectedRating === 0) {
-    alert('Vui lòng chọn số sao đánh giá!');
-    return;
-  }
+  if (selectedRating === 0) { alert('Vui lòng chọn số sao!'); return; }
 
-  const orderId = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
-  const comment = document.getElementById('review-comment')?.value.trim() || '';
-
+  const orderId    = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
+  const comment    = document.getElementById('review-comment')?.value.trim() || '';
   const savedName  = sessionStorage.getItem('lastOrderCustomerName');
-const savedItems = JSON.parse(sessionStorage.getItem('lastOrderItems') || '[]');
+  const savedItems = JSON.parse(sessionStorage.getItem('lastOrderItems') || '[]');
 
-const review = {
-  id:           'RV' + Date.now().toString().slice(-6),
-  orderId:      orderId,
-  customerName: savedName ? maskName(savedName) : 'Khách hàng',
-  items:        savedItems.join(', '),
-  rating:       selectedRating,
-  comment:      comment,
-  createdAt:    new Date().toISOString()
-};
- /////
+  const review = {
+    id:           'RV' + Date.now().toString().slice(-6),
+    orderId,
+    customerName: savedName ? maskName(savedName) : 'Khách hàng',
+    items:        savedItems.join(', '),
+    rating:       selectedRating,
+    comment,
+    createdAt:    new Date().toISOString()
+  };
 
   const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
   reviews.push(review);
@@ -710,7 +670,7 @@ const review = {
 
   const formEl   = document.getElementById('review-form');
   const thanksEl = document.getElementById('review-thanks');
-  if (formEl)   formEl.style.display = 'none';
+  if (formEl)   formEl.style.display   = 'none';
   if (thanksEl) thanksEl.style.display = 'block';
 }
 
@@ -730,7 +690,7 @@ function renderReviews() {
   const list = document.getElementById('reviews-list');
   if (!list) return;
 
-  const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+  const reviews   = JSON.parse(localStorage.getItem('reviews')) || [];
   const noReviews = document.getElementById('no-reviews');
 
   if (reviews.length === 0) {
@@ -741,9 +701,7 @@ function renderReviews() {
 
   if (noReviews) noReviews.style.display = 'none';
 
-  const sorted = [...reviews].reverse();
-
-  list.innerHTML = sorted.map(r => `
+  list.innerHTML = [...reviews].reverse().map(r => `
     <div class="review-card">
       <div class="review-header">
         <div class="review-avatar">👤</div>
@@ -753,8 +711,8 @@ function renderReviews() {
         </div>
         <span class="review-date">${formatReviewDate(r.createdAt)}</span>
       </div>
-      ${r.items ? `<div class="review-items">🍽️ ${r.items}</div>` : ''}
-      ${r.comment ? `<p class="review-comment">"${r.comment}"</p>` : ''}
+      ${r.items   ? `<div class="review-items">🍽️ ${r.items}</div>` : ''}
+      ${r.comment ? `<p class="review-comment">"${r.comment}"</p>`   : ''}
     </div>
   `).join('');
 
@@ -769,15 +727,15 @@ function renderSummary(reviews) {
   if (!avgEl) return;
 
   if (reviews.length === 0) {
-    avgEl.textContent = '—';
+    avgEl.textContent   = '—';
     starsEl.textContent = '☆☆☆☆☆';
     countEl.textContent = '0 đánh giá';
-    breakEl.innerHTML = '';
+    breakEl.innerHTML   = '';
     return;
   }
 
   const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-  avgEl.textContent = avg.toFixed(1);
+  avgEl.textContent   = avg.toFixed(1);
   starsEl.textContent = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
   countEl.textContent = `${reviews.length} đánh giá`;
 
@@ -787,9 +745,7 @@ function renderSummary(reviews) {
     return `
       <div class="breakdown-row">
         <span>${star} ★</span>
-        <div class="breakdown-bar">
-          <div class="breakdown-fill" style="width:${percent}%"></div>
-        </div>
+        <div class="breakdown-bar"><div class="breakdown-fill" style="width:${percent}%"></div></div>
         <span>${count}</span>
       </div>
     `;
@@ -797,31 +753,31 @@ function renderSummary(reviews) {
 }
 
 function formatReviewDate(dateStr) {
-  const date = new Date(dateStr);
-  const now  = new Date();
+  const date     = new Date(dateStr);
+  const now      = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-
   if (diffDays === 0) return 'Hôm nay';
   if (diffDays === 1) return 'Hôm qua';
   if (diffDays < 7)   return `${diffDays} ngày trước`;
   return date.toLocaleDateString('vi-VN');
 }
+
+
 // =====================
 // MOBILE HAMBURGER MENU
 // =====================
 const navToggle = document.getElementById('nav-toggle');
-const mainNav    = document.getElementById('main-nav');
+const mainNav   = document.getElementById('main-nav');
 
 if (navToggle && mainNav) {
   navToggle.addEventListener('click', () => {
     mainNav.classList.toggle('open');
   });
-
-  // Tự đóng menu khi bấm chọn 1 link
   mainNav.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => mainNav.classList.remove('open'));
   });
 }
+
 
 // =====================
 // KHỞI ĐỘNG TẤT CẢ
@@ -831,4 +787,4 @@ renderCart();
 checkLoginStatus();
 renderHistory();
 renderReviews();
-loadMenu(); 
+loadMenu();
