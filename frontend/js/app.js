@@ -831,4 +831,4 @@ renderCart();
 checkLoginStatus();
 renderHistory();
 renderReviews();
-loadMenu();
+loadMenu(); 
