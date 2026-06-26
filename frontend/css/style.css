@@ -1561,3 +1561,28 @@ a { text-decoration: none; color: inherit; }
     border-bottom: none;
   }
 }
+/* ===== MINI FILTER TRONG ORDER.HTML ===== */
+.mini-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.mini-filter-btn {
+  padding: 6px 14px;
+  border: 2px solid #c0392b;
+  background: white;
+  color: #c0392b;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.mini-filter-btn.active,
+.mini-filter-btn:hover {
+  background: #c0392b;
+  color: white;
+}

@@ -422,6 +422,68 @@ async function loadMenu() {
     }
   }
 }
+// =====================
+// MINI MENU TRONG ORDER.HTML
+// =====================
+let miniMenuItems = []; // cache để dùng cho bộ lọc
+
+async function loadMiniMenu() {
+  const grid    = document.getElementById('mini-menu-grid');
+  const loading = document.getElementById('mini-menu-loading');
+  if (!grid) return; // không phải trang order.html
+
+  try {
+    const res  = await fetch(`${API_URL}/menu`);
+    const items = await res.json();
+    miniMenuItems = items; // lưu cache
+
+    if (loading) loading.style.display = 'none';
+    grid.style.display = 'grid';
+
+    renderMiniMenu(items);
+
+  } catch (err) {
+    console.error('Lỗi tải mini menu:', err);
+    if (loading) {
+      loading.textContent = '⚠️ Không tải được món. Vui lòng thử lại!';
+    }
+  }
+}
+
+function renderMiniMenu(items) {
+  const grid = document.getElementById('mini-menu-grid');
+  if (!grid) return;
+
+  if (!items || items.length === 0) {
+    grid.innerHTML = '<p style="color:#999;padding:10px">Chưa có món nào</p>';
+    return;
+  }
+
+  grid.innerHTML = items.map(item => `
+    <div class="mini-item" data-cat="${item.category}">
+      <span>${item.icon || '🍽️'} ${item.name}</span>
+      <div class="mini-item-right">
+        <span class="price">${formatPrice(item.price)}</span>
+        <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Bộ lọc mini menu
+document.querySelectorAll('.mini-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mini-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cat      = btn.dataset.cat;
+    const filtered = cat === 'all'
+      ? miniMenuItems
+      : miniMenuItems.filter(item => item.category === cat);
+
+    renderMiniMenu(filtered);
+  });
+});
 
 function getBadgeLabel(badge) {
   const labels = {
@@ -788,3 +850,4 @@ checkLoginStatus();
 renderHistory();
 renderReviews();
 loadMenu();
+loadMiniMenu();   // ← THÊM DÒNG NÀY
