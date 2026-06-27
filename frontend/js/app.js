@@ -826,6 +826,7 @@ function formatReviewDate(dateStr) {
 
 
 // =====================
+// =====================
 // MOBILE HAMBURGER MENU
 // =====================
 const navToggle = document.getElementById('nav-toggle');
@@ -834,9 +835,22 @@ const mainNav   = document.getElementById('main-nav');
 if (navToggle && mainNav) {
   navToggle.addEventListener('click', () => {
     mainNav.classList.toggle('open');
+    navToggle.textContent = mainNav.classList.contains('open') ? '✕' : '☰';
   });
+
   mainNav.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => mainNav.classList.remove('open'));
+    link.addEventListener('click', () => {
+      mainNav.classList.remove('open');
+      navToggle.textContent = '☰';
+    });
+  });
+
+  // Đóng menu khi click ra ngoài
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.header')) {
+      mainNav.classList.remove('open');
+      navToggle.textContent = '☰';
+    }
   });
 }
 
