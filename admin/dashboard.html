@@ -118,13 +118,30 @@
     }
 
     function playNotificationSound() {
-      if (!soundEnabled) return;
-      const audio = new Audio('sounds/notification.mp3');
-      audio.volume = 0.6;
-      audio.play().catch(err => {
-        console.log('Không phát được âm thanh:', err.message);
-      });
-    }
+  if (!soundEnabled) return;
+  try {
+    const ctx        = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = ctx.createOscillator();
+    const gainNode   = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    // Tiếng "ting" dễ nghe
+    oscillator.type      = 'sine';
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime);          // nốt A5
+    oscillator.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);  // lên cao
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.2);   // xuống
+
+    gainNode.gain.setValueAtTime(0.8, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.6);
+  } catch (err) {
+    console.log('Không phát được âm thanh:', err.message);
+  }
+}
 
     // ===== HÀM TẢI ĐƠN HÀNG TỪ BACKEND (API) =====
     async function loadOrders() {
