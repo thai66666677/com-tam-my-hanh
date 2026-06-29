@@ -391,9 +391,9 @@ async function loadMenu() {
     grid.innerHTML = items.map(item => `
       <div class="menu-card" data-category="${item.category}">
         <div class="menu-img-wrap">
-          <img src="images/${item.id}.jpg"
-               onerror="this.src='https://via.placeholder.com/400x300/fff5f5/c0392b?text=${encodeURIComponent(item.icon || '🍽️')}'"
-               alt="${item.name}" class="menu-img-real">
+         <img src="${item.imageUrl || `images/${item.id}.jpg`}"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
+            alt="${item.name}" class="menu-img-real"> 
           ${item.badge ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
         </div>
         <div class="menu-info">

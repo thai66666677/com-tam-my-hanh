@@ -1669,3 +1669,13 @@ a { text-decoration: none; color: inherit; }
   /* Đẩy nội dung trang lên để không bị che bởi nav bar */
   body { padding-bottom: 60px; }
 }
+/* ===== ẢNH MÓN ĂN - FALLBACK EMOJI ===== */
+.menu-img-emoji {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  background: #fff5f5;
+}

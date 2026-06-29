@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thống Kê - Cơm Tấm Mỹ Hạnh</title>
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="../frontend/js/config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="admin-header-left">
+        <span class="logo">🍚 Cơm Tấm Mỹ Hạnh</span>
+        <span class="admin-badge">Quản trị</span>
+      </div>
+      <nav class="admin-nav">
+        <a href="dashboard.html">📋 Đơn hàng</a>
+        <a href="stats.html" class="active">📊 Thống kê</a>
+        <a href="menu-manager.html">🍽️ Quản lý món</a>
+        <button onclick="adminLogout()">🚪 Đăng xuất</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-main">
+
+    <!-- THỐNG KÊ TỔNG QUAN -->
+    <div class="stats-grid" id="overview-stats">
+      <div class="stat-card">
+        <span class="stat-icon">💰</span>
+        <div>
+          <div class="stat-num" id="s-today-revenue">--</div>
+          <div class="stat-label">Doanh thu hôm nay</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📋</span>
+        <div>
+          <div class="stat-num" id="s-today-orders">--</div>
+          <div class="stat-label">Đơn hôm nay</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎉</span>
+        <div>
+          <div class="stat-num" id="s-today-done">--</div>
+          <div class="stat-label">Hoàn thành hôm nay</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💎</span>
+        <div>
+          <div class="stat-num" id="s-total-revenue">--</div>
+          <div class="stat-label">Tổng doanh thu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BIỂU ĐỒ DOANH THU 7 NGÀY -->
+    <div class="admin-card">
+      <h2>📈 Doanh thu 7 ngày gần nhất</h2>
+      <div style="position:relative;height:280px;">
+        <canvas id="chart-revenue"></canvas>
+      </div>
+    </div>
+
+    <!-- BIỂU ĐỒ SỐ ĐƠN 7 NGÀY -->
+    <div class="admin-card">
+      <h2>📦 Số đơn hàng 7 ngày gần nhất</h2>
+      <div style="position:relative;height:220px;">
+        <canvas id="chart-orders"></canvas>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- MÓN BÁN CHẠY -->
+      <div class="admin-card">
+        <h2>🔥 Top 5 món bán chạy</h2>
+        <div id="top-items-list"></div>
+      </div>
+
+      <!-- TỶ LỆ TRẠNG THÁI ĐƠN -->
+      <div class="admin-card">
+        <h2>🥧 Tỷ lệ đơn hàng</h2>
+        <div style="position:relative;height:200px;">
+          <canvas id="chart-status"></canvas>
+        </div>
+        <div id="status-legend" style="margin-top:12px;"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    function adminLogout() {
+      localStorage.removeItem('adminLoggedIn');
+      window.location.href = 'login.html';
+    }
+
+    function formatPrice(p) {
+      if (!p) return '0đ';
+      if (p >= 1000000) return (p / 1000000).toFixed(1) + 'tr';
+      if (p >= 1000)    return (p / 1000).toFixed(0) + 'k';
+      return p.toLocaleString('vi-VN') + 'đ';
+    }
+
+    function formatPriceFull(p) {
+      return (p || 0).toLocaleString('vi-VN') + 'đ';
+    }
+
+    let revenueChart = null;
+    let ordersChart  = null;
+    let statusChart  = null;
+
+    async function loadStats() {
+      try {
+        const res  = await fetch(`${API_URL}/orders/stats`);
+        const data = await res.json();
+
+        // === TỔNG QUAN ===
+        document.getElementById('s-today-revenue').textContent = formatPrice(data.today.revenue);
+        document.getElementById('s-today-orders').textContent  = data.today.orders;
+        document.getElementById('s-today-done').textContent    = data.today.done;
+        document.getElementById('s-total-revenue').textContent = formatPrice(data.total.revenue);
+
+        // === BIỂU ĐỒ DOANH THU ===
+        const labels  = data.last7Days.map(d => d.label);
+        const revenue = data.last7Days.map(d => d.revenue);
+        const counts  = data.last7Days.map(d => d.count);
+
+        if (revenueChart) revenueChart.destroy();
+        revenueChart = new Chart(
+          document.getElementById('chart-revenue'),
+          {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Doanh thu (đ)',
+                data: revenue,
+                backgroundColor: 'rgba(192,57,43,0.2)',
+                borderColor: '#c0392b',
+                borderWidth: 2,
+                borderRadius: 6,
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => formatPriceFull(ctx.raw)
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: val => formatPrice(val)
+                  }
+                }
+              }
+            }
+          }
+        );
+
+        // === BIỂU ĐỒ SỐ ĐƠN ===
+        if (ordersChart) ordersChart.destroy();
+        ordersChart = new Chart(
+          document.getElementById('chart-orders'),
+          {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Số đơn hoàn thành',
+                data: counts,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39,174,96,0.1)',
+                borderWidth: 2,
+                pointRadius: 5,
+                pointBackgroundColor: '#27ae60',
+                fill: true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { stepSize: 1 }
+                }
+              }
+            }
+          }
+        );
+
+        // === TOP ITEMS ===
+        const topEl = document.getElementById('top-items-list');
+        if (data.topItems.length === 0) {
+          topEl.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Chưa có dữ liệu</p>';
+        } else {
+          const maxCount = data.topItems[0].count;
+          topEl.innerHTML = data.topItems.map((item, i) => `
+            <div style="margin-bottom:14px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-weight:600;">${i + 1}. ${item.name}</span>
+                <span style="color:#c0392b;font-weight:700;">${item.count} phần</span>
+              </div>
+              <div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:${(item.count/maxCount*100)}%;
+                            background:${i===0?'#c0392b':i===1?'#e67e22':'#3498db'};
+                            border-radius:4px;transition:width 0.5s;"></div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // === BIỂU ĐỒ TRẠNG THÁI ===
+        const { statusCount } = data;
+        const total = Object.values(statusCount).reduce((a,b)=>a+b, 0);
+
+        if (statusChart) statusChart.destroy();
+        statusChart = new Chart(
+          document.getElementById('chart-status'),
+          {
+            type: 'doughnut',
+            data: {
+              labels: ['🆕 Đơn mới', '✅ Xác nhận', '🎉 Hoàn thành', '❌ Đã hủy'],
+              datasets: [{
+                data: [
+                  statusCount.new,
+                  statusCount.confirmed,
+                  statusCount.done,
+                  statusCount.cancelled
+                ],
+                backgroundColor: ['#f39c12','#3498db','#27ae60','#e74c3c'],
+                borderWidth: 2,
+                borderColor: '#fff'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => `${ctx.label}: ${ctx.raw} đơn`
+                  }
+                }
+              }
+            }
+          }
+        );
+
+        // Legend thủ công
+        const colors   = ['#f39c12','#3498db','#27ae60','#e74c3c'];
+        const sLabels  = ['Đơn mới','Xác nhận','Hoàn thành','Đã hủy'];
+        const sValues  = [statusCount.new, statusCount.confirmed, statusCount.done, statusCount.cancelled];
+        document.getElementById('status-legend').innerHTML = sLabels.map((l,i) => `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.9rem;">
+            <span style="width:12px;height:12px;border-radius:3px;background:${colors[i]};flex-shrink:0;"></span>
+            <span style="flex:1;">${l}</span>
+            <span style="font-weight:700;">${sValues[i]}</span>
+            <span style="color:#999;">(${total ? Math.round(sValues[i]/total*100) : 0}%)</span>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Lỗi tải thống kê:', err);
+        document.getElementById('overview-stats').innerHTML =
+          '<p style="text-align:center;color:#e74c3c;padding:20px">⚠️ Không tải được dữ liệu thống kê</p>';
+      }
+    }
+
+    // Tải khi mở trang + tự reload mỗi 2 phút
+    loadStats();
+    setInterval(loadStats, 120000);
+  </script>
+</body>
+</html>

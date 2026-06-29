@@ -100,5 +100,90 @@ router.patch('/:id', async (req, res) => {
     res.status(500).json({ error: 'Lỗi cập nhật đơn hàng!' });
   }
 });
+// ===== THỐNG KÊ DOANH THU =====
+// GET /api/orders/stats
+router.get('/stats', async (req, res) => {
+  try {
+    const snapshot = await ordersRef.get();
+    const orders   = snapshot.docs.map(doc => doc.data());
+
+    const now   = new Date();
+    const today = now.toDateString();
+
+    // === 7 ngày gần nhất ===
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d    = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toDateString();
+      const label   = i === 0 ? 'Hôm nay'
+                    : i === 1 ? 'Hôm qua'
+                    : `${d.getDate()}/${d.getMonth() + 1}`;
+
+      const dayOrders  = orders.filter(o =>
+        o.status === 'done' &&
+        new Date(o.createdAt).toDateString() === dateStr
+      );
+      const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
+      const count   = dayOrders.length;
+
+      last7Days.push({ label, revenue, count });
+    }
+
+    // === Hôm nay ===
+    const todayOrders   = orders.filter(o => new Date(o.createdAt).toDateString() === today);
+    const todayDone     = todayOrders.filter(o => o.status === 'done');
+    const todayRevenue  = todayDone.reduce((sum, o) => sum + o.total, 0);
+    const todayNewCount = todayOrders.filter(o => o.status === 'new').length;
+
+    // === Tổng tất cả ===
+    const totalRevenue = orders
+      .filter(o => o.status === 'done')
+      .reduce((sum, o) => sum + o.total, 0);
+
+    // === Món bán chạy nhất ===
+    const itemCount = {};
+    orders
+      .filter(o => o.status === 'done')
+      .forEach(o => {
+        o.items.forEach(item => {
+          itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
+        });
+      });
+
+    const topItems = Object.entries(itemCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    // === Tỷ lệ trạng thái ===
+    const statusCount = {
+      new:       orders.filter(o => o.status === 'new').length,
+      confirmed: orders.filter(o => o.status === 'confirmed').length,
+      done:      orders.filter(o => o.status === 'done').length,
+      cancelled: orders.filter(o => o.status === 'cancelled').length,
+    };
+
+    res.json({
+      last7Days,
+      today: {
+        revenue:   todayRevenue,
+        orders:    todayOrders.length,
+        done:      todayDone.length,
+        newOrders: todayNewCount
+      },
+      total: {
+        revenue: totalRevenue,
+        orders:  orders.length
+      },
+      topItems,
+      statusCount
+    });
+
+  } catch (err) {
+    console.error('Lỗi thống kê:', err);
+    res.status(500).json({ error: 'Lỗi lấy thống kê!' });
+  }
+});
 
 module.exports = router;

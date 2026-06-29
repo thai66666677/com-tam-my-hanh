@@ -6,7 +6,7 @@
   <title>Quản Lý Món Ăn - Cơm Tấm Mỹ Hạnh</title>
   <link rel="stylesheet" href="../frontend/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
- <script src="../frontend/js/config.js"></script>
+  <script src="../frontend/js/config.js"></script>
 </head>
 <body class="admin-body">
 
@@ -26,62 +26,100 @@
 
   <div class="admin-main">
 
+    <!-- HƯỚNG DẪN THÊM ẢNH -->
+    <div class="admin-card" style="background:#fff8e1;border:1px solid #ffe082;margin-bottom:16px;">
+      <h2 style="color:#856404;margin-bottom:12px;">📸 Hướng dẫn thêm ảnh món ăn</h2>
+      <p style="line-height:2;color:#666;font-size:0.9rem;">
+        <strong>Cách 1 — Google Drive:</strong>
+        Chụp ảnh → Upload lên Drive → Chuột phải → "Lấy link" → Đổi thành "Bất kỳ ai có đường link" → Dán vào ô ảnh bên dưới<br>
+        <strong>Cách 2 — Imgur (dễ nhất):</strong>
+        Vào <a href="https://imgur.com" target="_blank" style="color:#c0392b;font-weight:700;">imgur.com</a>
+        → Kéo thả ảnh vào → Copy link "Direct Link" (.jpg/.png) → Dán vào ô ảnh
+      </p>
+    </div>
+
     <!-- FORM THÊM / SỬA MÓN -->
     <div class="admin-card">
       <h2 id="form-title">➕ Thêm Món Mới</h2>
 
-     <div class="menu-form-grid">
-  <div class="form-group">
-    <label>Tên món *</label>
-    <input type="text" id="item-name" placeholder="Cơm Tấm Sườn Bì">
-  </div>
-  <div class="form-group">
-    <label>Giá (VNĐ) *</label>
-    <input type="number" id="item-price" placeholder="35000">
-  </div>
-  <div class="form-group">
-    <label>Danh mục *</label>
-    <select id="item-category">
-      <option value="com">🍚 Cơm</option>
-      <option value="bun-mi">🍜 Bún & Mì</option>
-      <option value="nuoc">🥤 Nước uống</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Icon (emoji)</label>
-    <input type="text" id="item-icon" placeholder="🍚">
-  </div>
-  <div class="form-group">
-    <label>Badge</label>
-    <select id="item-badge">
-      <option value="">Không có badge</option>
-      <option value="hot">🔥 Bán chạy</option>
-      <option value="new">⭐ Nổi bật</option>
-      <option value="special">🎁 Đặc biệt</option>
-      <option value="fresh">✨ Mới có</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Giá cũ (để trống nếu không có)</label>
-    <input type="number" id="item-old-price" placeholder="65000">
-  </div>
-  <div class="form-group">
-    <label>Số lượt đã bán hôm nay</label>
-    <input type="number" id="item-sold-count" placeholder="0">
-  </div>
-  <div class="form-group" style="grid-column: 1/-1;">
-    <label>Mô tả món</label>
-    <textarea id="item-desc" placeholder="Sườn nướng mềm, bì trộn thơm..."></textarea>
-  </div>
-</div>
+      <div class="menu-form-grid">
+
+        <div class="form-group">
+          <label>Tên món *</label>
+          <input type="text" id="item-name" placeholder="Cơm Tấm Sườn Bì">
+        </div>
+
+        <div class="form-group">
+          <label>Giá (VNĐ) *</label>
+          <input type="number" id="item-price" placeholder="35000">
+        </div>
+
+        <div class="form-group">
+          <label>Danh mục *</label>
+          <select id="item-category">
+            <option value="com">🍚 Cơm</option>
+            <option value="bun-mi">🍜 Bún & Mì</option>
+            <option value="nuoc">🥤 Nước uống</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Icon (emoji)</label>
+          <input type="text" id="item-icon" placeholder="🍚">
+        </div>
+
+        <div class="form-group">
+          <label>Badge</label>
+          <select id="item-badge">
+            <option value="">Không có badge</option>
+            <option value="hot">🔥 Bán chạy</option>
+            <option value="new">⭐ Nổi bật</option>
+            <option value="special">🎁 Đặc biệt</option>
+            <option value="fresh">✨ Mới có</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Giá cũ (để trống nếu không có)</label>
+          <input type="number" id="item-old-price" placeholder="65000">
+        </div>
+
+        <div class="form-group">
+          <label>Số lượt đã bán hôm nay</label>
+          <input type="number" id="item-sold-count" placeholder="0">
+        </div>
+
+        <div class="form-group" style="grid-column: 1/-1;">
+          <label>Mô tả món</label>
+          <textarea id="item-desc" placeholder="Sườn nướng mềm, bì trộn thơm..."></textarea>
+        </div>
+
+        <!-- FIELD ẢNH MÓN ĂN -->
+        <div class="form-group" style="grid-column: 1/-1;">
+          <label>🖼️ Link ảnh món ăn</label>
+          <input type="text" id="item-image"
+            placeholder="https://i.imgur.com/xxxx.jpg hoặc link Google Drive">
+          <small style="color:#888;font-size:0.8rem;margin-top:4px;display:block;">
+            💡 Xem hướng dẫn ở trên để lấy link ảnh
+          </small>
+
+          <!-- Preview ảnh -->
+          <div id="image-preview" style="display:none;margin-top:12px;">
+            <p style="font-size:0.85rem;color:#555;margin-bottom:6px;">Preview:</p>
+            <img id="preview-img" src="" alt="preview"
+                 style="max-width:220px;max-height:160px;border-radius:10px;
+                        border:2px solid #eee;object-fit:cover;display:block;">
+            <p id="preview-error" style="color:#e74c3c;font-size:0.8rem;display:none;margin-top:4px;">
+              ⚠️ Không tải được ảnh. Kiểm tra lại link.
+            </p>
+          </div>
+        </div>
+
+      </div>
 
       <div class="form-actions">
-        <button class="action-btn confirm" onclick="saveMenuItem()">
-          💾 Lưu món
-        </button>
-        <button class="action-btn cancel" onclick="resetForm()">
-          🔄 Làm mới
-        </button>
+        <button class="action-btn confirm" onclick="saveMenuItem()">💾 Lưu món</button>
+        <button class="action-btn cancel"  onclick="resetForm()">🔄 Làm mới</button>
       </div>
 
       <div class="account-msg" id="menu-msg"></div>
@@ -102,186 +140,248 @@
     </div>
 
   </div>
-/////////
+
   <script>
-   if (localStorage.getItem('adminLoggedIn') !== 'true') {
-  window.location.href = 'login.html';
-}
+    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
 
-function adminLogout() {
-  localStorage.removeItem('adminLoggedIn');
-  window.location.href = 'login.html';
-}
+    function adminLogout() {
+      localStorage.removeItem('adminLoggedIn');
+      window.location.href = 'login.html';
+    }
 
-function formatPrice(p) {
-  return p.toLocaleString('vi-VN') + 'đ';
-}
+    function formatPrice(p) {
+      return p.toLocaleString('vi-VN') + 'đ';
+    }
 
-let editingId  = null;
-let currentCat = 'all';
-let menuItems  = [];
+    let editingId  = null;
+    let currentCat = 'all';
+    let menuItems  = [];
 
-// ===== TẢI MENU TỪ API =====
-async function loadMenuItems() {
-  try {
-    const res = await fetch(`${API_URL}/menu`);
-    menuItems = await res.json();
-    renderMenuList();
-  } catch (err) {
-    alert('Không kết nối được server!');
-  }
-}
+    // ===== CHUYỂN LINK GOOGLE DRIVE SANG LINK ẢNH TRỰC TIẾP =====
+    function convertGoogleDriveUrl(url) {
+      if (!url) return '';
+      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+      }
+      return url; // Imgur, Cloudinary... dùng thẳng
+    }
 
-// ===== RENDER DANH SÁCH MÓN =====
-function renderMenuList() {
-  const filtered = currentCat === 'all'
-    ? menuItems
-    : menuItems.filter(item => item.category === currentCat);
+    // ===== PREVIEW ẢNH KHI NHẬP URL =====
+    const imageInput   = document.getElementById('item-image');
+    const previewBox   = document.getElementById('image-preview');
+    const previewImg   = document.getElementById('preview-img');
+    const previewError = document.getElementById('preview-error');
 
-  const list = document.getElementById('menu-list');
+    imageInput.addEventListener('input', () => {
+      const url = convertGoogleDriveUrl(imageInput.value.trim());
+      if (url) {
+        previewBox.style.display = 'block';
+        previewError.style.display = 'none';
+        previewImg.style.display = 'block';
+        previewImg.src = url;
+        previewImg.onerror = () => {
+          previewImg.style.display = 'none';
+          previewError.style.display = 'block';
+        };
+        previewImg.onload = () => {
+          previewImg.style.display = 'block';
+          previewError.style.display = 'none';
+        };
+      } else {
+        previewBox.style.display = 'none';
+      }
+    });
 
-  if (filtered.length === 0) {
-    list.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Chưa có món nào</p>';
-    return;
-  }
+    // ===== TẢI MENU TỪ API =====
+    async function loadMenuItems() {
+      try {
+        const res = await fetch(`${API_URL}/menu`);
+        menuItems = await res.json();
+        renderMenuList();
+      } catch (err) {
+        alert('Không kết nối được server!');
+      }
+    }
 
-  list.innerHTML = filtered.map(item => `
-    <div class="menu-manage-row">
-      <span class="menu-icon">${item.icon || '🍽️'}</span>
-      <div class="menu-manage-info">
-        <strong>${item.name}</strong>
-        <span>${item.desc || ''}</span>
-      </div>
-      <span class="menu-manage-cat">${getCatLabel(item.category)}</span>
-      <span class="menu-manage-price">${formatPrice(item.price)}</span>
-      <div class="menu-manage-actions">
-        <button class="action-btn confirm" onclick="editItem('${item.id}')">✏️ Sửa</button>
-        <button class="action-btn cancel"  onclick="deleteItem('${item.id}', '${item.name}')">🗑️ Xóa</button>
-      </div>
-    </div>
-  `).join('');
-}
+    // ===== RENDER DANH SÁCH MÓN (có hiển thị ảnh nhỏ) =====
+    function renderMenuList() {
+      const filtered = currentCat === 'all'
+        ? menuItems
+        : menuItems.filter(item => item.category === currentCat);
 
-function getCatLabel(cat) {
-  return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
-}
+      const list = document.getElementById('menu-list');
 
-// ===== LƯU MÓN (Thêm hoặc Sửa) =====
-async function saveMenuItem() {
-  const name     = document.getElementById('item-name').value.trim();
-  const price    = document.getElementById('item-price').value;
-  const category = document.getElementById('item-category').value;
-  const icon     = document.getElementById('item-icon').value.trim()     || '🍽️';
-  const desc     = document.getElementById('item-desc').value.trim();
-  const badge    = document.getElementById('item-badge').value;
-  const oldPrice = document.getElementById('item-old-price').value;
-  const msg      = document.getElementById('menu-msg');
+      if (filtered.length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Chưa có món nào</p>';
+        return;
+      }
 
-  if (!name || !price) {
-    msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
-    msg.className = 'account-msg error';
-    return;
-  }
+      list.innerHTML = filtered.map(item => `
+        <div class="menu-manage-row">
 
-  const body = { name, price: parseInt(price), category, icon, desc, badge, oldPrice: oldPrice ? parseInt(oldPrice) : null };
+          <!-- Ảnh hoặc icon -->
+          ${item.imageUrl
+            ? `<img src="${convertGoogleDriveUrl(item.imageUrl)}"
+                    alt="${item.name}"
+                    style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;"
+                    onerror="this.outerHTML='<span class=\\'menu-icon\\'>${item.icon || '🍽️'}</span>'">`
+            : `<span class="menu-icon">${item.icon || '🍽️'}</span>`
+          }
 
-  try {
-    let res;
-    if (editingId) {
-      res = await fetch(`${API_URL}/menu/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+          <div class="menu-manage-info">
+            <strong>${item.name}</strong>
+            <span>${item.desc || ''}</span>
+          </div>
+
+          <span class="menu-manage-cat">${getCatLabel(item.category)}</span>
+          <span class="menu-manage-price">${formatPrice(item.price)}</span>
+
+          <div class="menu-manage-actions">
+            <button class="action-btn confirm" onclick="editItem('${item.id}')">✏️ Sửa</button>
+            <button class="action-btn cancel"  onclick="deleteItem('${item.id}', '${item.name}')">🗑️ Xóa</button>
+          </div>
+
+        </div>
+      `).join('');
+    }
+
+    function getCatLabel(cat) {
+      return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
+    }
+
+    // ===== LƯU MÓN =====
+    async function saveMenuItem() {
+      const name      = document.getElementById('item-name').value.trim();
+      const price     = document.getElementById('item-price').value;
+      const category  = document.getElementById('item-category').value;
+      const icon      = document.getElementById('item-icon').value.trim()      || '🍽️';
+      const desc      = document.getElementById('item-desc').value.trim();
+      const badge     = document.getElementById('item-badge').value;
+      const oldPrice  = document.getElementById('item-old-price').value;
+      const soldCount = document.getElementById('item-sold-count').value;
+      const imageRaw  = document.getElementById('item-image').value.trim();
+      const imageUrl  = convertGoogleDriveUrl(imageRaw) || null;
+      const msg       = document.getElementById('menu-msg');
+
+      if (!name || !price) {
+        msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
+        msg.className = 'account-msg error';
+        return;
+      }
+
+      const body = {
+        name,
+        price:     parseInt(price),
+        category,
+        icon,
+        desc,
+        badge,
+        imageUrl,
+        oldPrice:  oldPrice  ? parseInt(oldPrice)  : null,
+        soldCount: soldCount ? parseInt(soldCount) : 0
+      };
+
+      try {
+        let res;
+        if (editingId) {
+          res = await fetch(`${API_URL}/menu/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          res = await fetch(`${API_URL}/menu`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          msg.textContent = data.error || 'Có lỗi xảy ra!';
+          msg.className = 'account-msg error';
+          return;
+        }
+
+        msg.textContent = editingId ? '✅ Đã cập nhật món!' : '✅ Đã thêm món mới!';
+        msg.className = 'account-msg success';
+
+        resetForm();
+        await loadMenuItems();
+        setTimeout(() => msg.textContent = '', 2000);
+
+      } catch (err) {
+        msg.textContent = 'Không kết nối được server!';
+        msg.className = 'account-msg error';
+      }
+    }
+
+    // ===== SỬA MÓN =====
+    function editItem(id) {
+      const item = menuItems.find(i => i.id === id);
+      if (!item) return;
+
+      editingId = id;
+      document.getElementById('item-name').value      = item.name;
+      document.getElementById('item-price').value     = item.price;
+      document.getElementById('item-category').value  = item.category;
+      document.getElementById('item-icon').value      = item.icon      || '';
+      document.getElementById('item-desc').value      = item.desc      || '';
+      document.getElementById('item-badge').value     = item.badge     || '';
+      document.getElementById('item-old-price').value = item.oldPrice  || '';
+      document.getElementById('item-sold-count').value= item.soldCount || 0;
+      document.getElementById('item-image').value     = item.imageUrl  || '';
+      document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
+
+      // Trigger preview ảnh
+      imageInput.dispatchEvent(new Event('input'));
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== XÓA MÓN =====
+    async function deleteItem(id, name) {
+      if (!confirm(`Xóa món "${name}" khỏi menu?`)) return;
+      try {
+        const res  = await fetch(`${API_URL}/menu/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Xóa thất bại!'); return; }
+        await loadMenuItems();
+      } catch (err) {
+        alert('Không kết nối được server!');
+      }
+    }
+
+    // ===== RESET FORM =====
+    function resetForm() {
+      editingId = null;
+      ['item-name','item-price','item-icon','item-desc',
+       'item-old-price','item-sold-count','item-image'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
       });
-    } else {
-      res = await fetch(`${API_URL}/menu`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+      document.getElementById('item-category').value = 'com';
+      document.getElementById('item-badge').value    = '';
+      document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
+      previewBox.style.display = 'none';
+    }
+
+    // ===== BỘ LỌC =====
+    document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-filter .filter-btn')
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCat = btn.dataset.cat;
+        renderMenuList();
       });
-    }
+    });
 
-    const data = await res.json();
-    if (!res.ok) {
-      msg.textContent = data.error || 'Có lỗi xảy ra!';
-      msg.className = 'account-msg error';
-      return;
-    }
-
-    msg.textContent = editingId ? '✅ Đã cập nhật món!' : '✅ Đã thêm món mới!';
-    msg.className = 'account-msg success';
-
-    resetForm();
-    await loadMenuItems(); // Reload danh sách từ Firestore
-    setTimeout(() => msg.textContent = '', 2000);
-
-  } catch (err) {
-    msg.textContent = 'Không kết nối được server!';
-    msg.className = 'account-msg error';
-  }
-}
-
-// ===== SỬA MÓN =====
-function editItem(id) {
-  const item = menuItems.find(i => i.id === id);
-  if (!item) return;
-
-  editingId = id;
-  document.getElementById('item-name').value     = item.name;
-  document.getElementById('item-price').value    = item.price;
-  document.getElementById('item-category').value = item.category;
-  document.getElementById('item-icon').value     = item.icon || '';
-  document.getElementById('item-desc').value     = item.desc || '';
-  document.getElementById('item-badge').value    = item.badge || '';
-  document.getElementById('item-old-price').value = item.oldPrice || '';
-  document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ===== XÓA MÓN =====
-async function deleteItem(id, name) {
-  if (!confirm(`Xóa món "${name}" khỏi menu?`)) return;
-
-  try {
-    const res = await fetch(`${API_URL}/menu/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || 'Xóa thất bại!');
-      return;
-    }
-
-    await loadMenuItems();
-  } catch (err) {
-    alert('Không kết nối được server!');
-  }
-}
-
-// ===== RESET FORM =====
-function resetForm() {
-  editingId = null;
-  ['item-name','item-price','item-icon','item-desc','item-old-price'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('item-category').value = 'com';
-  document.getElementById('item-badge').value    = '';
-  document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
-}
-
-// ===== BỘ LỌC DANH MỤC =====
-document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.admin-filter .filter-btn')
-      .forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentCat = btn.dataset.cat;
-    renderMenuList();
-  });
-});
-
-// ===== KHỞI ĐỘNG =====
-loadMenuItems();
-  </script>/////
+    loadMenuItems();
+  </script>
 </body>
 </html>
