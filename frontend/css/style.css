@@ -1679,3 +1679,142 @@ a { text-decoration: none; color: inherit; }
   font-size: 4rem;
   background: #fff5f5;
 }
+/* ===== THEO DÕI ĐƠN REAL-TIME ===== */
+.tracking-box {
+  background: #f9f9f9;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 2px solid #eee;
+}
+
+.tracking-box h3 {
+  color: #c0392b;
+  margin-bottom: 4px;
+  font-size: 1.1rem;
+}
+
+/* THANH TIẾN TRÌNH */
+.tracking-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 24px 0 20px;
+  position: relative;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  opacity: 0.35;
+  transition: opacity 0.4s;
+}
+
+.tracking-step.active  { opacity: 1; }
+.tracking-step.done    { opacity: 1; }
+
+.step-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 3px solid #ddd;
+  transition: all 0.4s;
+  z-index: 1;
+}
+
+.tracking-step.active .step-icon {
+  background: #fff3cd;
+  border-color: #f39c12;
+  animation: pulse-icon 1.5s infinite;
+}
+
+.tracking-step.done .step-icon {
+  background: #d4edda;
+  border-color: #27ae60;
+}
+
+.tracking-step.cancelled .step-icon {
+  background: #f8d7da;
+  border-color: #e74c3c;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(243,156,18,0.4); }
+  50%       { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(243,156,18,0); }
+}
+
+.step-line {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: #ddd;
+  z-index: 0;
+}
+
+.tracking-step.done .step-line { background: #27ae60; }
+
+.step-label {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-align: center;
+}
+
+.tracking-step.active .step-label { color: #f39c12; }
+.tracking-step.done   .step-label { color: #27ae60; }
+
+.step-time {
+  font-size: 0.7rem;
+  color: #999;
+  margin-top: 4px;
+  text-align: center;
+  min-height: 16px;
+}
+
+/* THÔNG BÁO TRẠNG THÁI */
+.tracking-status-msg {
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  min-height: 44px;
+}
+
+.tracking-status-msg.new       { background: #fff3cd; color: #856404; }
+.tracking-status-msg.confirmed { background: #cce5ff; color: #004085; }
+.tracking-status-msg.done      { background: #d4edda; color: #155724; }
+.tracking-status-msg.cancelled { background: #f8d7da; color: #721c24; }
+
+/* THÔNG TIN ĐƠN */
+.tracking-info {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.8;
+}
+
+/* SPIN ANIMATION */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  .step-label { font-size: 0.7rem; }
+  .step-icon  { width: 36px; height: 36px; font-size: 1rem; }
+}

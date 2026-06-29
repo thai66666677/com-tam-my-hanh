@@ -278,6 +278,8 @@ async function submitOrder() {
     if (formEl)    formEl.style.display    = 'none';
     if (successEl) successEl.style.display = 'block';
     if (orderIdEl) orderIdEl.textContent   = orderId;
+    // Bắt đầu theo dõi đơn real-time
+     startOrderTracking(orderId);
 
     document.querySelectorAll('.btn-contact-zalo').forEach(link => {
       link.href  = 'https://zalo.me/0901234567';
@@ -302,7 +304,170 @@ async function submitOrder() {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Đặt Món Ngay'; }
   }
 }
+ // =====================
+// THEO DÕI ĐƠN REAL-TIME
+// =====================
+let trackingInterval  = null;
+let lastTrackedStatus = null;
+let trackingOrderId   = null;
 
+function startOrderTracking(orderId) {
+  trackingOrderId = orderId;
+  lastTrackedStatus = 'new';
+
+  // Hiện UI tracking
+  const trackingEl  = document.getElementById('order-tracking');
+  const trackingIdEl = document.getElementById('tracking-id');
+  if (trackingEl)   trackingEl.style.display = 'block';
+  if (trackingIdEl) trackingIdEl.textContent = orderId;
+
+  // Set bước đầu (Đặt món)
+  updateTrackingUI({
+    id:        orderId,
+    status:    'new',
+    createdAt: new Date().toISOString()
+  });
+
+  // Gọi API ngay lập tức
+  fetchOrderStatus(orderId);
+
+  // Auto refresh mỗi 10 giây
+  if (trackingInterval) clearInterval(trackingInterval);
+  trackingInterval = setInterval(() => fetchOrderStatus(orderId), 10000);
+}
+
+async function fetchOrderStatus(orderId) {
+  const refreshIcon = document.getElementById('tracking-refresh-icon');
+  if (refreshIcon) refreshIcon.style.display = 'inline-block';
+
+  try {
+    const res   = await fetch(`${API_URL}/orders/${orderId}`);
+    const order = await res.json();
+
+    if (!res.ok) return;
+
+    // Phát âm thanh nếu trạng thái thay đổi
+    if (lastTrackedStatus && order.status !== lastTrackedStatus) {
+      playStatusChangeSound(order.status);
+      lastTrackedStatus = order.status;
+    }
+
+    updateTrackingUI(order);
+
+    // Dừng polling khi đơn kết thúc
+    if (order.status === 'done' || order.status === 'cancelled') {
+      clearInterval(trackingInterval);
+      trackingInterval = null;
+    }
+
+  } catch (err) {
+    console.log('Lỗi theo dõi đơn:', err.message);
+  } finally {
+    if (refreshIcon) refreshIcon.style.display = 'none';
+  }
+}
+
+function updateTrackingUI(order) {
+  const steps = {
+    new:       { active: 'step-new',       done: [] },
+    confirmed: { active: 'step-confirmed', done: ['step-new'] },
+    done:      { active: 'step-done',      done: ['step-new','step-confirmed','step-cooking'] },
+    cancelled: { active: null,              done: [] }
+  };
+
+  const statusConfig = steps[order.status] || steps.new;
+
+  // Reset tất cả bước
+  ['step-new','step-confirmed','step-cooking','step-done'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'tracking-step';
+  });
+
+  // Đánh dấu bước đã xong
+  statusConfig.done.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('done');
+  });
+
+  // Đánh dấu bước hiện tại
+  if (order.status === 'cancelled') {
+    // Tất cả mờ đi
+    ['step-new','step-confirmed','step-cooking','step-done'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('cancelled');
+    });
+  } else if (statusConfig.active) {
+    const el = document.getElementById(statusConfig.active);
+    if (el) el.classList.add('active');
+
+    // Nếu confirmed → cooking cũng là "active" (đang nấu)
+    if (order.status === 'confirmed') {
+      const cookEl = document.getElementById('step-cooking');
+      if (cookEl) cookEl.classList.add('active');
+    }
+  }
+
+  // Thời gian tạo đơn
+  const timeStr = new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+    hour: '2-digit', minute: '2-digit'
+  });
+  const newTimeEl = document.getElementById('step-new-time');
+  if (newTimeEl) newTimeEl.textContent = timeStr;
+
+  // Thông báo trạng thái
+  const messages = {
+    new:       { text: '⏳ Đơn hàng đang chờ quán xác nhận...', cls: 'new' },
+    confirmed: { text: '👨‍🍳 Quán đã xác nhận! Đang chuẩn bị món cho bạn...', cls: 'confirmed' },
+    done:      { text: '🎉 Đơn hàng đã hoàn thành! Chúc bạn ngon miệng!', cls: 'done' },
+    cancelled: { text: '❌ Đơn hàng đã bị hủy. Vui lòng liên hệ quán.', cls: 'cancelled' }
+  };
+
+  const msg    = messages[order.status] || messages.new;
+  const msgEl  = document.getElementById('tracking-status-msg');
+  if (msgEl) {
+    msgEl.textContent = msg.text;
+    msgEl.className   = `tracking-status-msg ${msg.cls}`;
+  }
+
+  // Thông tin đơn hàng
+  const infoEl = document.getElementById('tracking-info');
+  if (infoEl && order.items) {
+    infoEl.innerHTML = `
+      <strong>📋 Món đã đặt:</strong><br>
+      ${order.items.map(i => `${i.name} x${i.quantity}`).join(' · ')}<br>
+      <strong>💰 Tổng:</strong> ${(order.total || 0).toLocaleString('vi-VN')}đ ·
+      <strong>💳</strong> ${order.payment === 'cod' ? 'Tiền mặt' : 'Chuyển khoản'}
+    `;
+  }
+}
+
+function playStatusChangeSound(status) {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (status === 'done') {
+      // Tiếng vui - 3 nốt lên
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.7);
+    } else {
+      // Tiếng thông báo - 1 nốt
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    }
+  } catch (e) {}
+}
 
 // =====================
 // TÌM KIẾM + LỌC DANH MỤC MENU

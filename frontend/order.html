@@ -173,6 +173,57 @@
                 </a>
               </div>
             </div>
+            <!-- THEO DÕI ĐƠN REAL-TIME -->
+<div id="order-tracking" style="display:none;">
+  <div class="tracking-box">
+    <h3>📍 Theo dõi đơn hàng</h3>
+    <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">
+      Mã đơn: <strong id="tracking-id"></strong>
+      · Tự cập nhật mỗi 10 giây
+      <span id="tracking-refresh-icon" style="display:inline-block;animation:spin 1s linear infinite;display:none;">🔄</span>
+    </p>
+
+    <!-- THANH TIẾN TRÌNH -->
+    <div class="tracking-steps">
+
+      <div class="tracking-step" id="step-new">
+        <div class="step-icon">📝</div>
+        <div class="step-line"></div>
+        <div class="step-label">Đặt món</div>
+        <div class="step-time" id="step-new-time"></div>
+      </div>
+
+      <div class="tracking-step" id="step-confirmed">
+        <div class="step-icon">✅</div>
+        <div class="step-line"></div>
+        <div class="step-label">Xác nhận</div>
+        <div class="step-time" id="step-confirmed-time"></div>
+      </div>
+
+      <div class="tracking-step" id="step-cooking">
+        <div class="step-icon">👨‍🍳</div>
+        <div class="step-line"></div>
+        <div class="step-label">Đang nấu</div>
+        <div class="step-time" id="step-cooking-time"></div>
+      </div>
+
+      <div class="tracking-step" id="step-done">
+        <div class="step-icon">🎉</div>
+        <div class="step-line" style="display:none;"></div>
+        <div class="step-label">Hoàn thành</div>
+        <div class="step-time" id="step-done-time"></div>
+      </div>
+
+    </div>
+
+    <!-- THÔNG BÁO TRẠNG THÁI -->
+    <div class="tracking-status-msg" id="tracking-status-msg"></div>
+
+    <!-- THÔNG TIN ĐƠN -->
+    <div class="tracking-info" id="tracking-info"></div>
+
+  </div>
+</div>
 
             <!-- ĐÁNH GIÁ -->
             <div class="review-prompt" id="review-prompt">
