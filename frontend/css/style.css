@@ -1818,3 +1818,20 @@ a { text-decoration: none; color: inherit; }
   .step-label { font-size: 0.7rem; }
   .step-icon  { width: 36px; height: 36px; font-size: 1rem; }
 }
+/* ===== MÓN HẾT HÀNG TRONG ADMIN ===== */
+.sold-out-row {
+  opacity: 0.6;
+  background: #fafafa;
+}
+
+.sold-out-tag {
+  display: inline-block;
+  background: #e74c3c;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
