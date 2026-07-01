@@ -1,3 +1,33 @@
+
+// =====================
+// KIỂM TRA ĐĂNG NHẬP - CHẶN ORDER.HTML
+// =====================
+function checkAuthForOrder() {
+  const orderContent     = document.getElementById('order-content');
+  const loginRequiredBox = document.getElementById('login-required-box');
+
+  if (!orderContent) return; // không phải order.html
+
+  const user  = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  const token = localStorage.getItem('authToken');
+
+  if (!user || !token) {
+    loginRequiredBox.style.display = 'block';
+    orderContent.style.display     = 'none';
+    return false;
+  }
+
+  loginRequiredBox.style.display = 'none';
+  orderContent.style.display     = 'block';
+
+  // Tự điền sẵn tên + SĐT từ tài khoản
+  const nameEl  = document.getElementById('customer-name');
+  const phoneEl = document.getElementById('customer-phone');
+  if (nameEl  && !nameEl.value)  nameEl.value  = user.name;
+  if (phoneEl && !phoneEl.value) phoneEl.value = user.phone;
+
+  return true;
+}
 // =====================
 // GIỜ MỞ/ĐÓNG CỬA TỰ ĐỘNG
 // =====================
@@ -98,6 +128,14 @@ function updateCartCount() {
 }
 
 function addToCart(name, price) {
+   const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+  if (!user) {
+    if (confirm('Vui lòng đăng nhập để đặt món. Đăng nhập ngay?')) {
+      window.location.href = 'account.html?redirect=menu';
+    }
+    return;
+  }
   const existing = cart.find(item => item.name === name);
   if (existing) {
     existing.quantity += 1;
@@ -243,24 +281,43 @@ async function submitOrder() {
   if (cart.length === 0) { alert('Giỏ hàng trống!');  return; }
 
   const total     = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
+     // Lưu địa chỉ để dùng lần sau
+     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+     if (currentUser && address) { 
+      localStorage.setItem(`lastAddress_${currentUser.phone}`, address);
+}
   const orderData = { customer: { name, phone, address, note }, items: [...cart], total, payment };
 
   const submitBtn = document.querySelector('.btn-submit');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Đang gửi đơn...'; }
 
   try {
-    const res  = await fetch(`${API_URL}/orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData)
-    });
-    const data = await res.json();
+     const token = localStorage.getItem('authToken');
 
-    if (!res.ok) {
+     const res = await fetch(`${API_URL}/orders`, {
+     method: 'POST',
+     headers: {
+     'Content-Type': 'application/json',
+     'Authorization': `Bearer ${token}`
+      },
+     body: JSON.stringify(orderData)
+     });
+
+     // Nếu token hết hạn → bắt đăng nhập lại
+     if (res.status === 401) {
+     alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+     localStorage.removeItem('currentUser');
+     localStorage.removeItem('authToken');
+     window.location.href = 'account.html?redirect=order';
+     return;
+     }
+     const data = await res.json();
+
+     if (!res.ok) {
       alert(data.error || 'Có lỗi xảy ra!');
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Đặt Món Ngay'; }
       return;
-    }
+     }
 
     const orderId = data.orderId;
 
@@ -751,20 +808,78 @@ async function handleLogin() {
     if (btn) { btn.disabled = false; btn.textContent = '🔐 Đăng Nhập'; }
   }
 }
-
-function showLoggedIn(user) {
+async function showLoggedIn(user) {
+  // Ẩn form login/register
   ['tab-login', 'tab-register'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  const loggedIn = document.getElementById('tab-logged-in');
-  if (loggedIn) loggedIn.style.display = 'block';
   document.querySelectorAll('.tab-btn').forEach(b => b.style.display = 'none');
 
+  const loggedIn = document.getElementById('tab-logged-in');
+  if (loggedIn) loggedIn.style.display = 'block';
+
+  // Điền tên + SĐT cơ bản
   const nameEl  = document.getElementById('user-name-display');
   const phoneEl = document.getElementById('user-phone-display');
-  if (nameEl)  nameEl.textContent  = '👋 ' + user.name;
-  if (phoneEl) phoneEl.textContent = '📞 ' + user.phone;
+  const infoName  = document.getElementById('info-name');
+  const infoPhone = document.getElementById('info-phone');
+
+  if (nameEl)  nameEl.textContent  = user.name;
+  if (phoneEl) phoneEl.textContent = user.phone;
+  if (infoName)  infoName.textContent  = user.name;
+  if (infoPhone) infoPhone.textContent = user.phone;
+
+  // Hiện địa chỉ thường dùng (nếu có)
+  const savedAddr    = localStorage.getItem(`lastAddress_${user.phone}`);
+  const addrRow      = document.getElementById('info-address-row');
+  const addrDisplay  = document.getElementById('info-address');
+  if (savedAddr && addrRow && addrDisplay) {
+    addrRow.style.display = 'block';
+    addrDisplay.textContent = savedAddr;
+  }
+
+  // Load thống kê đơn hàng
+  await loadUserStats(user);
+
+  // Redirect nếu có ?redirect=order
+  const params   = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect');
+  if (redirect === 'order') {
+    setTimeout(() => window.location.href = 'order.html', 800);
+  }
+}
+
+async function loadUserStats(user) {
+  const statOrders = document.getElementById('stat-total-orders');
+  const statSpent  = document.getElementById('stat-total-spent');
+  const statDone   = document.getElementById('stat-done-orders');
+  if (!statOrders) return; // không phải account.html
+
+  try {
+    const token = localStorage.getItem('authToken');
+    const res   = await fetch(`${API_URL}/orders/my-orders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const orders = await res.json();
+
+    if (!Array.isArray(orders)) return;
+
+    const totalOrders = orders.length;
+    const doneOrders  = orders.filter(o => o.status === 'done').length;
+    const totalSpent  = orders
+      .filter(o => o.status === 'done')
+      .reduce((sum, o) => sum + (o.total || 0), 0);
+
+    statOrders.textContent = totalOrders;
+    statDone.textContent   = doneOrders;
+    statSpent.textContent  = totalSpent >= 1000000
+      ? (totalSpent / 1000000).toFixed(1) + 'tr'
+      : (totalSpent / 1000).toFixed(0) + 'k';
+
+  } catch (err) {
+    console.log('Lỗi tải thống kê user:', err.message);
+  }
 }
 
 function handleLogout() {
@@ -797,7 +912,10 @@ async function renderHistory() {
   }
 
   try {
-    const res      = await fetch(`${API_URL}/orders/phone/${user.phone}`);
+     const token = localStorage.getItem('authToken');
+     const res = await fetch(`${API_URL}/orders/my-orders`, {
+     headers: { 'Authorization': `Bearer ${token}` }
+    });
     const myOrders = await res.json();
 
     if (!myOrders || myOrders.length === 0) {
@@ -1018,11 +1136,34 @@ if (navToggle && mainNav) {
     }
   });
 }
+// =====================
+// TỰ ĐIỀN FORM KHI ĐÃ ĐĂNG NHẬP
+// =====================
+function initOrderPage() {
+  const orderContent = document.getElementById('order-content');
+  if (!orderContent) return;
+
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user) return;
+
+  // Tự điền tên + SĐT
+  const nameEl  = document.getElementById('customer-name');
+  const phoneEl = document.getElementById('customer-phone');
+  const addrEl  = document.getElementById('customer-address');
+
+  if (nameEl  && !nameEl.value)  nameEl.value  = user.name;
+  if (phoneEl && !phoneEl.value) phoneEl.value = user.phone;
+
+  // Điền địa chỉ đã dùng lần trước
+  const savedAddr = localStorage.getItem(`lastAddress_${user.phone}`);
+  if (addrEl && savedAddr && !addrEl.value) addrEl.value = savedAddr;
+}
 
 
 // =====================
 // KHỞI ĐỘNG TẤT CẢ
 // =====================
+checkAuthForOrder();   // ← THÊM DÒNG NÀY, GỌI ĐẦU TIÊN
 updateCartCount();
 renderCart();
 checkLoginStatus();
@@ -1030,3 +1171,4 @@ renderHistory();
 renderReviews();
 loadMenu();
 loadMiniMenu();   // ← THÊM DÒNG NÀY
+initOrderPage();   // ← THÊM

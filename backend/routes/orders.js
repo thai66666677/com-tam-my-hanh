@@ -1,3 +1,4 @@
+const requireAuth = require('../middleware/auth');
 const express  = require('express');
 const router   = express.Router();
 const db       = require('../utils/firebase');
@@ -17,7 +18,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Lỗi tải đơn hàng!' });
   }
 });
-
 // ===== 2. THỐNG KÊ DOANH THU ← PHẢI TRƯỚC /:id =====
 router.get('/stats', async (req, res) => {
   try {
@@ -111,6 +111,19 @@ router.get('/phone/:phone', async (req, res) => {
     res.status(500).json({ error: 'Lỗi tải lịch sử đơn!' });
   }
 });
+// ===== LẤY ĐƠN THEO TÀI KHOẢN ĐĂNG NHẬP =====
+router.get('/my-orders', requireAuth, async (req, res) => {
+  try {
+    const snapshot = await ordersRef
+      .where('userId', '==', req.user.phone)
+      .orderBy('createdAt', 'desc')
+      .get();
+    const orders = snapshot.docs.map(doc => doc.data());
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi tải lịch sử đơn!' });
+  }
+});
 
 // ===== 4. LẤY 1 ĐƠN THEO ID ← SAU CÙNG =====
 router.get('/:id', async (req, res) => {
@@ -126,8 +139,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// ===== 5. TẠO ĐƠN MỚI =====
-router.post('/', async (req, res) => {
+// ===== TẠO ĐƠN MỚI (BẮT BUỘC ĐĂNG NHẬP) =====
+router.post('/', requireAuth, async (req, res) => {
   try {
     const { customer, items, total, payment } = req.body;
 
@@ -139,8 +152,10 @@ router.post('/', async (req, res) => {
     }
 
     const orderId = 'DH' + Date.now().toString().slice(-5);
+
     const newOrder = {
       id: orderId,
+      userId: req.user.phone,  // ← gắn chặt với tài khoản đăng nhập
       customer,
       items,
       total,

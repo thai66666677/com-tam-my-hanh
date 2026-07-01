@@ -79,16 +79,88 @@
           <p class="form-note">Đã có tài khoản? <a onclick="switchTab('login')">Đăng nhập</a></p>
         </div>
 
-        <!-- ĐÃ ĐĂNG NHẬP -->
-        <div class="tab-content" id="tab-logged-in" style="display:none;">
-          <div class="logged-in-box">
-            <div class="user-avatar">👤</div>
-            <h3 id="user-name-display"></h3>
-            <p id="user-phone-display"></p>
-            <a href="history.html" class="btn btn-primary">📋 Xem lịch sử đơn hàng</a>
-            <button class="btn-logout" onclick="handleLogout()">🚪 Đăng xuất</button>
-          </div>
-        </div>
+        <!-- TRẠNG THÁI ĐÃ ĐĂNG NHẬP - DASHBOARD -->
+<div id="tab-logged-in" style="display:none;">
+
+  <!-- DASHBOARD CÁ NHÂN -->
+  <div class="account-dashboard">
+    <div class="account-dashboard-header">
+      <div class="account-avatar-big">👤</div>
+      <div>
+        <h3 id="user-name-display">--</h3>
+        <p id="user-phone-display">--</p>
+      </div>
+    </div>
+    <div class="account-stats-row">
+      <div class="account-stat">
+        <div class="num" id="stat-total-orders">--</div>
+        <div class="label">Đơn hàng</div>
+      </div>
+      <div class="account-stat">
+        <div class="num" id="stat-total-spent">--</div>
+        <div class="label">Đã chi</div>
+      </div>
+      <div class="account-stat">
+        <div class="num" id="stat-done-orders">--</div>
+        <div class="label">Hoàn thành</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU NHANH -->
+  <div class="account-menu-grid">
+    <a href="history.html" class="account-menu-item">
+      <span class="icon">📋</span>
+      <div>
+        <strong>Lịch sử đơn hàng</strong>
+        <small>Xem các đơn đã đặt</small>
+      </div>
+    </a>
+    <a href="order.html" class="account-menu-item">
+      <span class="icon">🍽️</span>
+      <div>
+        <strong>Đặt món ngay</strong>
+        <small>Thông tin tự điền sẵn</small>
+      </div>
+    </a>
+    <a href="menu.html" class="account-menu-item">
+      <span class="icon">🍱</span>
+      <div>
+        <strong>Xem thực đơn</strong>
+        <small>Khám phá món mới</small>
+      </div>
+    </a>
+    <a href="reviews.html" class="account-menu-item">
+      <span class="icon">⭐</span>
+      <div>
+        <strong>Đánh giá</strong>
+        <small>Xem đánh giá đã gửi</small>
+      </div>
+    </a>
+  </div>
+
+  <!-- THÔNG TIN TÀI KHOẢN -->
+  <div style="background:white;border-radius:12px;padding:20px;
+              box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-top:16px;">
+    <h3 style="margin-bottom:16px;font-size:1rem;color:#555;">
+      ⚙️ Thông tin tài khoản
+    </h3>
+    <div style="line-height:2.4;color:#555;font-size:0.95rem;">
+      <div>👤 Họ tên: <strong id="info-name">--</strong></div>
+      <div>📞 Số điện thoại: <strong id="info-phone">--</strong></div>
+      <div id="info-address-row" style="display:none;">
+        📍 Địa chỉ thường dùng: <strong id="info-address">--</strong>
+      </div>
+    </div>
+    <button onclick="handleLogout()"
+      style="margin-top:20px;width:100%;background:none;
+             border:2px solid #e74c3c;color:#e74c3c;padding:12px;
+             border-radius:8px;font-weight:700;cursor:pointer;font-size:1rem;">
+      🚪 Đăng xuất
+    </button>
+  </div>
+
+</div>
 
         <!-- THÔNG BÁO -->
         <div class="account-msg" id="account-msg"></div>

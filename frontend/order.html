@@ -41,6 +41,21 @@
 
   <section class="order-section">
     <div class="container">
+      <!-- YÊU CẦU ĐĂNG NHẬP -->
+     <div id="login-required-box" style="display:none;">
+      <div class="login-required-card">
+        <div style="font-size:3.5rem;margin-bottom:12px;">🔐</div>
+        <h2>Vui lòng đăng nhập để đặt món</h2>
+        <p>Đăng nhập giúp bạn theo dõi đơn hàng và lưu lại lịch sử đặt món dễ dàng hơn</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+          <a href="account.html?redirect=order" class="btn btn-primary">🔐 Đăng nhập ngay</a>
+          <a href="menu.html" class="btn btn-secondary">🍽️ Xem Menu trước</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- NỘI DUNG ĐẶT MÓN (chỉ hiện khi đã đăng nhập) -->
+    <div id="order-content" style="display:none;">
 
       <!-- MINI MENU CHỌN MÓN NHANH - LOAD TỪ API -->
       <div class="mini-menu-box">
@@ -174,8 +189,8 @@
               </div>
             </div>
             <!-- THEO DÕI ĐƠN REAL-TIME -->
-<div id="order-tracking" style="display:none;">
-  <div class="tracking-box">
+    <div id="order-tracking" style="display:none;">
+     <div class="tracking-box">
     <h3>📍 Theo dõi đơn hàng</h3>
     <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">
       Mã đơn: <strong id="tracking-id"></strong>
