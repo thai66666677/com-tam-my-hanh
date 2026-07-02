@@ -593,6 +593,12 @@ function clearSearch() {
 // =====================
 // LOAD MENU TỪ API FIRESTORE  ← ✅ NẰM NGOÀI, ĐÚNG VỊ TRÍ
 // =====================
+   // =====================
+// LOAD MENU + SMART POLLING
+// =====================
+let menuPollInterval  = null;
+let menuCacheSnapshot = {}; // lưu trạng thái available của từng món
+
 async function loadMenu() {
   const grid    = document.getElementById('menu-grid');
   const loading = document.getElementById('menu-loading');
@@ -610,17 +616,46 @@ async function loadMenu() {
       return;
     }
 
-       grid.innerHTML = items.map(item => {
-  const isAvailable = item.available !== false; // mặc định true nếu chưa có field
+    // Render toàn bộ lần đầu
+    renderMenuGrid(items);
 
+    // Lưu snapshot trạng thái
+    items.forEach(item => {
+      menuCacheSnapshot[item.id] = item.available !== false;
+    });
+
+    // Bắt đầu polling nếu chưa chạy
+    startMenuPolling();
+
+  } catch (err) {
+    console.error('Lỗi tải menu:', err);
+    if (loading) {
+      loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn. Vui lòng thử lại!</p>';
+    }
+  }
+}
+
+// ===== RENDER TOÀN BỘ MENU =====
+function renderMenuGrid(items) {
+  const grid = document.getElementById('menu-grid');
+  if (!grid) return;
+
+  grid.innerHTML = items.map(item => buildMenuCard(item)).join('');
+  applyMenuFilters();
+}
+
+// ===== BUILD 1 CARD MÓN ĂN =====
+function buildMenuCard(item) {
+  const isAvailable = item.available !== false;
   return `
     <div class="menu-card ${!isAvailable ? 'menu-card-sold-out' : ''}"
-         data-category="${item.category}">
+         data-category="${item.category}"
+         data-item-id="${item.id}">
       <div class="menu-img-wrap">
         <img src="${item.imageUrl || `images/${item.id}.jpg`}"
              onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
-             alt="${item.name}" class="menu-img-real">
-
+             alt="${item.name}" class="menu-img-real"
+             style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}">
         ${item.badge && isAvailable
           ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>`
           : ''
@@ -650,16 +685,118 @@ async function loadMenu() {
       </div>
     </div>
   `;
-}).join('');
+}
 
-    applyMenuFilters();
+// ===== POLLING — Chỉ cập nhật card thay đổi =====
+function startMenuPolling() {
+  if (menuPollInterval) return; // Đã chạy rồi thì thôi
 
-  } catch (err) {
-    console.error('Lỗi tải menu:', err);
-    if (loading) {
-      loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn. Vui lòng thử lại!</p>';
+  menuPollInterval = setInterval(async () => {
+    const grid = document.getElementById('menu-grid');
+    if (!grid) {
+      // Rời khỏi trang menu → dừng polling
+      clearInterval(menuPollInterval);
+      menuPollInterval = null;
+      return;
+    }
+
+    try {
+      const res   = await fetch(`${API_URL}/menu`);
+      const items = await res.json();
+      if (!items) return;
+
+      let hasChange = false;
+
+      items.forEach(item => {
+        const newAvailable = item.available !== false;
+        const oldAvailable = menuCacheSnapshot[item.id];
+
+        // Chỉ cập nhật card khi trạng thái THAY ĐỔI
+        if (oldAvailable !== newAvailable) {
+          console.log(`🔄 Cập nhật "${item.name}": ${newAvailable ? 'Còn hàng' : 'Hết hàng'}`);
+          updateMenuCard(item, newAvailable);
+          menuCacheSnapshot[item.id] = newAvailable;
+          hasChange = true;
+        }
+      });
+
+      if (hasChange) {
+        showMenuUpdateToast();
+      }
+
+    } catch (err) {
+      // Bỏ qua lỗi poll (không làm phiền người dùng)
+    }
+
+  }, 30000); // Poll mỗi 30 giây
+}
+
+// ===== CẬP NHẬT 1 CARD CỤ THỂ (không reload toàn trang) =====
+function updateMenuCard(item, isAvailable) {
+  const card = document.querySelector(`.menu-card[data-item-id="${item.id}"]`);
+  if (!card) return;
+
+  // Cập nhật class card
+  card.classList.toggle('menu-card-sold-out', !isAvailable);
+
+  // Cập nhật ảnh
+  const img = card.querySelector('.menu-img-real');
+  if (img) img.style.filter = isAvailable ? '' : 'grayscale(0.7)';
+
+  // Cập nhật badge
+  const imgWrap = card.querySelector('.menu-img-wrap');
+  if (imgWrap) {
+    // Xóa badge cũ
+    const oldBadge = imgWrap.querySelector('.badge-sold-out, .badge');
+    if (oldBadge) oldBadge.remove();
+
+    // Thêm badge mới
+    if (!isAvailable) {
+      const badge = document.createElement('span');
+      badge.className = 'badge badge-sold-out';
+      badge.textContent = '😢 Hết hàng';
+      imgWrap.appendChild(badge);
+    } else if (item.badge) {
+      const badge = document.createElement('span');
+      badge.className = `badge badge-${item.badge}`;
+      badge.textContent = getBadgeLabel(item.badge);
+      imgWrap.appendChild(badge);
     }
   }
+
+  // Cập nhật nút "+ Thêm"
+  const btnArea = card.querySelector('.menu-footer');
+  if (btnArea) {
+    const oldBtn = btnArea.querySelector('.btn-add, .btn-sold-out');
+    if (oldBtn) oldBtn.remove();
+
+    const newBtn = document.createElement('button');
+    if (isAvailable) {
+      newBtn.className = 'btn-add';
+      newBtn.textContent = '+ Thêm';
+      newBtn.onclick = () => addToCart(item.name, item.price);
+    } else {
+      newBtn.className = 'btn-add btn-sold-out';
+      newBtn.textContent = 'Hết hàng';
+      newBtn.disabled = true;
+    }
+    btnArea.appendChild(newBtn);
+  }
+}
+
+// ===== TOAST BÁO CÓ CẬP NHẬT MENU =====
+function showMenuUpdateToast() {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  const original = toast.textContent;
+  toast.textContent = '🔄 Menu vừa được cập nhật!';
+  toast.style.background = '#3498db';
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.textContent = original;
+    toast.style.background = '';
+  }, 3000);
 }
 // =====================
 // MINI MENU TRONG ORDER.HTML
@@ -689,7 +826,7 @@ async function loadMiniMenu() {
   }
 }
 
- function renderMiniMenu(items) {
+   function renderMiniMenu(items) {
   const grid = document.getElementById('mini-menu-grid');
   if (!grid) return;
 
@@ -705,13 +842,16 @@ async function loadMiniMenu() {
            data-cat="${item.category}">
         <span>
           ${item.icon || '🍽️'} ${item.name}
-          ${!isAvailable ? '<small style="color:#e74c3c;font-weight:600;">(Hết hàng)</small>' : ''}
+          ${!isAvailable
+            ? '<small style="color:#e74c3c;font-weight:600;">(Hết hàng)</small>'
+            : ''
+          }
         </span>
         <div class="mini-item-right">
           <span class="price">${formatPrice(item.price)}</span>
           ${isAvailable
             ? `<button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>`
-            : `<button class="btn-add" disabled style="opacity:0.4;cursor:not-allowed;">Hết</button>`
+            : `<button class="btn-add" disabled style="opacity:0.4;cursor:not-allowed;background:#ccc;">Hết</button>`
           }
         </div>
       </div>
