@@ -2,160 +2,126 @@ const requireAuth = require('../middleware/auth');
 const express  = require('express');
 const router   = express.Router();
 const db       = require('../utils/firebase');
-const sendTelegram          = require('../utils/telegram');
+const sendTelegram             = require('../utils/telegram');
 const { sendZaloNotification } = require('../utils/zalo');
 
 const ordersRef = db.collection('orders');
 
-// ===== 1. LẤY TẤT CẢ ĐƠN (Admin) =====
+// 1. Tất cả đơn (Admin)
 router.get('/', async (req, res) => {
   try {
     const snapshot = await ordersRef.orderBy('createdAt', 'desc').get();
-    const orders   = snapshot.docs.map(doc => doc.data());
-    res.json(orders);
+    res.json(snapshot.docs.map(doc => doc.data()));
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Lỗi tải đơn hàng!' });
   }
 });
-// ===== 2. THỐNG KÊ DOANH THU ← PHẢI TRƯỚC /:id =====
+
+// 2. Thống kê ← TRƯỚC /:id
 router.get('/stats', async (req, res) => {
   try {
     const snapshot = await ordersRef.get();
     const orders   = snapshot.docs.map(doc => doc.data());
+    const now      = new Date();
+    const today    = now.toDateString();
 
-    const now   = new Date();
-    const today = now.toDateString();
-
-    // 7 ngày gần nhất
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
       const d       = new Date(now);
       d.setDate(d.getDate() - i);
       const dateStr = d.toDateString();
-      const label   = i === 0 ? 'Hôm nay'
-                    : i === 1 ? 'Hôm qua'
-                    : `${d.getDate()}/${d.getMonth() + 1}`;
-
-      const dayOrders = orders.filter(o =>
-        o.status === 'done' &&
-        new Date(o.createdAt).toDateString() === dateStr
-      );
-      last7Days.push({
-        label,
-        revenue: dayOrders.reduce((sum, o) => sum + o.total, 0),
-        count:   dayOrders.length
-      });
+      const label   = i === 0 ? 'Hôm nay' : i === 1 ? 'Hôm qua' : `${d.getDate()}/${d.getMonth()+1}`;
+      const dayOrders = orders.filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === dateStr);
+      last7Days.push({ label, revenue: dayOrders.reduce((s,o) => s+o.total,0), count: dayOrders.length });
     }
 
-    // Hôm nay
     const todayOrders  = orders.filter(o => new Date(o.createdAt).toDateString() === today);
     const todayDone    = todayOrders.filter(o => o.status === 'done');
-    const todayRevenue = todayDone.reduce((sum, o) => sum + o.total, 0);
-
-    // Tổng tất cả
-    const totalRevenue = orders
-      .filter(o => o.status === 'done')
-      .reduce((sum, o) => sum + o.total, 0);
-
-    // Món bán chạy nhất
-    const itemCount = {};
+    const itemCount    = {};
     orders.filter(o => o.status === 'done').forEach(o => {
-      o.items.forEach(item => {
-        itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
-      });
+      o.items.forEach(item => { itemCount[item.name] = (itemCount[item.name]||0) + item.quantity; });
     });
-    const topItems = Object.entries(itemCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
-
-    // Tỷ lệ trạng thái
-    const statusCount = {
-      new:       orders.filter(o => o.status === 'new').length,
-      confirmed: orders.filter(o => o.status === 'confirmed').length,
-      done:      orders.filter(o => o.status === 'done').length,
-      cancelled: orders.filter(o => o.status === 'cancelled').length,
-    };
 
     res.json({
       last7Days,
       today: {
-        revenue:   todayRevenue,
+        revenue:   todayDone.reduce((s,o) => s+o.total, 0),
         orders:    todayOrders.length,
         done:      todayDone.length,
-        newOrders: todayOrders.filter(o => o.status === 'new').length
+        newOrders: todayOrders.filter(o => o.status==='new').length
       },
-      total: { revenue: totalRevenue, orders: orders.length },
-      topItems,
-      statusCount
+      total: {
+        revenue: orders.filter(o=>o.status==='done').reduce((s,o)=>s+o.total,0),
+        orders:  orders.length
+      },
+      topItems: Object.entries(itemCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,count])=>({name,count})),
+      statusCount: {
+        new:       orders.filter(o=>o.status==='new').length,
+        confirmed: orders.filter(o=>o.status==='confirmed').length,
+        done:      orders.filter(o=>o.status==='done').length,
+        cancelled: orders.filter(o=>o.status==='cancelled').length,
+      }
     });
-
   } catch (err) {
-    console.error('Lỗi thống kê:', err);
-    res.status(500).json({ error: 'Lỗi lấy thống kê!' });
+    res.status(500).json({ error: 'Lỗi thống kê!' });
   }
 });
 
-// ===== 3. LẤY ĐƠN THEO SĐT ← PHẢI TRƯỚC /:id =====
+// 3. Theo SĐT ← TRƯỚC /:id — ĐÃ SỬA bỏ orderBy
 router.get('/phone/:phone', async (req, res) => {
   try {
     const snapshot = await ordersRef
       .where('customer.phone', '==', req.params.phone)
-      .orderBy('createdAt', 'desc')
       .get();
-    const orders = snapshot.docs.map(doc => doc.data());
+    const orders = snapshot.docs
+      .map(doc => doc.data())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(orders);
   } catch (err) {
-    console.error(err);
+    console.error('❌ Lỗi /phone:', err.message);
     res.status(500).json({ error: 'Lỗi tải lịch sử đơn!' });
   }
 });
-// ===== LẤY ĐƠN THEO TÀI KHOẢN ĐĂNG NHẬP =====
+
+// 4. Theo token ← TRƯỚC /:id — ĐÃ SỬA bỏ orderBy
 router.get('/my-orders', requireAuth, async (req, res) => {
   try {
     const snapshot = await ordersRef
       .where('userId', '==', req.user.phone)
-      .orderBy('createdAt', 'desc')
       .get();
-    const orders = snapshot.docs.map(doc => doc.data());
+    const orders = snapshot.docs
+      .map(doc => doc.data())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    console.log(`✅ /my-orders: ${orders.length} đơn cho ${req.user.phone}`);
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ error: 'Lỗi tải lịch sử đơn!' });
+    console.error('❌ Lỗi /my-orders:', err.message);
+    res.status(500).json({ error: 'Lỗi tải lịch sử!' });
   }
 });
 
-// ===== 4. LẤY 1 ĐƠN THEO ID ← SAU CÙNG =====
+// 5. Theo ID ← SAU CÙNG
 router.get('/:id', async (req, res) => {
   try {
     const doc = await ordersRef.doc(req.params.id).get();
-    if (!doc.exists) {
-      return res.status(404).json({ error: 'Không tìm thấy đơn hàng!' });
-    }
+    if (!doc.exists) return res.status(404).json({ error: 'Không tìm thấy đơn!' });
     res.json(doc.data());
   } catch (err) {
-    console.error('Lỗi lấy đơn:', err);
     res.status(500).json({ error: 'Lỗi server!' });
   }
 });
 
-// ===== TẠO ĐƠN MỚI (BẮT BUỘC ĐĂNG NHẬP) =====
+// 6. Tạo đơn mới
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { customer, items, total, payment } = req.body;
+    if (!customer?.name || !customer?.phone) return res.status(400).json({ error: 'Thiếu thông tin!' });
+    if (!items || items.length === 0) return res.status(400).json({ error: 'Giỏ hàng trống!' });
 
-    if (!customer?.name || !customer?.phone) {
-      return res.status(400).json({ error: 'Thiếu thông tin khách hàng!' });
-    }
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: 'Giỏ hàng trống!' });
-    }
-
-    const orderId = 'DH' + Date.now().toString().slice(-5);
-
+    const orderId  = 'DH' + Date.now().toString().slice(-5);
     const newOrder = {
-      id: orderId,
-      userId: req.user.phone,  // ← gắn chặt với tài khoản đăng nhập
+      id:        orderId,
+      userId:    req.user.phone,
       customer,
       items,
       total,
@@ -165,45 +131,26 @@ router.post('/', requireAuth, async (req, res) => {
     };
 
     await ordersRef.doc(orderId).set(newOrder);
-
-    Promise.allSettled([
-      sendZaloNotification(newOrder),
-      sendTelegram(newOrder)
-    ]).catch(() => {});
-
+    Promise.allSettled([sendZaloNotification(newOrder), sendTelegram(newOrder)]).catch(()=>{});
     res.status(201).json({ message: 'Đặt món thành công!', orderId });
-
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Lỗi tạo đơn hàng!' });
+    res.status(500).json({ error: 'Lỗi tạo đơn!' });
   }
 });
 
-// ===== 6. CẬP NHẬT TRẠNG THÁI (Admin) =====
+// 7. Cập nhật trạng thái (Admin)
 router.patch('/:id', async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatus = ['new', 'confirmed', 'done', 'cancelled'];
-
-    if (!validStatus.includes(status)) {
+    if (!['new','confirmed','done','cancelled'].includes(status)) {
       return res.status(400).json({ error: 'Trạng thái không hợp lệ!' });
     }
-
     const docRef = ordersRef.doc(req.params.id);
-    const doc    = await docRef.get();
-
-    if (!doc.exists) {
-      return res.status(404).json({ error: 'Không tìm thấy đơn hàng!' });
-    }
-
+    if (!(await docRef.get()).exists) return res.status(404).json({ error: 'Không tìm thấy đơn!' });
     await docRef.update({ status });
-    const updated = await docRef.get();
-
-    res.json({ message: 'Cập nhật thành công!', order: updated.data() });
-
+    res.json({ message: 'Cập nhật thành công!' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Lỗi cập nhật đơn hàng!' });
+    res.status(500).json({ error: 'Lỗi cập nhật!' });
   }
 });
 
