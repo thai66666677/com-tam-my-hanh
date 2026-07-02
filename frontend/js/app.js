@@ -905,30 +905,65 @@ async function renderHistory() {
   const historyLoginRequired = document.getElementById('history-login-required');
   if (!historyList) return;
 
-  const user = JSON.parse(localStorage.getItem('currentUser'));
-  if (!user) {
+  const user  = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  const token = localStorage.getItem('authToken');
+
+  if (!user || !token) {
     if (historyLoginRequired) historyLoginRequired.style.display = 'block';
     return;
   }
 
-  try {
-     const token = localStorage.getItem('authToken');
-     const res = await fetch(`${API_URL}/orders/my-orders`, {
-     headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const myOrders = await res.json();
+  // Hiện loading
+  historyList.innerHTML = '<p style="text-align:center;color:#999;padding:20px">⏳ Đang tải lịch sử...</p>';
 
-    if (!myOrders || myOrders.length === 0) {
-      if (historyEmpty) historyEmpty.style.display = 'block';
+  try {
+    // Thử route mới (gắn với token)
+    let orders = null;
+
+    const res1 = await fetch(`${API_URL}/orders/my-orders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (res1.status === 401) {
+      // Token hết hạn → đăng xuất
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('authToken');
+      historyList.innerHTML = '';
+      if (historyLoginRequired) historyLoginRequired.style.display = 'block';
+      return;
+    }
+
+    if (res1.ok) {
+      orders = await res1.json();
+      console.log('✅ Lịch sử từ /my-orders:', orders?.length, 'đơn');
+    } else {
+      // Fallback: tìm theo SĐT (cho đơn cũ trước khi có auth)
+      console.log('⚠️ /my-orders thất bại, fallback về /phone/:phone');
+      const res2 = await fetch(`${API_URL}/orders/phone/${user.phone}`);
+      if (res2.ok) {
+        orders = await res2.json();
+        console.log('✅ Lịch sử từ /phone:', orders?.length, 'đơn');
+      }
+    }
+
+    if (!orders || orders.length === 0) {
+      historyList.innerHTML = '';
+      if (historyEmpty) {
+        historyEmpty.style.display = 'block';
+        const p = historyEmpty.querySelector('p');
+        if (p) p.textContent = '📭 Bạn chưa có đơn hàng nào';
+      }
       return;
     }
 
     const statusLabel = {
-      new: '🆕 Đơn mới', confirmed: '✅ Đã xác nhận',
-      done: '🎉 Hoàn thành', cancelled: '❌ Đã hủy'
+      new:       '🆕 Đơn mới',
+      confirmed: '✅ Đã xác nhận',
+      done:      '🎉 Hoàn thành',
+      cancelled: '❌ Đã hủy'
     };
 
-    historyList.innerHTML = myOrders.map(order => `
+    historyList.innerHTML = orders.map(order => `
       <div class="history-card">
         <div class="history-header">
           <span class="order-id">Mã đơn: <strong>${order.id}</strong></span>
@@ -937,12 +972,12 @@ async function renderHistory() {
           </span>
         </div>
         <div class="history-items">
-          ${order.items.map(item =>
-            `<div class="history-item">
+          ${order.items.map(item => `
+            <div class="history-item">
               <span>${item.name} x${item.quantity}</span>
               <span>${formatPrice(item.price * item.quantity)}</span>
-            </div>`
-          ).join('')}
+            </div>
+          `).join('')}
         </div>
         <div class="history-footer">
           <span>📅 ${new Date(order.createdAt).toLocaleString('vi-VN')}</span>
@@ -952,15 +987,15 @@ async function renderHistory() {
     `).join('');
 
   } catch (err) {
-    console.error('Lỗi tải lịch sử:', err);
+    console.error('❌ Lỗi tải lịch sử:', err);
+    historyList.innerHTML = '';
     if (historyEmpty) {
       historyEmpty.style.display = 'block';
       const p = historyEmpty.querySelector('p');
-      if (p) p.textContent = '⚠️ Không kết nối được server';
+      if (p) p.textContent = '⚠️ Không kết nối được server. Thử lại sau!';
     }
   }
 }
-
 
 // =====================
 // ĐÁNH GIÁ SAU ĐẶT MÓN
