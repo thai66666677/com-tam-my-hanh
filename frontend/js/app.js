@@ -610,30 +610,47 @@ async function loadMenu() {
       return;
     }
 
-    grid.innerHTML = items.map(item => `
-      <div class="menu-card" data-category="${item.category}">
-        <div class="menu-img-wrap">
-         <img src="${item.imageUrl || `images/${item.id}.jpg`}"
-            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
-            alt="${item.name}" class="menu-img-real"> 
-          ${item.badge ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
-        </div>
-        <div class="menu-info">
-          <h3>${item.name}</h3>
-          <p>${item.desc || ''}</p>
-          ${item.soldCount > 0
-            ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>`
-            : ''}
-          <div class="menu-footer">
-            <div class="price-wrap">
-              <span class="price">${formatPrice(item.price)}</span>
-              ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
-            </div>
-            <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
+       grid.innerHTML = items.map(item => {
+  const isAvailable = item.available !== false; // mặc định true nếu chưa có field
+
+  return `
+    <div class="menu-card ${!isAvailable ? 'menu-card-sold-out' : ''}"
+         data-category="${item.category}">
+      <div class="menu-img-wrap">
+        <img src="${item.imageUrl || `images/${item.id}.jpg`}"
+             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
+             alt="${item.name}" class="menu-img-real">
+
+        ${item.badge && isAvailable
+          ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>`
+          : ''
+        }
+        ${!isAvailable
+          ? `<span class="badge badge-sold-out">😢 Hết hàng</span>`
+          : ''
+        }
+      </div>
+      <div class="menu-info">
+        <h3>${item.name}</h3>
+        <p>${item.desc || ''}</p>
+        ${item.soldCount > 0 && isAvailable
+          ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>`
+          : ''
+        }
+        <div class="menu-footer">
+          <div class="price-wrap">
+            <span class="price">${formatPrice(item.price)}</span>
+            ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
           </div>
+          ${isAvailable
+            ? `<button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>`
+            : `<button class="btn-add btn-sold-out" disabled>Hết hàng</button>`
+          }
         </div>
       </div>
-    `).join('');
+    </div>
+  `;
+}).join('');
 
     applyMenuFilters();
 
@@ -672,7 +689,7 @@ async function loadMiniMenu() {
   }
 }
 
-function renderMiniMenu(items) {
+ function renderMiniMenu(items) {
   const grid = document.getElementById('mini-menu-grid');
   if (!grid) return;
 
@@ -681,15 +698,25 @@ function renderMiniMenu(items) {
     return;
   }
 
-  grid.innerHTML = items.map(item => `
-    <div class="mini-item" data-cat="${item.category}">
-      <span>${item.icon || '🍽️'} ${item.name}</span>
-      <div class="mini-item-right">
-        <span class="price">${formatPrice(item.price)}</span>
-        <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>
+  grid.innerHTML = items.map(item => {
+    const isAvailable = item.available !== false;
+    return `
+      <div class="mini-item ${!isAvailable ? 'mini-item-sold-out' : ''}"
+           data-cat="${item.category}">
+        <span>
+          ${item.icon || '🍽️'} ${item.name}
+          ${!isAvailable ? '<small style="color:#e74c3c;font-weight:600;">(Hết hàng)</small>' : ''}
+        </span>
+        <div class="mini-item-right">
+          <span class="price">${formatPrice(item.price)}</span>
+          ${isAvailable
+            ? `<button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>`
+            : `<button class="btn-add" disabled style="opacity:0.4;cursor:not-allowed;">Hết</button>`
+          }
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // Bộ lọc mini menu
