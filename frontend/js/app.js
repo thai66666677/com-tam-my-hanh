@@ -728,7 +728,7 @@ function startMenuPolling() {
       // Bỏ qua lỗi poll (không làm phiền người dùng)
     }
 
-  }, 30000); // Poll mỗi 30 giây
+  }, 5000); // Poll mỗi 30 giây
 }
 
 // ===== CẬP NHẬT 1 CARD CỤ THỂ (không reload toàn trang) =====
