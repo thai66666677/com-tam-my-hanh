@@ -10,7 +10,27 @@ const app = express();
 // =====================
 // 1. SECURITY HEADERS
 // =====================
-app.use(helmet());
+  app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:     ["'self'", "https://fonts.gstatic.com"],
+      imgSrc:      ["'self'", "data:", "https:", "blob:"],
+      connectSrc:  ["'self'", "https://com-tam-my-hanh.onrender.com"],
+    }
+  },
+  permissionsPolicy: {
+    features: {
+      camera:         [],  // Không dùng camera
+      microphone:     [],  // Không dùng mic
+      geolocation:    [],  // Không dùng GPS
+      payment:        [],  // Không dùng Payment API
+      usb:            [],  // Không dùng USB
+    }
+  }
+}));
 
 // =====================
 // 2. LOGGING
