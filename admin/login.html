@@ -43,23 +43,44 @@
       window.location.href = 'dashboard.html';
     }
 
-    function handleAdminLogin() {
-      const user = document.getElementById('admin-user').value.trim();
-      const pass = document.getElementById('admin-pass').value;
+      async function handleAdminLogin() {
+  const username = document.getElementById('admin-username')?.value.trim();
+  const password = document.getElementById('admin-password')?.value;
+  const msgEl    = document.getElementById('login-msg');
 
-      // Tài khoản mặc định (sau này thay bằng Firebase Auth)
-      const ADMIN_USER = 'admin';
-      const ADMIN_PASS = 'myhanh2024';
+  if (!username || !password) {
+    if (msgEl) { msgEl.textContent = 'Vui lòng nhập đủ thông tin!'; msgEl.style.color = '#e74c3c'; }
+    return;
+  }
 
-      if (user === ADMIN_USER && pass === ADMIN_PASS) {
-        localStorage.setItem('adminLoggedIn', 'true');
-        window.location.href = 'dashboard.html';
-      } else {
-        const msg = document.getElementById('admin-msg');
-        msg.textContent = '❌ Sai tên đăng nhập hoặc mật khẩu!';
-        msg.className = 'account-msg error';
-      }
+  const btn = document.querySelector('.btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; }
+
+  try {
+    const res  = await fetch(`${API_URL}/auth/admin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (msgEl) { msgEl.textContent = data.error || 'Sai tài khoản hoặc mật khẩu!'; msgEl.style.color = '#e74c3c'; }
+      return;
     }
+
+    // Lưu cả 2: flag cũ (tương thích) + token mới (bảo mật)
+    localStorage.setItem('adminLoggedIn', 'true');
+    localStorage.setItem('adminToken', data.token); // ← QUAN TRỌNG!
+
+    window.location.href = 'dashboard.html';
+
+  } catch (err) {
+    if (msgEl) { msgEl.textContent = 'Không kết nối được server!'; msgEl.style.color = '#e74c3c'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 Đăng Nhập'; }
+  }
+}
   </script>
 </body>
 </html>
