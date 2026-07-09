@@ -6,7 +6,7 @@
   <title>Đăng Nhập Quản Trị - Cơm Tấm Mỹ Hạnh</title>
   <link rel="stylesheet" href="../frontend/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-   <script src="../frontend/js/config.js"></script>  ← THÊM DÒNG NÀY
+  <script src="../frontend/js/config.js"></script>
 </head>
 <body class="admin-body">
 
@@ -19,68 +19,85 @@
 
       <div class="form-group">
         <label>Tên đăng nhập</label>
-        <input type="text" id="admin-user" placeholder="admin">
+        <input type="text" id="admin-username" placeholder="admin"
+          onkeydown="if(event.key==='Enter') handleAdminLogin()">
       </div>
 
       <div class="form-group">
         <label>Mật khẩu</label>
-        <input type="password" id="admin-pass" placeholder="••••••••"
+        <input type="password" id="admin-password" placeholder="••••••••"
           onkeydown="if(event.key==='Enter') handleAdminLogin()">
       </div>
 
-      <button class="btn-submit" onclick="handleAdminLogin()">
+      <button class="btn-submit" id="login-btn" onclick="handleAdminLogin()">
         🔐 Đăng Nhập
       </button>
 
-      <div class="account-msg" id="admin-msg"></div>
+      <div class="account-msg" id="login-msg"></div>
 
     </div>
   </div>
 
   <script>
-    // Kiểm tra đã đăng nhập chưa → chuyển thẳng vào dashboard
-    if (localStorage.getItem('adminLoggedIn') === 'true') {
+    // Đã đăng nhập đủ cả 2 thứ → vào dashboard luôn
+    if (localStorage.getItem('adminLoggedIn') === 'true' &&
+        localStorage.getItem('adminToken')) {
       window.location.href = 'dashboard.html';
     }
 
-      async function handleAdminLogin() {
-  const username = document.getElementById('admin-username')?.value.trim();
-  const password = document.getElementById('admin-password')?.value;
-  const msgEl    = document.getElementById('login-msg');
+    async function handleAdminLogin() {
+      const username = document.getElementById('admin-username').value.trim();
+      const password = document.getElementById('admin-password').value;
+      const msgEl    = document.getElementById('login-msg');
+      const btn      = document.getElementById('login-btn');
 
-  if (!username || !password) {
-    if (msgEl) { msgEl.textContent = 'Vui lòng nhập đủ thông tin!'; msgEl.style.color = '#e74c3c'; }
-    return;
-  }
+      // Reset thông báo
+      msgEl.textContent = '';
+      msgEl.className   = 'account-msg';
 
-  const btn = document.querySelector('.btn-submit');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; }
+      if (!username || !password) {
+        msgEl.textContent = '⚠️ Vui lòng nhập đủ tên và mật khẩu!';
+        msgEl.className   = 'account-msg error';
+        return;
+      }
 
-  try {
-    const res  = await fetch(`${API_URL}/auth/admin-login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
+      btn.disabled    = true;
+      btn.textContent = '⏳ Đang đăng nhập...';
 
-    if (!res.ok) {
-      if (msgEl) { msgEl.textContent = data.error || 'Sai tài khoản hoặc mật khẩu!'; msgEl.style.color = '#e74c3c'; }
-      return;
+      try {
+        const res  = await fetch(`${API_URL}/auth/admin-login`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          msgEl.textContent = data.error || 'Sai tài khoản hoặc mật khẩu!';
+          msgEl.className   = 'account-msg error';
+          return;
+        }
+
+        // Lưu cả flag lẫn token
+        localStorage.setItem('adminLoggedIn', 'true');
+        localStorage.setItem('adminToken',    data.token);
+
+        msgEl.textContent = '✅ Đăng nhập thành công!';
+        msgEl.className   = 'account-msg success';
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 500);
+
+      } catch (err) {
+        console.error('Lỗi đăng nhập admin:', err);
+        msgEl.textContent = '⚠️ Không kết nối được server!';
+        msgEl.className   = 'account-msg error';
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = '🔐 Đăng Nhập';
+      }
     }
-
-    // Lưu cả 2: flag cũ (tương thích) + token mới (bảo mật)
-    localStorage.setItem('adminLoggedIn', 'true');
-    localStorage.setItem('adminToken', data.token); // ← QUAN TRỌNG!
-
-    window.location.href = 'dashboard.html';
-
-  } catch (err) {
-    if (msgEl) { msgEl.textContent = 'Không kết nối được server!'; msgEl.style.color = '#e74c3c'; }
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🔐 Đăng Nhập'; }
-  }
-}
   </script>
 </body>
 </html>

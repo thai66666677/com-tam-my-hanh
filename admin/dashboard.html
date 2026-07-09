@@ -7,11 +7,9 @@
   <link rel="stylesheet" href="../frontend/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="../frontend/js/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="admin-body">
 
-  <!-- ADMIN HEADER -->
   <header class="admin-header">
     <div class="admin-header-inner">
       <div class="admin-header-left">
@@ -20,7 +18,7 @@
       </div>
       <nav class="admin-nav">
         <a href="dashboard.html" class="active">📋 Đơn hàng</a>
-        <a href="stats.html">📊 Thống kê</a>          <!-- THÊM -->
+        <a href="stats.html">📊 Thống kê</a>
         <a href="menu-manager.html">🍽️ Quản lý món</a>
         <button id="btn-enable-sound" onclick="enableSound()">🔇 Bật âm thanh</button>
         <button onclick="adminLogout()">🚪 Đăng xuất</button>
@@ -30,7 +28,6 @@
 
   <div class="admin-main">
 
-    <!-- THỐNG KÊ NHANH -->
     <div class="stats-grid">
       <div class="stat-card">
         <span class="stat-icon">🆕</span>
@@ -62,7 +59,6 @@
       </div>
     </div>
 
-    <!-- BỘ LỌC TRẠNG THÁI -->
     <div class="admin-filter">
       <button class="filter-btn active" data-status="all">Tất cả</button>
       <button class="filter-btn" data-status="new">🆕 Đơn mới</button>
@@ -71,7 +67,6 @@
       <button class="filter-btn" data-status="cancelled">❌ Đã hủy</button>
     </div>
 
-    <!-- DANH SÁCH ĐƠN HÀNG -->
     <div id="orders-container">
       <div class="empty-cart"><p>⏳ Đang tải đơn hàng...</p></div>
     </div>
@@ -79,23 +74,43 @@
   </div>
 
   <script>
-    // Bảo vệ trang admin
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+    // ===== BẢO VỆ TRANG =====
+    // Kiểm tra cả adminLoggedIn lẫn adminToken
+    const _loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    const _token    = localStorage.getItem('adminToken');
+
+    if (!_loggedIn || !_token) {
+      // Xóa hết dữ liệu cũ rồi về login
+      localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('adminToken');
       window.location.href = 'login.html';
     }
 
+    // ===== LOGOUT =====
     function adminLogout() {
       localStorage.removeItem('adminLoggedIn');
-      localStorage.removeItem('adminToken'); // ← THÊM DÒNG NÀY
+      localStorage.removeItem('adminToken');
       window.location.href = 'login.html';
     }
 
-    // Format tiền
+    // ===== LẤY HEADERS ADMIN =====
+    function getAdminHeaders() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        adminLogout();
+        return null;
+      }
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
+    // ===== FORMAT TIỀN =====
     function formatPrice(price) {
       return price.toLocaleString('vi-VN') + 'đ';
     }
 
-    // Nhãn trạng thái
     const statusLabel = {
       new:       '🆕 Đơn mới',
       confirmed: '✅ Đã xác nhận',
@@ -103,98 +118,75 @@
       cancelled: '❌ Đã hủy'
     };
 
-    let currentFilter = 'all';
+    let currentFilter    = 'all';
+    let soundEnabled     = false;
+    let previousNewCount = -1;
 
-    // ===== ÂM THANH BÁO ĐƠN MỚI =====
-    let soundEnabled    = false;
-    let previousNewCount = -1; // -1 = lần đầu tải, chưa so sánh
-
+    // ===== ÂM THANH =====
     function enableSound() {
       soundEnabled = true;
       const btn = document.getElementById('btn-enable-sound');
       btn.textContent = '🔊 Đã bật âm thanh';
-      btn.disabled = true;
-      // Phát thử 1 lần để "mở khóa" autoplay trên trình duyệt
-      const audio = new Audio('sounds/notification.mp3');
-      audio.volume = 0.3;
-      audio.play().catch(() => {});
+      btn.disabled    = true;
     }
 
     function playNotificationSound() {
-  if (!soundEnabled) return;
-  try {
-    const ctx        = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode   = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    // Tiếng "ting" dễ nghe
-    oscillator.type      = 'sine';
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime);          // nốt A5
-    oscillator.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);  // lên cao
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.2);   // xuống
-
-    gainNode.gain.setValueAtTime(0.8, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.6);
-  } catch (err) {
-    console.log('Không phát được âm thanh:', err.message);
-  }
-}
-
-    // ===== HÀM TẢI ĐƠN HÀNG TỪ BACKEND (API) =====
-       // ===== HÀM LẤY TOKEN ADMIN (dùng chung cho mọi fetch) =====
-function getAdminHeaders() {
-  const token = localStorage.getItem('adminToken');
-  if (!token) {
-    adminLogout(); // Chưa có token → về trang login
-    return null;
-  }
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-}
-
-// ===== HÀM TẢI ĐƠN HÀNG =====
-async function loadOrders() {
-  let orders = [];
-
-  const headers = getAdminHeaders();
-  if (!headers) return; // Không có token → đã redirect rồi
-
-  try {
-    const res = await fetch(`${API_URL}/orders`, { headers });
-
-    // Token hết hạn hoặc không có quyền
-    if (res.status === 401 || res.status === 403) {
-      alert('⚠️ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
-      adminLogout();
-      return;
+      if (!soundEnabled) return;
+      try {
+        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880,  ctx.currentTime);
+        osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(880,  ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.8, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.6);
+      } catch (err) {
+        console.log('Không phát được âm thanh:', err.message);
+      }
     }
 
-    if (!res.ok) throw new Error('Response not OK: ' + res.status);
-    orders = await res.json();
+    // ===== TẢI ĐƠN HÀNG =====
+    async function loadOrders() {
+      const headers = getAdminHeaders();
+      if (!headers) return;
 
-  } catch (err) {
-    console.error('Lỗi tải đơn hàng:', err);
-    document.getElementById('orders-container').innerHTML = `
-      <div class="empty-cart">
-        <p>⚠️ Không kết nối được server</p>
-        <p style="color:#aaa;font-size:0.85rem;">${err.message}</p>
-      </div>
-    `;
-    return;
-  }
+      try {
+        const res = await fetch(`${API_URL}/orders`, { headers });
 
-      const today = new Date().toDateString();
+        if (res.status === 401 || res.status === 403) {
+          alert('⚠️ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
+          adminLogout();
+          return;
+        }
+
+        if (!res.ok) throw new Error('Lỗi ' + res.status);
+
+        const orders = await res.json();
+        renderOrders(orders);
+
+      } catch (err) {
+        console.error('Lỗi tải đơn hàng:', err);
+        document.getElementById('orders-container').innerHTML = `
+          <div class="empty-cart">
+            <p>⚠️ Không kết nối được server</p>
+            <p style="color:#aaa;font-size:0.85rem;">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // ===== RENDER DANH SÁCH ĐƠN =====
+    function renderOrders(orders) {
+      const today    = new Date().toDateString();
       const newCount = orders.filter(o => o.status === 'new').length;
 
-      // ===== PHÁT ÂM THANH NẾU CÓ ĐƠN MỚI VỪA XUẤT HIỆN =====
+      // Âm thanh khi có đơn mới
       if (previousNewCount !== -1 && newCount > previousNewCount) {
         playNotificationSound();
         showAdminToast(`🔔 Có ${newCount - previousNewCount} đơn mới!`);
@@ -202,18 +194,20 @@ async function loadOrders() {
       previousNewCount = newCount;
 
       // Thống kê
-      document.getElementById('stat-new').textContent = newCount;
+      document.getElementById('stat-new').textContent =
+        newCount;
       document.getElementById('stat-confirmed').textContent =
         orders.filter(o => o.status === 'confirmed').length;
       document.getElementById('stat-done').textContent =
         orders.filter(o => o.status === 'done').length;
+      document.getElementById('stat-revenue').textContent =
+        formatPrice(
+          orders
+            .filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === today)
+            .reduce((sum, o) => sum + o.total, 0)
+        );
 
-      const todayRevenue = orders
-        .filter(o => o.status === 'done' && new Date(o.createdAt).toDateString() === today)
-        .reduce((sum, o) => sum + o.total, 0);
-      document.getElementById('stat-revenue').textContent = formatPrice(todayRevenue);
-
-      // Lọc theo trạng thái
+      // Lọc
       const filtered = currentFilter === 'all'
         ? orders
         : orders.filter(o => o.status === currentFilter);
@@ -222,9 +216,7 @@ async function loadOrders() {
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="empty-cart">
-            <p>📭 Chưa có đơn hàng nào</p>
-          </div>
+          <div class="empty-cart"><p>📭 Chưa có đơn hàng nào</p></div>
         `;
         return;
       }
@@ -248,13 +240,10 @@ async function loadOrders() {
             <div class="customer-info">
               <p>👤 <strong>${order.customer.name}</strong></p>
               <p>📞 <a href="tel:${order.customer.phone}">${order.customer.phone}</a></p>
-              <p>📍 ${order.customer.address || 'Không có địa chỉ'}</p>
-              ${order.customer.note
-                ? `<p>📝 <em>${order.customer.note}</em></p>`
-                : ''}
+              <p>📍 ${order.customer.address || 'Đến lấy tại quán'}</p>
+              ${order.customer.note ? `<p>📝 <em>${order.customer.note}</em></p>` : ''}
               <p>💳 ${order.payment === 'cod' ? 'Tiền mặt' : 'Chuyển khoản QR'}</p>
             </div>
-
             <div class="order-items-list">
               ${order.items.map(item => `
                 <div class="admin-item-row">
@@ -271,24 +260,12 @@ async function loadOrders() {
 
           <div class="admin-order-actions">
             ${order.status === 'new' ? `
-              <button class="action-btn confirm"
-                onclick="updateStatus('${order.id}', 'confirmed')">
-                ✅ Xác nhận
-              </button>
-              <button class="action-btn cancel"
-                onclick="updateStatus('${order.id}', 'cancelled')">
-                ❌ Hủy đơn
-              </button>
+              <button class="action-btn confirm" onclick="updateStatus('${order.id}', 'confirmed')">✅ Xác nhận</button>
+              <button class="action-btn cancel"  onclick="updateStatus('${order.id}', 'cancelled')">❌ Hủy đơn</button>
             ` : ''}
             ${order.status === 'confirmed' ? `
-              <button class="action-btn done"
-                onclick="updateStatus('${order.id}', 'done')">
-                🎉 Hoàn thành
-              </button>
-              <button class="action-btn cancel"
-                onclick="updateStatus('${order.id}', 'cancelled')">
-                ❌ Hủy đơn
-              </button>
+              <button class="action-btn done"   onclick="updateStatus('${order.id}', 'done')">🎉 Hoàn thành</button>
+              <button class="action-btn cancel" onclick="updateStatus('${order.id}', 'cancelled')">❌ Hủy đơn</button>
             ` : ''}
             ${order.status === 'done' || order.status === 'cancelled' ? `
               <span class="action-done">Đơn đã kết thúc</span>
@@ -299,49 +276,50 @@ async function loadOrders() {
       `).join('');
     }
 
-    // ===== CẬP NHẬT TRẠNG THÁI ĐƠN QUA API =====
+    // ===== CẬP NHẬT TRẠNG THÁI =====
     async function updateStatus(orderId, newStatus) {
-  const headers = getAdminHeaders();
-  if (!headers) return;
+      const headers = getAdminHeaders();
+      if (!headers) return;
 
-  try {
-    const res = await fetch(`${API_URL}/orders/${orderId}`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ status: newStatus })
-    });
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderId}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ status: newStatus })
+        });
 
-    if (res.status === 401 || res.status === 403) {
-      alert('⚠️ Phiên đăng nhập hết hạn!');
-      adminLogout();
-      return;
+        if (res.status === 401 || res.status === 403) {
+          alert('⚠️ Phiên đăng nhập hết hạn!');
+          adminLogout();
+          return;
+        }
+
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Cập nhật thất bại!');
+          return;
+        }
+
+        const statusMsg = {
+          confirmed: `✅ Đã xác nhận đơn ${orderId}`,
+          done:      `🎉 Đơn ${orderId} hoàn thành!`,
+          cancelled: `❌ Đã hủy đơn ${orderId}`
+        };
+        showAdminToast(statusMsg[newStatus]);
+        loadOrders();
+
+      } catch (err) {
+        console.error('Lỗi cập nhật:', err);
+        alert('Không kết nối được server!');
+      }
     }
 
-    if (!res.ok) {
-      const data = await res.json();
-      alert(data.error || 'Cập nhật thất bại!');
-      return;
-    }
-
-    const statusMsg = {
-      confirmed: '✅ Đã xác nhận đơn ' + orderId,
-      done:      '🎉 Đơn ' + orderId + ' hoàn thành!',
-      cancelled: '❌ Đã hủy đơn ' + orderId
-    };
-    showAdminToast(statusMsg[newStatus]);
-    loadOrders();
-
-  } catch (err) {
-    console.error('Lỗi cập nhật:', err);
-    alert('Không kết nối được server!');
-  }
-}
-    // Hàm hiện toast cho admin
+    // ===== TOAST =====
     function showAdminToast(message) {
       let toast = document.getElementById('admin-toast');
       if (!toast) {
         toast = document.createElement('div');
-        toast.id = 'admin-toast';
+        toast.id        = 'admin-toast';
         toast.className = 'admin-toast';
         document.body.appendChild(toast);
       }
@@ -350,7 +328,7 @@ async function loadOrders() {
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // Bộ lọc
+    // ===== BỘ LỌC =====
     document.querySelectorAll('.admin-filter .filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.admin-filter .filter-btn')
@@ -361,7 +339,7 @@ async function loadOrders() {
       });
     });
 
-    // Tải lần đầu + auto reload mỗi 15 giây (realtime đơn mới)
+    // ===== KHỞI ĐỘNG =====
     loadOrders();
     setInterval(loadOrders, 15000);
   </script>
