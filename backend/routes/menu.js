@@ -99,6 +99,7 @@ router.post('/', async (req, res) => {
       desc:      desc      || '',
       badge:     badge     || '',
       imageUrl:  imageUrl  || null,
+      images:    images   || [],            // ← THÊM: mảng nhiều ảnh
       oldPrice:  oldPrice  ? parseInt(oldPrice) : null,
       soldCount: soldCount ? parseInt(soldCount) : 0,
       available: true,
@@ -124,6 +125,7 @@ router.put('/:id', async (req, res) => {
     const updated = {
       ...doc.data(),
       ...req.body,
+      images: req.body.images || doc.data().images || [], // ← THÊM
       id: req.params.id
     };
     await docRef.set(updated);

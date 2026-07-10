@@ -35,7 +35,8 @@
         Chụp ảnh → Upload lên Drive → Chuột phải → "Lấy link" → Đổi thành "Bất kỳ ai có đường link" → Dán vào ô ảnh bên dưới<br>
         <strong>Cách 2 — Imgur (dễ nhất):</strong>
         Vào <a href="https://imgur.com" target="_blank" style="color:#c0392b;font-weight:700;">imgur.com</a>
-        → Kéo thả ảnh vào → Copy link "Direct Link" (.jpg/.png) → Dán vào ô ảnh
+        → Kéo thả ảnh vào → Copy link "Direct Link" (.jpg/.png) → Dán vào ô ảnh<br>
+        <strong>Lưu ý:</strong> Ảnh đầu tiên sẽ là ảnh chính hiển thị trên menu. Có thể thêm tối đa 5 ảnh cho mỗi món.
       </p>
     </div>
 
@@ -95,28 +96,22 @@
           <textarea id="item-desc" placeholder="Sườn nướng mềm, bì trộn thơm..."></textarea>
         </div>
 
-        <!-- FIELD ẢNH MÓN ĂN -->
+        <!-- NHIỀU ẢNH SHOPEE-STYLE -->
         <div class="form-group" style="grid-column: 1/-1;">
-          <label>🖼️ Link ảnh món ăn</label>
-          <input type="text" id="item-image"
-            placeholder="https://i.imgur.com/xxxx.jpg hoặc link Google Drive">
-          <small style="color:#888;font-size:0.8rem;margin-top:4px;display:block;">
-            💡 Xem hướng dẫn ở trên để lấy link ảnh
+          <label>🖼️ Thư viện ảnh (tối đa 5 ảnh — giống Shopee)</label>
+          <small style="color:#888;font-size:0.8rem;display:block;margin-bottom:8px;">
+            Ảnh số 1 = ảnh chính hiển thị trên menu. Các ảnh còn lại hiển thị trong carousel khi khách vuốt.
           </small>
-
-          <!-- Preview ảnh -->
-          <div id="image-preview" style="display:none;margin-top:12px;">
-            <p style="font-size:0.85rem;color:#555;margin-bottom:6px;">Preview:</p>
-            <img id="preview-img" src="" alt="preview"
-                 style="max-width:220px;max-height:160px;border-radius:10px;
-                        border:2px solid #eee;object-fit:cover;display:block;">
-            <p id="preview-error" style="color:#e74c3c;font-size:0.8rem;display:none;margin-top:4px;">
-              ⚠️ Không tải được ảnh. Kiểm tra lại link.
-            </p>
+          <div id="image-slots"></div>
+          <div id="multi-preview" style="display:none;margin-top:12px;">
+            <p style="font-size:0.85rem;color:#555;margin-bottom:8px;">Preview carousel:</p>
+            <div id="preview-carousel"
+                 style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;">
+            </div>
           </div>
         </div>
 
-      </div>
+      </div><!-- end menu-form-grid -->
 
       <div class="form-actions">
         <button class="action-btn confirm" onclick="saveMenuItem()">💾 Lưu món</button>
@@ -129,26 +124,30 @@
     <!-- DANH SÁCH MÓN ĂN -->
     <div class="admin-card">
       <h2>📋 Danh Sách Món Ăn</h2>
-
       <div class="admin-filter">
         <button class="filter-btn active" data-cat="all">Tất cả</button>
         <button class="filter-btn" data-cat="com">🍚 Cơm</button>
         <button class="filter-btn" data-cat="bun-mi">🍜 Bún & Mì</button>
         <button class="filter-btn" data-cat="nuoc">🥤 Nước</button>
       </div>
-
       <div id="menu-list"></div>
     </div>
 
   </div>
 
   <script>
-    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+    // ===== BẢO VỆ TRANG =====
+    const _loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    const _token    = localStorage.getItem('adminToken');
+    if (!_loggedIn || !_token) {
+      localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('adminToken');
       window.location.href = 'login.html';
     }
 
     function adminLogout() {
       localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('adminToken');
       window.location.href = 'login.html';
     }
 
@@ -159,42 +158,75 @@
     let editingId  = null;
     let currentCat = 'all';
     let menuItems  = [];
+    const MAX_IMAGES = 5;
 
-    // ===== CHUYỂN LINK GOOGLE DRIVE SANG LINK ẢNH TRỰC TIẾP =====
+    // ===== CHUYỂN LINK GOOGLE DRIVE =====
     function convertGoogleDriveUrl(url) {
       if (!url) return '';
       const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if (match) {
-        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
-      }
+      if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
       return url;
     }
 
-    // ===== PREVIEW ẢNH KHI NHẬP URL =====
-    const imageInput   = document.getElementById('item-image');
-    const previewBox   = document.getElementById('image-preview');
-    const previewImg   = document.getElementById('preview-img');
-    const previewError = document.getElementById('preview-error');
+    // ===== QUẢN LÝ NHIỀU ẢNH =====
+    function renderImageSlots(values = []) {
+      const container = document.getElementById('image-slots');
+      container.innerHTML = Array.from({ length: MAX_IMAGES }, (_, i) => {
+        const val = values[i] || '';
+        return `
+          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+            <span style="font-size:0.8rem;color:#999;min-width:16px;">${i + 1}</span>
+            <input type="text"
+                   id="img-slot-${i}"
+                   placeholder="${i === 0 ? 'Ảnh chính (bắt buộc)' : `Ảnh phụ ${i}`}"
+                   value="${val}"
+                   style="flex:1;padding:10px;border:2px solid ${i === 0 ? '#c0392b' : '#eee'};
+                          border-radius:8px;font-family:inherit;font-size:0.9rem;"
+                   oninput="updateMultiPreview()">
+            ${val ? `
+              <img src="${convertGoogleDriveUrl(val)}"
+                   style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;"
+                   onerror="this.style.display='none'">
+            ` : '<div style="width:40px;"></div>'}
+          </div>
+        `;
+      }).join('');
+      updateMultiPreview();
+    }
 
-    imageInput.addEventListener('input', () => {
-      const url = convertGoogleDriveUrl(imageInput.value.trim());
-      if (url) {
-        previewBox.style.display = 'block';
-        previewError.style.display = 'none';
-        previewImg.style.display = 'block';
-        previewImg.src = url;
-        previewImg.onerror = () => {
-          previewImg.style.display = 'none';
-          previewError.style.display = 'block';
-        };
-        previewImg.onload = () => {
-          previewImg.style.display = 'block';
-          previewError.style.display = 'none';
-        };
-      } else {
-        previewBox.style.display = 'none';
+    function getImageSlotValues() {
+      return Array.from({ length: MAX_IMAGES }, (_, i) => {
+        const val = document.getElementById(`img-slot-${i}`)?.value.trim();
+        return val ? convertGoogleDriveUrl(val) : '';
+      }).filter(Boolean);
+    }
+
+    function updateMultiPreview() {
+      const images   = getImageSlotValues();
+      const preview  = document.getElementById('multi-preview');
+      const carousel = document.getElementById('preview-carousel');
+
+      if (images.length === 0) {
+        preview.style.display = 'none';
+        return;
       }
-    });
+
+      preview.style.display = 'block';
+      carousel.innerHTML = images.map((url, i) => `
+        <div style="flex-shrink:0;position:relative;">
+          <img src="${url}"
+               style="width:80px;height:80px;border-radius:8px;object-fit:cover;
+                      border:2px solid ${i === 0 ? '#c0392b' : '#eee'};"
+               onerror="this.parentElement.remove()">
+          ${i === 0 ? `
+            <span style="position:absolute;top:4px;left:4px;background:#c0392b;color:white;
+                         font-size:0.6rem;padding:2px 5px;border-radius:4px;font-weight:700;">
+              Chính
+            </span>
+          ` : ''}
+        </div>
+      `).join('');
+    }
 
     // ===== TẢI MENU TỪ API =====
     async function loadMenuItems() {
@@ -207,7 +239,7 @@
       }
     }
 
-    // ===== RENDER DANH SÁCH MÓN (có ảnh + nút Hết hàng) =====
+    // ===== RENDER DANH SÁCH MÓN =====
     function renderMenuList() {
       const filtered = currentCat === 'all'
         ? menuItems
@@ -222,21 +254,29 @@
 
       list.innerHTML = filtered.map(item => {
         const isAvailable = item.available !== false;
+        const thumbUrl    = item.imageUrl
+          ? convertGoogleDriveUrl(item.imageUrl)
+          : (item.images && item.images[0] ? item.images[0] : '');
 
         return `
           <div class="menu-manage-row ${!isAvailable ? 'sold-out-row' : ''}">
 
-            <!-- Ảnh hoặc icon -->
-            ${item.imageUrl
-              ? `<img src="${convertGoogleDriveUrl(item.imageUrl)}"
-                      alt="${item.name}"
-                      style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;${!isAvailable ? 'filter:grayscale(1);opacity:0.5;' : ''}"
+            ${thumbUrl
+              ? `<img src="${thumbUrl}" alt="${item.name}"
+                      style="width:48px;height:48px;border-radius:8px;object-fit:cover;
+                             flex-shrink:0;${!isAvailable ? 'filter:grayscale(1);opacity:0.5;' : ''}"
                       onerror="this.outerHTML='<span class=\\'menu-icon\\'>${item.icon || '🍽️'}</span>'">`
-              : `<span class="menu-icon" style="${!isAvailable ? 'filter:grayscale(1);opacity:0.5;' : ''}">${item.icon || '🍽️'}</span>`
+              : `<span class="menu-icon" style="${!isAvailable ? 'opacity:0.5;' : ''}">${item.icon || '🍽️'}</span>`
             }
 
             <div class="menu-manage-info">
-              <strong>${item.name} ${!isAvailable ? '<span class="sold-out-tag">Hết hàng</span>' : ''}</strong>
+              <strong>
+                ${item.name}
+                ${!isAvailable ? '<span class="sold-out-tag">Hết hàng</span>' : ''}
+                ${item.images && item.images.length > 1
+                  ? `<span style="font-size:0.7rem;color:#3498db;margin-left:6px;">📷 ${item.images.length} ảnh</span>`
+                  : ''}
+              </strong>
               <span>${item.desc || ''}</span>
             </div>
 
@@ -262,19 +302,13 @@
       return { com: '🍚 Cơm', 'bun-mi': '🍜 Bún & Mì', nuoc: '🥤 Nước' }[cat] || cat;
     }
 
-    // ===== BẬT/TẮT TRẠNG THÁI CÒN HÀNG =====
+    // ===== BẬT/TẮT HẾT HÀNG =====
     async function toggleAvailability(id) {
       try {
         const res  = await fetch(`${API_URL}/menu/${id}/toggle`, { method: 'PATCH' });
         const data = await res.json();
-
-        if (!res.ok) {
-          alert(data.error || 'Cập nhật thất bại!');
-          return;
-        }
-
+        if (!res.ok) { alert(data.error || 'Cập nhật thất bại!'); return; }
         await loadMenuItems();
-
       } catch (err) {
         alert('Không kết nối được server!');
       }
@@ -285,18 +319,20 @@
       const name      = document.getElementById('item-name').value.trim();
       const price     = document.getElementById('item-price').value;
       const category  = document.getElementById('item-category').value;
-      const icon      = document.getElementById('item-icon').value.trim()      || '🍽️';
+      const icon      = document.getElementById('item-icon').value.trim() || '🍽️';
       const desc      = document.getElementById('item-desc').value.trim();
       const badge     = document.getElementById('item-badge').value;
       const oldPrice  = document.getElementById('item-old-price').value;
       const soldCount = document.getElementById('item-sold-count').value;
-      const imageRaw  = document.getElementById('item-image').value.trim();
-      const imageUrl  = convertGoogleDriveUrl(imageRaw) || null;
       const msg       = document.getElementById('menu-msg');
+
+      // Lấy mảng ảnh từ các slot
+      const images   = getImageSlotValues();
+      const imageUrl = images[0] || null; // Ảnh đầu = ảnh chính
 
       if (!name || !price) {
         msg.textContent = '⚠️ Vui lòng nhập tên và giá món!';
-        msg.className = 'account-msg error';
+        msg.className   = 'account-msg error';
         return;
       }
 
@@ -307,7 +343,8 @@
         icon,
         desc,
         badge,
-        imageUrl,
+        imageUrl,  // Ảnh chính (tương thích cũ)
+        images,    // Mảng nhiều ảnh (carousel)
         oldPrice:  oldPrice  ? parseInt(oldPrice)  : null,
         soldCount: soldCount ? parseInt(soldCount) : 0
       };
@@ -331,12 +368,12 @@
         const data = await res.json();
         if (!res.ok) {
           msg.textContent = data.error || 'Có lỗi xảy ra!';
-          msg.className = 'account-msg error';
+          msg.className   = 'account-msg error';
           return;
         }
 
         msg.textContent = editingId ? '✅ Đã cập nhật món!' : '✅ Đã thêm món mới!';
-        msg.className = 'account-msg success';
+        msg.className   = 'account-msg success';
 
         resetForm();
         await loadMenuItems();
@@ -344,7 +381,7 @@
 
       } catch (err) {
         msg.textContent = 'Không kết nối được server!';
-        msg.className = 'account-msg error';
+        msg.className   = 'account-msg error';
       }
     }
 
@@ -354,18 +391,22 @@
       if (!item) return;
 
       editingId = id;
-      document.getElementById('item-name').value      = item.name;
-      document.getElementById('item-price').value     = item.price;
-      document.getElementById('item-category').value  = item.category;
-      document.getElementById('item-icon').value      = item.icon      || '';
-      document.getElementById('item-desc').value      = item.desc      || '';
-      document.getElementById('item-badge').value     = item.badge     || '';
-      document.getElementById('item-old-price').value = item.oldPrice  || '';
-      document.getElementById('item-sold-count').value= item.soldCount || 0;
-      document.getElementById('item-image').value     = item.imageUrl  || '';
+      document.getElementById('item-name').value       = item.name;
+      document.getElementById('item-price').value      = item.price;
+      document.getElementById('item-category').value   = item.category;
+      document.getElementById('item-icon').value       = item.icon      || '';
+      document.getElementById('item-desc').value       = item.desc      || '';
+      document.getElementById('item-badge').value      = item.badge     || '';
+      document.getElementById('item-old-price').value  = item.oldPrice  || '';
+      document.getElementById('item-sold-count').value = item.soldCount || 0;
       document.getElementById('form-title').textContent = '✏️ Sửa Món Ăn';
 
-      imageInput.dispatchEvent(new Event('input'));
+      // Điền lại các ô ảnh (ưu tiên mảng images, fallback về imageUrl)
+      const existingImages = (item.images && item.images.length > 0)
+        ? item.images
+        : item.imageUrl ? [item.imageUrl] : [];
+      renderImageSlots(existingImages);
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -386,14 +427,14 @@
     function resetForm() {
       editingId = null;
       ['item-name','item-price','item-icon','item-desc',
-       'item-old-price','item-sold-count','item-image'].forEach(id => {
+       'item-old-price','item-sold-count'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
-      document.getElementById('item-category').value = 'com';
-      document.getElementById('item-badge').value    = '';
+      document.getElementById('item-category').value   = 'com';
+      document.getElementById('item-badge').value      = '';
       document.getElementById('form-title').textContent = '➕ Thêm Món Mới';
-      previewBox.style.display = 'none';
+      renderImageSlots([]); // Xóa và reset các ô ảnh
     }
 
     // ===== BỘ LỌC =====
@@ -407,6 +448,8 @@
       });
     });
 
+    // ===== KHỞI ĐỘNG =====
+    renderImageSlots(); // Khởi tạo 5 ô ảnh trống
     loadMenuItems();
   </script>
 </body>

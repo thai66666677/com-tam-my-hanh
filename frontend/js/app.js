@@ -647,31 +647,67 @@ function renderMenuGrid(items) {
 // ===== BUILD 1 CARD MÓN ĂN =====
 function buildMenuCard(item) {
   const isAvailable = item.available !== false;
+  const images = (item.images && item.images.length > 0)
+    ? item.images
+    : item.imageUrl ? [item.imageUrl] : [];
+  const hasMultiple = images.length > 1;
+
   return `
     <div class="menu-card ${!isAvailable ? 'menu-card-sold-out' : ''}"
          data-category="${item.category}"
          data-item-id="${item.id}">
-      <div class="menu-img-wrap">
-        <img src="${item.imageUrl || `images/${item.id}.jpg`}"
-             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
-             alt="${item.name}" class="menu-img-real"
-             style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}">
+
+      <!-- PHẦN ẢNH: Carousel nếu nhiều ảnh, ảnh đơn nếu 1 ảnh -->
+      <div class="menu-img-wrap" style="position:relative;">
+
+        ${hasMultiple ? `
+          <!-- CAROUSEL NHIỀU ẢNH -->
+          <div class="img-carousel" id="carousel-${item.id}">
+            ${images.map((url, i) => `
+              <img src="${url}"
+                   class="carousel-img ${i === 0 ? 'active' : ''}"
+                   alt="${item.name}"
+                   style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}"
+                   onerror="this.style.display='none'">
+            `).join('')}
+          </div>
+
+          <!-- Dots chỉ vị trí -->
+          <div class="carousel-dots">
+            ${images.map((_, i) => `
+              <span class="dot ${i === 0 ? 'active' : ''}"
+                    onclick="goToSlide('${item.id}', ${i})">
+              </span>
+            `).join('')}
+          </div>
+
+          <!-- Nút prev/next -->
+          <button class="carousel-btn prev"
+                  onclick="changeSlide('${item.id}', -1)">&#8249;</button>
+          <button class="carousel-btn next"
+                  onclick="changeSlide('${item.id}', 1)">&#8250;</button>
+
+        ` : `
+          <!-- ẢNH ĐƠN -->
+          <img src="${images[0] || ''}"
+               onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
+               alt="${item.name}" class="menu-img-real"
+               style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}">
+        `}
+
         ${item.badge && isAvailable
           ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>`
-          : ''
-        }
+          : ''}
         ${!isAvailable
           ? `<span class="badge badge-sold-out">😢 Hết hàng</span>`
-          : ''
-        }
+          : ''}
       </div>
+
       <div class="menu-info">
         <h3>${item.name}</h3>
         <p>${item.desc || ''}</p>
         ${item.soldCount > 0 && isAvailable
-          ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>`
-          : ''
-        }
+          ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>` : ''}
         <div class="menu-footer">
           <div class="price-wrap">
             <span class="price">${formatPrice(item.price)}</span>
@@ -679,12 +715,40 @@ function buildMenuCard(item) {
           </div>
           ${isAvailable
             ? `<button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">+ Thêm</button>`
-            : `<button class="btn-add btn-sold-out" disabled>Hết hàng</button>`
-          }
+            : `<button class="btn-add btn-sold-out" disabled>Hết hàng</button>`}
         </div>
       </div>
     </div>
   `;
+}
+
+// ===== CAROUSEL FUNCTIONS =====
+const carouselState = {}; // {itemId: currentIndex}
+
+function changeSlide(itemId, direction) {
+  const carousel = document.getElementById(`carousel-${itemId}`);
+  if (!carousel) return;
+  const imgs  = carousel.querySelectorAll('.carousel-img');
+  const dots  = carousel.parentElement.querySelectorAll('.dot');
+  const total = imgs.length;
+
+  carouselState[itemId] = carouselState[itemId] || 0;
+  carouselState[itemId] = (carouselState[itemId] + direction + total) % total;
+  const idx = carouselState[itemId];
+
+  imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+}
+
+function goToSlide(itemId, index) {
+  const carousel = document.getElementById(`carousel-${itemId}`);
+  if (!carousel) return;
+  const imgs = carousel.querySelectorAll('.carousel-img');
+  const dots = carousel.parentElement.querySelectorAll('.dot');
+
+  carouselState[itemId] = index;
+  imgs.forEach((img, i) => img.classList.toggle('active', i === index));
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
 }
 
 // ===== POLLING — Chỉ cập nhật card thay đổi =====
