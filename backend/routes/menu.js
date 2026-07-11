@@ -80,59 +80,78 @@ router.get('/:id', async (req, res) => {
 });
 
 // ===== 4. THÊM MÓN MỚI =====
-// POST /api/menu
+// backend/routes/menu.js — SỬA route POST và PUT
+
+// ===== THÊM MÓN MỚI =====
 router.post('/', async (req, res) => {
   try {
-    const { name, price, category, icon, desc, badge, oldPrice, soldCount, imageUrl } = req.body;
+    const {
+      name, price, category, icon, desc,
+      badge, oldPrice, soldCount, imageUrl, images
+    } = req.body;
 
     if (!name || !price || !category) {
       return res.status(400).json({ error: 'Thiếu thông tin món ăn!' });
     }
 
+    // Làm sạch mảng ảnh — xóa giá trị null/rỗng
+    const cleanImages = Array.isArray(images)
+      ? images.filter(img => img && typeof img === 'string' && img.trim() !== '')
+      : [];
+
     const id = Date.now().toString();
     const newItem = {
       id,
-      name,
+      name:      name.trim(),
       price:     parseInt(price),
       category,
       icon:      icon      || '🍽️',
       desc:      desc      || '',
       badge:     badge     || '',
-      imageUrl:  imageUrl  || null,
-      images:    images   || [],            // ← THÊM: mảng nhiều ảnh
-      oldPrice:  oldPrice  ? parseInt(oldPrice) : null,
+      imageUrl:  cleanImages[0] || imageUrl || null, // Ảnh chính = ảnh đầu tiên
+      images:    cleanImages,                         // ← Mảng nhiều ảnh
+      oldPrice:  oldPrice  ? parseInt(oldPrice)  : null,
       soldCount: soldCount ? parseInt(soldCount) : 0,
       available: true,
       createdAt: new Date().toISOString()
     };
 
+    console.log(`✅ Thêm món: ${name}, ${cleanImages.length} ảnh`);
     await menuRef.doc(id).set(newItem);
     res.status(201).json({ message: 'Thêm món thành công!', item: newItem });
+
   } catch (err) {
-    console.error('Lỗi thêm món:', err);
-    res.status(500).json({ error: 'Lỗi thêm món!' });
+    console.error('❌ Lỗi thêm món:', err.message);
+    res.status(500).json({ error: 'Lỗi thêm món: ' + err.message });
   }
 });
 
-// ===== 5. SỬA MÓN =====
-// PUT /api/menu/:id
+// ===== SỬA MÓN =====
 router.put('/:id', async (req, res) => {
   try {
     const docRef = menuRef.doc(req.params.id);
     const doc    = await docRef.get();
     if (!doc.exists) return res.status(404).json({ error: 'Không tìm thấy món!' });
 
+    // Làm sạch mảng ảnh
+    const cleanImages = Array.isArray(req.body.images)
+      ? req.body.images.filter(img => img && typeof img === 'string' && img.trim() !== '')
+      : doc.data().images || [];
+
     const updated = {
       ...doc.data(),
       ...req.body,
-      images: req.body.images || doc.data().images || [], // ← THÊM
-      id: req.params.id
+      images:   cleanImages,
+      imageUrl: cleanImages[0] || req.body.imageUrl || doc.data().imageUrl || null,
+      id:       req.params.id
     };
+
     await docRef.set(updated);
     res.json({ message: 'Cập nhật thành công!', item: updated });
+
   } catch (err) {
-    console.error('Lỗi sửa món:', err);
-    res.status(500).json({ error: 'Lỗi cập nhật món!' });
+    console.error('❌ Lỗi sửa món:', err.message);
+    res.status(500).json({ error: 'Lỗi cập nhật: ' + err.message });
   }
 });
 
