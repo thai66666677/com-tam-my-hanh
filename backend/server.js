@@ -77,7 +77,7 @@ const generalLimiter = rateLimit({
 
 const orderLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 giờ
-  max: 10,
+  max: 500,
   message: { error: 'Bạn đặt quá nhiều đơn, vui lòng thử lại sau 1 giờ!' }
 });
 
