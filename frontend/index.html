@@ -3,183 +3,259 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- SEO -->
-  <title>Cơm Tấm Mỹ Hạnh - Đặt Món Mang Đi | Đức Hòa</title>
-  <meta name="description" content="Quán cơm tấm ngon tại Đức Hòa. Đặt món online, giao tận nơi. Mở cửa 6:00 - 22:00.">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="/frontend/css/style.css">
-
-  <!-- Google Fonts -->
+  <title>Cơm Tấm Mỹ Hạnh — Đặt Món Online</title>
+  <meta name="description" content="Đặt cơm tấm online tại Cơm Tấm Mỹ Hạnh. Giao tận nơi nhanh chóng tại Đức Hòa, Long An.">
+  <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="js/config.js"></script>
 </head>
-
-<!-- NÚT ZALO NỔI - NHẮN TIN ĐẶT MÓN -->
-<a href="https://zalo.me/0373717654"
-   target="_blank"
-   class="btn-zalo-float"
-   title="Nhắn Zalo đặt món">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
-       alt="Zalo" width="26" height="26">
-  <span>Nhắn Zalo</span>
-</a>
 <body>
 
-  <!-- ===== HEADER / NAVBAR ===== -->
-   <header class="header">
-  <div class="container">
-    <div class="logo">🍚 Cơm Tấm Mỹ Hạnh</div>
-    <button class="nav-toggle" id="nav-toggle" aria-label="Mở menu">☰</button>
-    <nav class="nav" id="main-nav">
-      <a href="index.html">Trang chủ</a>
-      <a href="menu.html">Menu</a>
-      <a href="reviews.html">⭐ Đánh giá</a>
-      <a href="account.html">👤 Tài khoản</a>
-      <a href="order.html" class="btn-order">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
-    </nav>
-  </div>
-</header>
-  
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
 
-  <!-- ===== HERO / BANNER ===== -->
-  <!-- ===== HERO / BANNER ===== -->
-<section class="hero" id="hero-section">
-
-  <!-- Lớp overlay (app.js sẽ tự thêm khi có background) -->
-
-  <div class="container hero-inner">
-
-    <!-- CỘT TRÁI: thông tin quán + giờ mở cửa -->
-    <div class="hero-left">
-      <div class="info-card">
-        <span class="icon">🕐</span>
-        <h3>Giờ mở cửa</h3>
-        <p>Thứ 2 – Chủ Nhật<br>6:00 sáng – 10:00 tối</p>
-        <!-- CHỈ 1 thanh trạng thái duy nhất -->
-        <div class="business-status" style="margin-top:12px;"></div>
+      <!-- LOGO: có thể là ảnh hoặc emoji -->
+      <div class="logo" id="site-logo-wrap">
+        <img id="logo-img" src="" alt="Logo" class="logo-img" style="display:none;">
+        <span id="logo-text">🍚 Cơm Tấm Mỹ Hạnh</span>
       </div>
-    </div>
 
-    <!-- CỘT PHẢI: tiêu đề + nút -->
-    <div class="hero-content">
-      <h1>Cơm Tấm Mỹ Hạnh</h1>
-      <p>Hương vị đậm đà, giao tận nơi nhanh chóng</p>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Mở menu">☰</button>
+      <nav class="nav" id="main-nav">
+        <a href="index.html" class="active">Trang chủ</a>
+        <a href="menu.html">Menu</a>
+        <a href="reviews.html">⭐ Đánh giá</a>
+        <a href="account.html">👤 Tài khoản</a>
+        <a href="order.html" class="btn-order">
+          🛒 Giỏ hàng (<span id="cart-count">0</span>)
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO — NỘI DUNG CHÍNH GIỮA -->
+  <section class="hero" id="hero-section">
+
+    <!-- Overlay (app.js tự thêm khi có background) -->
+
+    <div class="hero-center">
+      <h1 class="hero-title" id="hero-title">Cơm Tấm Mỹ Hạnh</h1>
+      <p  class="hero-slogan" id="hero-slogan">Hương vị đậm đà, giao tận nơi nhanh chóng</p>
       <div class="hero-buttons">
         <a href="menu.html"  class="btn btn-white">🍽️ Xem Menu</a>
-        <a href="order.html" class="btn btn-primary">🛒 Đặt Món Ngay</a>
+        <a href="order.html" class="btn btn-gold">🛒 Đặt Món Ngay</a>
       </div>
     </div>
 
-  </div>
-</section>
+  </section>
 
-<!-- THANH TRẠNG THÁI BÊN DƯỚI HERO (riêng biệt, không trong hero) -->
-<div class="business-status-bar">
-  <div class="container">
-    <div class="business-status"></div>
+  <!-- THANH TRẠNG THÁI MỞ CỬA -->
+  <div class="business-status-bar">
+    <div class="container">
+      <div class="business-status"></div>
+    </div>
   </div>
-</div>
 
-  <!-- ===== THÔNG TIN QUÁN ===== -->
+  <!-- THÔNG TIN NHANH -->
   <section class="info-section">
     <div class="container">
-      <h2>Thông Tin Quán</h2>
       <div class="info-grid">
 
         <div class="info-card">
-          <span class="icon">📍</span>
-          <h3>Địa chỉ</h3>
-          <p>123 Đường Lê Lợi, Thị trấn Đức Hòa, Long An</p>
-        </div>
-
-        <div class="info-card">
-          <span class="icon">🕐</span>
+          <span class="info-icon">🕐</span>
           <h3>Giờ mở cửa</h3>
           <p>Thứ 2 – Chủ Nhật<br>6:00 sáng – 10:00 tối</p>
         </div>
 
         <div class="info-card">
-          <span class="icon">📞</span>
-          <h3>Hotline</h3>
-          <p><a href="tel:0901234567">090 123 4567</a></p>
-          <p><small>Gọi đặt món hoặc hỏi thông tin</small></p>
+          <span class="info-icon">📍</span>
+          <h3>Địa chỉ</h3>
+          <p>123 Lê Lợi<br>Đức Hòa, Long An</p>
         </div>
-        <!-- THÊM ĐOẠN NÀY -->
-  <div class="contact-links">
-    <a href="tel:0901234567" class="contact-link call">
-      📞 Gọi điện
-    </a>
-    <a href="https://zalo.me/0901234567"
-       target="_blank"
-       class="contact-link zalo">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
-           width="16" height="16" alt="zalo">
-      Zalo
-    </a>
-  </div>
-  <!-- KẾT THÚC THÊM -->
-</div>
 
         <div class="info-card">
-          <span class="icon">🚀</span>
+          <span class="info-icon">📞</span>
+          <h3>Liên hệ</h3>
+          <p>
+            <a href="tel:0373717654">0373 717 654</a><br>
+            <a href="https://zalo.me/0373717654" target="_blank">Nhắn Zalo</a>
+          </p>
+        </div>
+
+        <div class="info-card">
+          <span class="info-icon">🚀</span>
           <h3>Giao hàng</h3>
-          <p>Giao trong vòng 5km<br>Thời gian: 20–30 phút</p>
+          <p>Nhanh 20–30 phút<br>Phí ship 15.000đ</p>
         </div>
 
       </div>
     </div>
   </section>
 
-  <!-- ===== GOOGLE MAPS ===== -->
-  <section class="map-section">
+  <!-- MÓN NỔI BẬT -->
+  <section class="featured-section">
     <div class="container">
-      <h2>📍 Vị Trí Quán</h2>
-      <div class="map-wrapper">
-        <!-- Thay src bằng link Google Maps thật của quán -->
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.4!2d106.6!3d10.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0!2zMTDCsDQ1JzAwLjAiTiAxMDbCsDM2JzAwLjAiRQ!5e0!3m2!1svi!2svn!4v1"
-          width="100%"
-          height="350"
-          style="border:0;"
-          allowfullscreen=""
-          loading="lazy">
-        </iframe>
+      <h2 class="section-title">🔥 Món Bán Chạy</h2>
+      <div class="menu-grid" id="featured-grid">
+        <div style="text-align:center;color:#999;padding:40px;grid-column:1/-1;">
+          ⏳ Đang tải...
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;">
+        <a href="menu.html" class="btn btn-outline">Xem toàn bộ thực đơn →</a>
       </div>
     </div>
   </section>
 
-  <!-- ===== NÚT GỌI ĐIỆN (mobile) ===== -->
-  <a href="tel:0901234567" class="btn-call-float">
-    📞 Gọi đặt món
+  <!-- LÝ DO CHỌN CHÚNG TÔI -->
+  <section class="why-section">
+    <div class="container">
+      <h2 class="section-title">Tại sao chọn Cơm Tấm Mỹ Hạnh?</h2>
+      <div class="why-grid">
+        <div class="why-card">
+          <span>🍚</span>
+          <h3>Nguyên liệu tươi</h3>
+          <p>Chọn lọc kỹ càng mỗi ngày, đảm bảo vệ sinh an toàn thực phẩm</p>
+        </div>
+        <div class="why-card">
+          <span>⚡</span>
+          <h3>Giao hàng nhanh</h3>
+          <p>Cam kết giao trong 20–30 phút, còn nóng đến tay bạn</p>
+        </div>
+        <div class="why-card">
+          <span>💰</span>
+          <h3>Giá bình dân</h3>
+          <p>Chất lượng quán ngon, giá cả phải chăng phù hợp mọi người</p>
+        </div>
+        <div class="why-card">
+          <span>❤️</span>
+          <h3>Nấu bằng tâm huyết</h3>
+          <p>Công thức gia truyền, hương vị đậm đà khó quên</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">✅ Đã thêm vào giỏ hàng!</div>
+
+  <!-- NÚT ZALO NỔI -->
+  <a href="https://zalo.me/0373717654"
+     target="_blank"
+     class="btn-zalo-float"
+     title="Nhắn Zalo đặt món">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+         alt="Zalo" width="26" height="26">
+    <span>Nhắn Zalo</span>
   </a>
 
-  <!-- ===== FOOTER ===== -->
+  <!-- NÚT GỌI ĐIỆN -->
+  <a href="tel:0373717654" class="btn-call-float">📞 Gọi đặt món</a>
+
+  <!-- MOBILE NAV BOTTOM -->
+  <div class="mobile-nav-btns">
+    <span class="mobile-nav-btn prev disabled">
+      <span style="font-size:1.2rem">←</span>
+      <span class="nav-label"><small>Quay lại</small>—</span>
+    </span>
+    <a href="index.html" class="mobile-nav-btn home">🏠</a>
+    <a href="menu.html" class="mobile-nav-btn next">
+      <span class="nav-label"><small>Tiếp theo</small>Xem Menu</span>
+      <span style="font-size:1.2rem">→</span>
+    </a>
+  </div>
+
   <footer class="footer">
     <div class="container">
-      <p>© 2024 Cơm Tấm Mỹ Hạnh. Địa chỉ: 123 Lê Lợi, Đức Hòa, Long An</p>
-      <p>Hotline: <a href="tel:0901234567">090 123 4567</a></p>
+      <p>© 2024 Cơm Tấm Mỹ Hạnh | Hotline: <a href="tel:0373717654">0373 717 654</a></p>
     </div>
   </footer>
-  <!-- NÚT ĐIỀU HƯỚNG MOBILE -->
-<div class="mobile-nav-btns">
-  <span class="mobile-nav-btn prev disabled">
-    <span style="font-size:1.2rem">←</span>
-    <span class="nav-label">
-      <small>Quay lại</small>
-      —
-    </span>
-  </span>
-  <a href="index.html" class="mobile-nav-btn home">🏠</a>
-  <a href="menu.html" class="mobile-nav-btn next">
-    <span class="nav-label">
-      <small>Tiếp theo</small>
-      Xem Menu
-    </span>
-    <span style="font-size:1.2rem">→</span>
-  </a>
-</div>
- <script src="js/config.js"></script>
+
+  <script src="js/config.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // ===== LOGO TỪ LINK =====
+    // Khi settings có logoUrl → hiện ảnh thay emoji
+    function applyLogo(logoUrl, logoEmoji, siteName) {
+      const imgEl  = document.getElementById('logo-img');
+      const textEl = document.getElementById('logo-text');
+
+      if (logoUrl) {
+        imgEl.src             = logoUrl;
+        imgEl.style.display   = 'inline-block';
+        textEl.style.display  = 'none';
+        imgEl.onerror = () => {
+          // Nếu link ảnh lỗi → fallback về text
+          imgEl.style.display  = 'none';
+          textEl.style.display = 'inline';
+          textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+        };
+      } else {
+        imgEl.style.display  = 'none';
+        textEl.style.display = 'inline';
+        textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+      }
+    }
+
+    // ===== LOAD MÓN NỔI BẬT =====
+    async function loadFeaturedItems() {
+      const grid = document.getElementById('featured-grid');
+      if (!grid) return;
+
+      try {
+        const res   = await fetch(`${API_URL}/menu`);
+        const items = await res.json();
+
+        // Lọc món có badge hot hoặc new, tối đa 4 món
+        const featured = items
+          .filter(i => i.available !== false && (i.badge === 'hot' || i.badge === 'new' || i.badge === 'special'))
+          .slice(0, 4);
+
+        // Nếu không có badge → lấy 4 món đầu tiên
+        const display = featured.length > 0 ? featured : items.slice(0, 4);
+
+        if (!display.length) {
+          grid.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Chưa có món nào</p>';
+          return;
+        }
+
+        grid.innerHTML = display.map(item => {
+          const imgSrc = (item.images && item.images[0]) || item.imageUrl || '';
+          return `
+            <div class="menu-card" data-category="${item.category}" data-item-id="${item.id}">
+              <div class="menu-img-wrap">
+                <img src="${imgSrc}"
+                     onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'menu-img-emoji\\'>${item.icon || '🍽️'}</div>'"
+                     alt="${item.name}" class="menu-img-real">
+                ${item.badge
+                  ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>`
+                  : ''}
+              </div>
+              <div class="menu-info">
+                <h3>${item.name}</h3>
+                <p>${item.desc || ''}</p>
+                <div class="menu-footer">
+                  <div class="price-wrap">
+                    <span class="price">${formatPrice(item.price)}</span>
+                    ${item.oldPrice ? `<span class="price-old">${formatPrice(item.oldPrice)}</span>` : ''}
+                  </div>
+                  <button class="btn-add"
+                    onclick="addToCart('${item.name}', ${item.price})">
+                    + Thêm
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        grid.innerHTML = '<p style="text-align:center;color:#999;padding:20px">⚠️ Không tải được món</p>';
+      }
+    }
+
+    loadFeaturedItems();
+  </script>
 </body>
 </html>

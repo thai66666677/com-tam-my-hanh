@@ -1302,6 +1302,7 @@ async function loadSiteSettings() {
     const settings = await res.json();
     if (!settings) return;
 
+    // Áp dụng background
     const path    = window.location.pathname;
     const pageKey =
       path.includes('menu.html')    ? 'menu'    :
@@ -1311,18 +1312,23 @@ async function loadSiteSettings() {
       path.includes('reviews.html') ? 'reviews' : 'home';
 
     const bgData = settings.backgrounds?.[pageKey];
-
     if (bgData) {
-      // Hỗ trợ cả 2 dạng: string (cũ) và object {url, opacity} (mới)
-      const url     = typeof bgData === 'string' ? bgData : bgData.url;
-      const opacity = typeof bgData === 'string' ? 30     : (bgData.opacity ?? 30);
+      const url     = typeof bgData === 'string' ? bgData      : bgData.url;
+      const opacity = typeof bgData === 'string' ? 30          : (bgData.opacity ?? 30);
       if (url) applyBackground(url, opacity);
     }
 
+    // Áp dụng tên quán + slogan
     if (settings.siteName) {
-      document.querySelectorAll('.logo').forEach(el => {
-        el.textContent = (settings.logoEmoji || '🍚') + ' ' + settings.siteName;
-      });
+      const titleEl  = document.getElementById('hero-title');
+      const sloganEl = document.getElementById('hero-slogan');
+      if (titleEl)  titleEl.textContent  = settings.siteName;
+      if (sloganEl && settings.slogan) sloganEl.textContent = settings.slogan;
+
+      // Cập nhật logo
+      if (typeof applyLogo === 'function') {
+        applyLogo(settings.logoUrl || '', settings.logoEmoji, settings.siteName);
+      }
     }
 
   } catch (err) {

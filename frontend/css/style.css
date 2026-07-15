@@ -2135,3 +2135,201 @@ a { text-decoration: none; color: inherit; }
   .hero-content h1 { font-size: 1.8rem; }
   .info-card     { width: 100%; }
 }
+/* ===== HERO CENTERED ===== */
+.hero {
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.hero-center {
+  position: relative;
+  z-index: 1;
+  padding: 60px 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.hero-slogan {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 32px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-white {
+  background: white;
+  color: #c0392b;
+  padding: 14px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  padding: 14px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-white:hover,
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* ===== LOGO ẢNH ===== */
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 6px;
+}
+
+/* ===== THÔNG TIN NHANH ===== */
+.info-section {
+  background: white;
+  padding: 40px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.info-card {
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  transition: transform 0.2s;
+}
+
+.info-card:hover { transform: translateY(-2px); }
+
+.info-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.info-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c0392b;
+  margin-bottom: 6px;
+}
+
+.info-card p, .info-card a {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+  text-decoration: none;
+}
+
+.info-card a:hover { color: #c0392b; }
+
+/* ===== MÓN NỔI BẬT ===== */
+.featured-section {
+  padding: 50px 0;
+  background: #fff9f9;
+}
+
+/* ===== LÝ DO CHỌN ===== */
+.why-section {
+  padding: 50px 0;
+  background: white;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.why-card {
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: 14px;
+  border: 2px solid #fff0f0;
+  background: #fffafa;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.why-card:hover {
+  transform: translateY(-3px);
+  border-color: #c0392b;
+}
+
+.why-card span { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+.why-card h3   { font-size: 1rem; font-weight: 700; color: #333; margin-bottom: 8px; }
+.why-card p    { font-size: 0.85rem; color: #777; line-height: 1.6; }
+
+.btn-outline {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 2px solid #c0392b;
+  color: #c0392b;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #c0392b;
+  color: white;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .hero-title   { font-size: 2rem; }
+  .info-grid    { grid-template-columns: repeat(2, 1fr); }
+  .why-grid     { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .info-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .why-grid  { grid-template-columns: 1fr 1fr; gap: 12px; }
+}

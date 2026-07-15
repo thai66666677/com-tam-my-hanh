@@ -90,6 +90,18 @@
     </div>
 
   </div>
+  <div class="form-group" style="grid-column: 1/-1;">
+  <label>🖼️ Link logo quán (để trống = dùng emoji)</label>
+  <input type="text" id="site-logo-url"
+         placeholder="https://i.imgur.com/xxx.png hoặc link Google Drive">
+  <small style="color:#888;font-size:0.8rem;margin-top:4px;display:block;">
+    💡 Nên dùng ảnh nền trong suốt (.png) kích thước 200×60px
+  </small>
+  <div id="logo-preview" style="margin-top:10px;display:none;">
+    <img id="logo-preview-img" src="" alt="Logo preview"
+         style="height:50px;border-radius:6px;background:#333;padding:6px;">
+  </div>
+</div>
 
   <script>
       // Chuyển MỌI dạng Google Drive link → link ảnh trực tiếp
@@ -152,12 +164,14 @@ function convertImageUrl(url) {
             <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
 
               <!-- Preview ảnh -->
+
               <div id="preview-${page.key}"
                    style="width:140px;height:80px;border-radius:10px;flex-shrink:0;
                           background:${url ? `url('${url}') center/cover` : 'linear-gradient(135deg,#c0392b,#e74c3c)'};
                           border:2px solid #eee;position:relative;overflow:hidden;">
                 ${!url ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:0.75rem;">Mặc định</div>' : ''}
               </div>
+
 
               <!-- Input -->
               <div style="flex:1;min-width:200px;">
@@ -236,6 +250,22 @@ function convertImageUrl(url) {
   };
   img.src = converted;
 }
+// Preview logo khi nhập URL
+const logoUrlInput = document.getElementById('site-logo-url');
+if (logoUrlInput) {
+  logoUrlInput.addEventListener('input', () => {
+    const url        = logoUrlInput.value.trim();
+    const previewBox = document.getElementById('logo-preview');
+    const previewImg = document.getElementById('logo-preview-img');
+    if (url && previewBox && previewImg) {
+      previewImg.src = url;
+      previewBox.style.display = 'block';
+      previewImg.onerror = () => previewBox.style.display = 'none';
+    } else if (previewBox) {
+      previewBox.style.display = 'none';
+    }
+  });
+}
 
     // ===== XÓA BACKGROUND =====
     function clearBg(key) {
@@ -302,7 +332,9 @@ PAGES.forEach(page => {
         backgrounds,
         siteName:     document.getElementById('site-name')?.value.trim()    || 'Cơm Tấm Mỹ Hạnh',
         slogan:       document.getElementById('site-slogan')?.value.trim()  || '',
-        logoEmoji:    document.getElementById('site-logo')?.value.trim()    || '🍚',
+        logoEmoji:    document.getElementById('site-logo')?.value.trim()    || '🍚'
+        ,
+        logoUrl:      document.getElementById('site-logo-url')?.value.trim() || '',
         primaryColor: document.getElementById('site-color-hex')?.value.trim() || '#c0392b'
       };
 
