@@ -1424,6 +1424,82 @@ function initOrderPage() {
   const savedAddr = localStorage.getItem(`lastAddress_${user.phone}`);
   if (addrEl && savedAddr && !addrEl.value) addrEl.value = savedAddr;
 }
+// =====================
+// LOAD SETTINGS & ÁP DỤNG BACKGROUND
+// =====================
+async function loadSiteSettings() {
+  try {
+    const res      = await fetch(`${API_URL}/settings`);
+    const settings = await res.json();
+    if (!settings) return;
+
+    // Xác định trang hiện tại
+    const path = window.location.pathname;
+    const pageKey =
+      path.includes('menu.html')    ? 'menu'    :
+      path.includes('order.html')   ? 'order'   :
+      path.includes('account.html') ? 'account' :
+      path.includes('history.html') ? 'history' :
+      path.includes('reviews.html') ? 'reviews' :
+      'home';
+
+    const bgUrl = settings.backgrounds?.[pageKey];
+
+    // Áp dụng background nếu có
+    if (bgUrl) {
+      applyBackground(bgUrl);
+    }
+
+    // Cập nhật tên quán nếu có
+    if (settings.siteName) {
+      document.querySelectorAll('.logo').forEach(el => {
+        el.textContent = (settings.logoEmoji || '🍚') + ' ' + settings.siteName;
+      });
+    }
+
+    // Cập nhật slogan trang chủ
+    if (settings.slogan) {
+      const sloganEl = document.querySelector('.hero p, .hero-content p');
+      if (sloganEl) sloganEl.textContent = settings.slogan;
+    }
+
+  } catch (err) {
+    // Silent fail — không ảnh hưởng đến web
+    console.log('Không tải được settings:', err.message);
+  }
+}
+
+function applyBackground(url) {
+  // Tìm section hero hoặc page-title
+  const heroEl  = document.querySelector('.hero, .page-title');
+  if (!heroEl) return;
+
+  heroEl.style.backgroundImage    = `url('${url}')`;
+  heroEl.style.backgroundSize     = 'cover';
+  heroEl.style.backgroundPosition = 'center';
+  heroEl.style.backgroundRepeat   = 'no-repeat';
+  heroEl.style.position           = 'relative';
+
+  // Thêm lớp tối để chữ dễ đọc (nếu chưa có)
+  if (!heroEl.querySelector('.bg-overlay')) {
+    const overlay = document.createElement('div');
+    overlay.className = 'bg-overlay';
+    overlay.style.cssText = `
+      position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(192,57,43,0.80) 0%,rgba(0,0,0,0.40) 100%);
+      z-index:0;
+    `;
+    heroEl.insertBefore(overlay, heroEl.firstChild);
+
+    // Đưa nội dung lên trên overlay
+    Array.from(heroEl.children).forEach(child => {
+      if (!child.classList.contains('bg-overlay')) {
+        child.style.position = 'relative';
+        child.style.zIndex   = '1';
+      }
+    });
+  }
+}
 
 
 // =====================
@@ -1438,3 +1514,4 @@ renderReviews();
 loadMenu();
 loadMiniMenu();   // ← THÊM DÒNG NÀY
 initOrderPage();   // ← THÊM
+loadSiteSettings(); // ← THÊM DÒNG NÀY

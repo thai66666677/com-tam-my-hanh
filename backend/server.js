@@ -91,6 +91,7 @@ const authLimiter = rateLimit({
 app.use('/api/', generalLimiter);
 app.use('/api/orders', orderLimiter);
 app.use('/api/auth', authLimiter);
+app.use('/api/settings', require('./routes/settings')); // ← THÊM DÒNG NÀY
 
 // =====================
 // 6. ROUTES
