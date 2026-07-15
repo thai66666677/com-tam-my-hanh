@@ -92,6 +92,29 @@
   </div>
 
   <script>
+      // Chuyển MỌI dạng Google Drive link → link ảnh trực tiếp
+function convertImageUrl(url) {
+  if (!url || !url.trim()) return '';
+  url = url.trim();
+
+  // Dạng 1: .../file/d/FILE_ID/view...
+  const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match1) {
+    return `https://drive.google.com/thumbnail?id=${match1[1]}&sz=w1200`;
+  }
+
+  // Dạng 2: ...id=FILE_ID...
+  const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match2) {
+    return `https://drive.google.com/thumbnail?id=${match2[1]}&sz=w1200`;
+  }
+
+  // Dạng 3: .../thumbnail?id=FILE_ID (đã đúng rồi)
+  if (url.includes('drive.google.com/thumbnail')) return url;
+
+  // Không phải Google Drive → dùng thẳng
+  return url;
+}
     // ===== BẢO VỆ TRANG =====
     const _loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
     const _token    = localStorage.getItem('adminToken');
@@ -170,27 +193,39 @@
     }
 
     // ===== PREVIEW BACKGROUND KHI NHẬP =====
-    function previewBg(key, url) {
-      const preview = document.getElementById(`preview-${key}`);
-      if (!preview) return;
-      if (url.trim()) {
-        preview.style.background = `url('${url.trim()}') center/cover no-repeat`;
-        preview.innerHTML = '';
-      } else {
-        preview.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
-        preview.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:0.75rem;">Mặc định</div>';
-      }
-    }
+     function previewBg(key, url) {
+  const preview  = document.getElementById(`preview-${key}`);
+  if (!preview) return;
+
+  const converted = convertImageUrl(url); // ← Chuyển đổi trước
+
+  if (converted) {
+    preview.style.background = `url('${converted}') center/cover no-repeat`;
+    preview.innerHTML = '';
+  } else {
+    preview.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
+    preview.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:0.75rem;">Mặc định</div>';
+  }
+}
 
     // ===== TEST URL ẢNH =====
-    function testBgUrl(key) {
-      const url = document.getElementById(`bg-${key}`)?.value.trim();
-      if (!url) { alert('Chưa có link ảnh!'); return; }
-      const img = new Image();
-      img.onload  = () => alert(`✅ Ảnh tải được! Kích thước: ${img.naturalWidth}×${img.naturalHeight}px`);
-      img.onerror = () => alert('❌ Không tải được ảnh. Kiểm tra lại link!');
-      img.src = url;
-    }
+   function testBgUrl(key) {
+  const raw       = document.getElementById(`bg-${key}`)?.value.trim();
+  const converted = convertImageUrl(raw);
+
+  if (!converted) { alert('Chưa có link ảnh!'); return; }
+
+  const img    = new Image();
+  img.onload  = () => {
+    // Cập nhật preview ngay
+    previewBg(key, raw);
+    alert(`✅ Ảnh hợp lệ!\nKích thước: ${img.naturalWidth}×${img.naturalHeight}px`);
+  };
+  img.onerror = () => {
+    alert('❌ Không tải được ảnh!\nKiểm tra:\n1. File có phải ảnh không?\n2. Đã đặt quyền "Bất kỳ ai có đường link" chưa?');
+  };
+  img.src = converted;
+}
 
     // ===== XÓA BACKGROUND =====
     function clearBg(key) {
@@ -242,12 +277,12 @@
 
       const msg = document.getElementById('settings-msg');
 
-      // Lấy tất cả giá trị background
-      const backgrounds = {};
-      PAGES.forEach(page => {
-        const val = document.getElementById(`bg-${page.key}`)?.value.trim() || '';
-        backgrounds[page.key] = val;
-      });
+      // Lấy tất cả giá trị background - TỰ ĐỘNG CHUYỂN ĐỔI
+const backgrounds = {};
+PAGES.forEach(page => {
+  const raw = document.getElementById(`bg-${page.key}`)?.value.trim() || '';
+  backgrounds[page.key] = convertImageUrl(raw); // ← Chuyển đổi trước khi lưu
+});
 
       const settings = {
         backgrounds,
