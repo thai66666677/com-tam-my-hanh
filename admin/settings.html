@@ -170,6 +170,16 @@ function convertImageUrl(url) {
                        style="width:100%;padding:10px;border:2px solid #eee;border-radius:8px;
                               font-size:0.9rem;font-family:inherit;"
                        oninput="previewBg('${page.key}', this.value)">
+              <!-- Thêm vào sau ô input link ảnh -->
+<div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+  <label style="font-size:0.8rem;color:#555;white-space:nowrap;">Độ mờ overlay:</label>
+  <input type="range" id="overlay-${page.key}"
+         min="0" max="80" value="30" step="5"
+         style="flex:1;"
+         oninput="document.getElementById('overlay-val-${page.key}').textContent=this.value+'%'">
+  <span id="overlay-val-${page.key}" style="font-size:0.8rem;color:#888;min-width:36px;">30%</span>
+</div>
+<small style="color:#888;font-size:0.75rem;">0% = ảnh rõ hoàn toàn · 80% = tối nhiều</small>
 
                 <!-- Nút test + xóa -->
                 <div style="display:flex;gap:8px;margin-top:8px;">
@@ -278,10 +288,14 @@ function convertImageUrl(url) {
       const msg = document.getElementById('settings-msg');
 
       // Lấy tất cả giá trị background - TỰ ĐỘNG CHUYỂN ĐỔI
-const backgrounds = {};
+      const backgrounds = {};
 PAGES.forEach(page => {
-  const raw = document.getElementById(`bg-${page.key}`)?.value.trim() || '';
-  backgrounds[page.key] = convertImageUrl(raw); // ← Chuyển đổi trước khi lưu
+  const raw     = document.getElementById(`bg-${page.key}`)?.value.trim()    || '';
+  const opacity = document.getElementById(`overlay-${page.key}`)?.value      || '30';
+  backgrounds[page.key] = {
+    url:     convertImageUrl(raw),
+    opacity: parseInt(opacity)
+  };
 });
 
       const settings = {

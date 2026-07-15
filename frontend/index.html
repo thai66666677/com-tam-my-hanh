@@ -43,28 +43,43 @@
   
 
   <!-- ===== HERO / BANNER ===== -->
-  <section class="hero">
-    <!-- BANNER TRẠNG THÁI MỞ/ĐÓNG CỬA -->
-<div class="business-status status-open" id="business-status-hero">
-  <span class="status-dot"></span>
-  <span>Đang kiểm tra giờ...</span>
-</div>
-<div class="info-card">
-  <span class="icon">🕐</span>
-  <h3>Giờ mở cửa</h3>
-  <p>Thứ 2 – Chủ Nhật<br>6:00 sáng – 10:00 tối</p>
-  <!-- THÊM DÒNG NÀY -->
-  <div class="business-status" style="margin-top:12px;"></div>
-</div>
+  <!-- ===== HERO / BANNER ===== -->
+<section class="hero" id="hero-section">
+
+  <!-- Lớp overlay (app.js sẽ tự thêm khi có background) -->
+
+  <div class="container hero-inner">
+
+    <!-- CỘT TRÁI: thông tin quán + giờ mở cửa -->
+    <div class="hero-left">
+      <div class="info-card">
+        <span class="icon">🕐</span>
+        <h3>Giờ mở cửa</h3>
+        <p>Thứ 2 – Chủ Nhật<br>6:00 sáng – 10:00 tối</p>
+        <!-- CHỈ 1 thanh trạng thái duy nhất -->
+        <div class="business-status" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: tiêu đề + nút -->
     <div class="hero-content">
       <h1>Cơm Tấm Mỹ Hạnh</h1>
       <p>Hương vị đậm đà, giao tận nơi nhanh chóng</p>
       <div class="hero-buttons">
-        <a href="menu.html" class="btn btn-primary">🍽️ Xem Menu</a>
-        <a href="order.html" class="btn btn-secondary">🛒 Đặt Món Ngay</a>
+        <a href="menu.html"  class="btn btn-white">🍽️ Xem Menu</a>
+        <a href="order.html" class="btn btn-primary">🛒 Đặt Món Ngay</a>
       </div>
     </div>
-  </section>
+
+  </div>
+</section>
+
+<!-- THANH TRẠNG THÁI BÊN DƯỚI HERO (riêng biệt, không trong hero) -->
+<div class="business-status-bar">
+  <div class="container">
+    <div class="business-status"></div>
+  </div>
+</div>
 
   <!-- ===== THÔNG TIN QUÁN ===== -->
   <section class="info-section">

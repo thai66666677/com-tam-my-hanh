@@ -1302,7 +1302,7 @@ async function loadSiteSettings() {
     const settings = await res.json();
     if (!settings) return;
 
-    const path = window.location.pathname;
+    const path    = window.location.pathname;
     const pageKey =
       path.includes('menu.html')    ? 'menu'    :
       path.includes('order.html')   ? 'order'   :
@@ -1310,8 +1310,14 @@ async function loadSiteSettings() {
       path.includes('history.html') ? 'history' :
       path.includes('reviews.html') ? 'reviews' : 'home';
 
-    const bgUrl = settings.backgrounds?.[pageKey];
-    if (bgUrl) applyBackground(bgUrl);
+    const bgData = settings.backgrounds?.[pageKey];
+
+    if (bgData) {
+      // Hỗ trợ cả 2 dạng: string (cũ) và object {url, opacity} (mới)
+      const url     = typeof bgData === 'string' ? bgData : bgData.url;
+      const opacity = typeof bgData === 'string' ? 30     : (bgData.opacity ?? 30);
+      if (url) applyBackground(url, opacity);
+    }
 
     if (settings.siteName) {
       document.querySelectorAll('.logo').forEach(el => {
@@ -1319,17 +1325,12 @@ async function loadSiteSettings() {
       });
     }
 
-    if (settings.slogan) {
-      const sloganEl = document.querySelector('.hero p, .hero-content p, .page-title p');
-      if (sloganEl) sloganEl.textContent = settings.slogan;
-    }
-
   } catch (err) {
     console.log('Không tải được settings:', err.message);
   }
 }
 
-function applyBackground(url) {
+function applyBackground(url, overlayOpacity = 30) {
   if (!url) return;
   const bgUrl  = convertDriveUrl(url);
   const heroEl = document.querySelector('.hero, .page-title');
@@ -1341,24 +1342,68 @@ function applyBackground(url) {
   heroEl.style.backgroundRepeat   = 'no-repeat';
   heroEl.style.position           = 'relative';
 
-  if (!heroEl.querySelector('.bg-overlay')) {
-    const overlay = document.createElement('div');
-    overlay.className = 'bg-overlay';
-    overlay.style.cssText = `
-      position:absolute;inset:0;
-      background:linear-gradient(135deg,rgba(192,57,43,0.75) 0%,rgba(0,0,0,0.40) 100%);
-      z-index:0;pointer-events:none;
-    `;
-    heroEl.insertBefore(overlay, heroEl.firstChild);
-    Array.from(heroEl.children).forEach(child => {
-      if (!child.classList.contains('bg-overlay')) {
-        child.style.position = 'relative';
-        child.style.zIndex   = '1';
-      }
-    });
-  }
+  const oldOverlay = heroEl.querySelector('.bg-overlay');
+  if (oldOverlay) oldOverlay.remove();
+
+  const alpha   = overlayOpacity / 100;
+  const overlay = document.createElement('div');
+  overlay.className = 'bg-overlay';
+  overlay.style.cssText = `
+    position:absolute;inset:0;
+    background:rgba(0,0,0,${alpha});
+    z-index:0;pointer-events:none;
+  `;
+  heroEl.insertBefore(overlay, heroEl.firstChild);
+
+  Array.from(heroEl.children).forEach(child => {
+    if (!child.classList.contains('bg-overlay')) {
+      child.style.position = 'relative';
+      child.style.zIndex   = '1';
+    }
+  });
 }
 
+function applyBackground(url, overlayOpacity = 30) {
+  if (!url) return;
+  const bgUrl = convertDriveUrl(url);
+
+  // Tìm hero section theo id trước, fallback về class
+  const heroEl = document.getElementById('hero-section')
+               || document.querySelector('.hero')
+               || document.querySelector('.page-title');
+  if (!heroEl) return;
+
+  heroEl.style.backgroundImage    = `url('${bgUrl}')`;
+  heroEl.style.backgroundSize     = 'cover';
+  heroEl.style.backgroundPosition = 'center top';
+  heroEl.style.backgroundRepeat   = 'no-repeat';
+  heroEl.style.position           = 'relative';
+  heroEl.style.overflow           = 'hidden';
+
+  // Xóa overlay cũ tránh chồng lớp
+  const oldOverlay = heroEl.querySelector('.bg-overlay');
+  if (oldOverlay) oldOverlay.remove();
+
+  const alpha   = Math.min(Math.max(overlayOpacity, 0), 80) / 100;
+  const overlay = document.createElement('div');
+  overlay.className = 'bg-overlay';
+  overlay.style.cssText = `
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,${alpha});
+    z-index:0;
+    pointer-events:none;
+  `;
+  heroEl.insertBefore(overlay, heroEl.firstChild);
+
+  // Đẩy tất cả nội dung lên trên overlay
+  Array.from(heroEl.children).forEach(child => {
+    if (!child.classList.contains('bg-overlay')) {
+      child.style.position = 'relative';
+      child.style.zIndex   = '1';
+    }
+  });
+}
 
 // =====================
 // KHỞI ĐỘNG TẤT CẢ
