@@ -1313,22 +1313,39 @@ async function loadSiteSettings() {
 
     const bgData = settings.backgrounds?.[pageKey];
     if (bgData) {
-      const url     = typeof bgData === 'string' ? bgData      : bgData.url;
-      const opacity = typeof bgData === 'string' ? 30          : (bgData.opacity ?? 30);
+      const url     = typeof bgData === 'string' ? bgData : bgData.url;
+      const opacity = typeof bgData === 'string' ? 30     : (bgData.opacity ?? 30);
       if (url) applyBackground(url, opacity);
     }
 
-    // Áp dụng tên quán + slogan
+    // Cập nhật logo + tên trên TẤT CẢ CÁC TRANG
+    const imgEl  = document.getElementById('logo-img');
+    const textEl = document.getElementById('logo-text');
+
+    if (textEl && settings.siteName) {
+      // Luôn cập nhật tên quán
+      textEl.textContent = (settings.logoEmoji || '🍚') + ' ' + settings.siteName;
+      textEl.style.display = 'inline';
+    }
+
+    if (imgEl && settings.logoUrl) {
+      let url = settings.logoUrl;
+      const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m) url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`;
+
+      imgEl.src = url;
+      imgEl.style.display = 'inline-block';
+      imgEl.onerror = () => { imgEl.style.display = 'none'; };
+    }
+
+    // Cập nhật hero title + slogan
     if (settings.siteName) {
       const titleEl  = document.getElementById('hero-title');
+      if (titleEl) titleEl.textContent = settings.siteName;
+    }
+    if (settings.slogan) {
       const sloganEl = document.getElementById('hero-slogan');
-      if (titleEl)  titleEl.textContent  = settings.siteName;
-      if (sloganEl && settings.slogan) sloganEl.textContent = settings.slogan;
-
-      // Cập nhật logo
-      if (typeof applyLogo === 'function') {
-        applyLogo(settings.logoUrl || '', settings.logoEmoji, settings.siteName);
-      }
+      if (sloganEl) sloganEl.textContent = settings.slogan;
     }
 
   } catch (err) {

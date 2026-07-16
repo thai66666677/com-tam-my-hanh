@@ -17,9 +17,15 @@
 
       <!-- LOGO: có thể là ảnh hoặc emoji -->
       <div class="logo" id="site-logo-wrap">
-        <img id="logo-img" src="" alt="Logo" class="logo-img" style="display:none;">
-        <span id="logo-text">🍚 Cơm Tấm Mỹ Hạnh</span>
-      </div>
+  <!-- Ảnh logo (ẩn nếu không có link) -->
+  <img id="logo-img" src="" alt="Logo"
+       style="display:none;height:38px;width:auto;
+              object-fit:contain;border-radius:6px;
+              vertical-align:middle;">
+
+  <!-- Tên quán (luôn hiển thị) -->
+  <span id="logo-text">🍚 Cơm Tấm Mỹ Hạnh</span>
+</div>
 
       <button class="nav-toggle" id="nav-toggle" aria-label="Mở menu">☰</button>
       <nav class="nav" id="main-nav">
@@ -182,24 +188,26 @@
   const textEl = document.getElementById('logo-text');
   if (!imgEl || !textEl) return;
 
-  // Chuyển đổi Google Drive link
-  let url = logoUrl || '';
-  const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (m) url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+  // Cập nhật tên quán (luôn hiển thị)
+  textEl.textContent = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+  textEl.style.display = 'inline';
 
-  if (url) {
-    imgEl.src  = url;
-    imgEl.style.display  = 'inline-block';
-    textEl.style.display = 'none';
+  // Xử lý logo ảnh
+  if (logoUrl) {
+    let url = logoUrl;
+    const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m) url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`;
+
+    imgEl.src = url;
+    imgEl.style.display = 'inline-block';
+
     imgEl.onerror = () => {
-      imgEl.style.display  = 'none';
-      textEl.style.display = 'inline';
-      textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+      // Link lỗi → ẩn ảnh, giữ tên
+      imgEl.style.display = 'none';
     };
   } else {
-    imgEl.style.display  = 'none';
-    textEl.style.display = 'inline';
-    textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+    // Không có logo → ẩn ảnh
+    imgEl.style.display = 'none';
   }
 }
 
