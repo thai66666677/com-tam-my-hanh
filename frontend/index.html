@@ -177,26 +177,31 @@
   <script>
     // ===== LOGO TỪ LINK =====
     // Khi settings có logoUrl → hiện ảnh thay emoji
-    function applyLogo(logoUrl, logoEmoji, siteName) {
-      const imgEl  = document.getElementById('logo-img');
-      const textEl = document.getElementById('logo-text');
+   function applyLogo(logoUrl, logoEmoji, siteName) {
+  const imgEl  = document.getElementById('logo-img');
+  const textEl = document.getElementById('logo-text');
+  if (!imgEl || !textEl) return;
 
-      if (logoUrl) {
-        imgEl.src             = logoUrl;
-        imgEl.style.display   = 'inline-block';
-        textEl.style.display  = 'none';
-        imgEl.onerror = () => {
-          // Nếu link ảnh lỗi → fallback về text
-          imgEl.style.display  = 'none';
-          textEl.style.display = 'inline';
-          textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
-        };
-      } else {
-        imgEl.style.display  = 'none';
-        textEl.style.display = 'inline';
-        textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
-      }
-    }
+  // Chuyển đổi Google Drive link
+  let url = logoUrl || '';
+  const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+
+  if (url) {
+    imgEl.src  = url;
+    imgEl.style.display  = 'inline-block';
+    textEl.style.display = 'none';
+    imgEl.onerror = () => {
+      imgEl.style.display  = 'none';
+      textEl.style.display = 'inline';
+      textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+    };
+  } else {
+    imgEl.style.display  = 'none';
+    textEl.style.display = 'inline';
+    textEl.textContent   = (logoEmoji || '🍚') + ' ' + (siteName || 'Cơm Tấm Mỹ Hạnh');
+  }
+}
 
     // ===== LOAD MÓN NỔI BẬT =====
     async function loadFeaturedItems() {

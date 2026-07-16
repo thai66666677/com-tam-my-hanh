@@ -30,103 +30,123 @@
 
     <!-- HƯỚNG DẪN -->
     <div class="admin-card" style="background:#e8f5e9;border:1px solid #a5d6a7;margin-bottom:16px;">
-      <h2 style="color:#2e7d32;margin-bottom:8px;">💡 Hướng dẫn thay đổi background</h2>
-      <p style="color:#555;font-size:0.9rem;line-height:1.8;">
-        Dán link ảnh vào từng trang bên dưới — giống cách thêm ảnh món ăn.<br>
-        <strong>Link ảnh hợp lệ:</strong> Google Drive, Imgur, Cloudinary, hoặc bất kỳ link .jpg/.png nào.<br>
-        <strong>Để trống</strong> = dùng màu đỏ mặc định.
+      <h2 style="color:#2e7d32;margin-bottom:8px;">💡 Hướng dẫn</h2>
+      <p style="color:#555;font-size:0.9rem;line-height:2;">
+        <strong>Background:</strong> Dán link ảnh Google Drive, Imgur... Code tự chuyển đổi.<br>
+        <strong>Logo:</strong> Dán link ảnh .png nền trong suốt (200×60px). Để trống = dùng emoji.<br>
+        <strong>Google Drive:</strong> Chuột phải → Chia sẻ → "Bất kỳ ai có đường link" → Copy link → Dán vào đây.
       </p>
     </div>
 
-    <!-- BACKGROUND TỪNG TRANG -->
+    <!-- ⚙️ THÔNG TIN QUÁN + LOGO -->
     <div class="admin-card">
-      <h2>🖼️ Background Từng Trang</h2>
-      <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">
-        Kích thước lý tưởng: 1920×900px. Nên nén ảnh tại <a href="https://tinypng.com" target="_blank">tinypng.com</a> trước khi dùng.
-      </p>
-
-      <!-- Danh sách các trang -->
-      <div id="bg-sections"></div>
-
-      <div class="form-actions" style="margin-top:24px;">
-        <button class="action-btn confirm" onclick="saveSettings()">💾 Lưu tất cả</button>
-        <button class="action-btn cancel"  onclick="loadSettings()">🔄 Tải lại</button>
-      </div>
-      <div class="account-msg" id="settings-msg"></div>
-    </div>
-
-    <!-- CÀI ĐẶT CHUNG -->
-    <div class="admin-card">
-      <h2>⚙️ Thông tin quán</h2>
+      <h2>⚙️ Thông tin quán & Logo</h2>
 
       <div class="menu-form-grid">
+
         <div class="form-group">
           <label>Tên quán</label>
           <input type="text" id="site-name" placeholder="Cơm Tấm Mỹ Hạnh">
         </div>
+
         <div class="form-group">
           <label>Slogan</label>
-          <input type="text" id="site-slogan" placeholder="Hương vị đậm đà, giao tận nơi nhanh chóng">
+          <input type="text" id="site-slogan"
+                 placeholder="Hương vị đậm đà, giao tận nơi nhanh chóng">
         </div>
+
         <div class="form-group">
-          <label>Logo (emoji)</label>
+          <label>Logo emoji (dùng khi không có ảnh logo)</label>
           <input type="text" id="site-logo" placeholder="🍚" style="font-size:1.5rem;">
         </div>
+
         <div class="form-group">
-          <label>Màu chủ đạo (hex)</label>
+          <label>Màu chủ đạo</label>
           <div style="display:flex;gap:10px;align-items:center;">
             <input type="color" id="site-color" value="#c0392b"
-                   style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;">
-            <input type="text"  id="site-color-hex" value="#c0392b"
+                   style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;"
+                   oninput="document.getElementById('site-color-hex').value=this.value">
+            <input type="text" id="site-color-hex" value="#c0392b"
                    placeholder="#c0392b" style="flex:1;"
                    oninput="document.getElementById('site-color').value=this.value">
           </div>
         </div>
+
+        <!-- LOGO URL -->
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>🖼️ Link ảnh logo quán</label>
+          <small style="color:#888;font-size:0.8rem;display:block;margin-bottom:8px;">
+            Nên dùng ảnh .png nền trong suốt, kích thước 200×60px. Để trống = dùng emoji ở trên.
+          </small>
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="site-logo-url"
+                   placeholder="https://drive.google.com/... hoặc https://i.imgur.com/..."
+                   style="flex:1;min-width:240px;padding:12px;border:2px solid #eee;
+                          border-radius:8px;font-family:inherit;font-size:0.9rem;"
+                   oninput="previewLogoUrl(this.value)">
+            <button onclick="testLogoUrl()"
+                    style="padding:10px 14px;background:#3498db;color:white;border:none;
+                           border-radius:8px;cursor:pointer;white-space:nowrap;font-size:0.85rem;">
+              🔍 Test ảnh
+            </button>
+            <button onclick="clearLogoUrl()"
+                    style="padding:10px 14px;background:#eee;color:#555;border:none;
+                           border-radius:8px;cursor:pointer;font-size:0.85rem;">
+              🗑️ Xóa
+            </button>
+          </div>
+
+          <!-- Preview nền tối -->
+          <div id="logo-preview-dark"
+               style="display:none;margin-top:12px;background:#222;padding:12px 20px;
+                      border-radius:10px;align-items:center;gap:12px;width:fit-content;">
+            <img id="logo-preview-img-dark" src="" alt="Logo"
+                 style="height:44px;width:auto;object-fit:contain;">
+            <span style="color:#aaa;font-size:0.8rem;">Preview nền tối (header)</span>
+          </div>
+
+          <!-- Preview nền sáng -->
+          <div id="logo-preview-light"
+               style="display:none;margin-top:8px;background:#f5f5f5;padding:12px 20px;
+                      border-radius:10px;border:1px solid #eee;
+                      align-items:center;gap:12px;width:fit-content;">
+            <img id="logo-preview-img-light" src="" alt="Logo"
+                 style="height:44px;width:auto;object-fit:contain;">
+            <span style="color:#888;font-size:0.8rem;">Preview nền sáng</span>
+          </div>
+        </div>
+
       </div>
 
-      <div class="form-actions" style="margin-top:16px;">
-        <button class="action-btn confirm" onclick="saveSettings()">💾 Lưu</button>
+      <div class="form-actions" style="margin-top:20px;">
+        <button class="action-btn confirm" onclick="saveSettings()">💾 Lưu thông tin quán</button>
       </div>
+      <div class="account-msg" id="info-msg"></div>
+    </div>
+
+    <!-- 🖼️ BACKGROUND TỪNG TRANG -->
+    <div class="admin-card">
+      <h2>🖼️ Background Từng Trang</h2>
+      <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">
+        Kích thước lý tưởng: 1920×900px. Nên nén tại
+        <a href="https://tinypng.com" target="_blank" style="color:#c0392b;">tinypng.com</a> trước khi dùng.
+      </p>
+
+      <div id="bg-sections">
+        <p style="text-align:center;color:#999;padding:20px;">⏳ Đang tải...</p>
+      </div>
+
+      <div class="form-actions" style="margin-top:24px;">
+        <button class="action-btn confirm" onclick="saveSettings()">💾 Lưu background</button>
+        <button class="action-btn cancel"  onclick="loadSettings()">🔄 Tải lại</button>
+      </div>
+      <div class="account-msg" id="bg-msg"></div>
     </div>
 
   </div>
-  <div class="form-group" style="grid-column: 1/-1;">
-  <label>🖼️ Link logo quán (để trống = dùng emoji)</label>
-  <input type="text" id="site-logo-url"
-         placeholder="https://i.imgur.com/xxx.png hoặc link Google Drive">
-  <small style="color:#888;font-size:0.8rem;margin-top:4px;display:block;">
-    💡 Nên dùng ảnh nền trong suốt (.png) kích thước 200×60px
-  </small>
-  <div id="logo-preview" style="margin-top:10px;display:none;">
-    <img id="logo-preview-img" src="" alt="Logo preview"
-         style="height:50px;border-radius:6px;background:#333;padding:6px;">
-  </div>
-</div>
 
   <script>
-      // Chuyển MỌI dạng Google Drive link → link ảnh trực tiếp
-function convertImageUrl(url) {
-  if (!url || !url.trim()) return '';
-  url = url.trim();
-
-  // Dạng 1: .../file/d/FILE_ID/view...
-  const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match1) {
-    return `https://drive.google.com/thumbnail?id=${match1[1]}&sz=w1200`;
-  }
-
-  // Dạng 2: ...id=FILE_ID...
-  const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match2) {
-    return `https://drive.google.com/thumbnail?id=${match2[1]}&sz=w1200`;
-  }
-
-  // Dạng 3: .../thumbnail?id=FILE_ID (đã đúng rồi)
-  if (url.includes('drive.google.com/thumbnail')) return url;
-
-  // Không phải Google Drive → dùng thẳng
-  return url;
-}
     // ===== BẢO VỆ TRANG =====
     const _loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
     const _token    = localStorage.getItem('adminToken');
@@ -142,132 +162,199 @@ function convertImageUrl(url) {
       window.location.href = 'login.html';
     }
 
+    // ===== CHUYỂN ĐỔI LINK ẢNH =====
+    function convertImageUrl(url) {
+      if (!url || !url.trim()) return '';
+      url = url.trim();
+      // Google Drive dạng /file/d/FILE_ID/view
+      const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w1200`;
+      // Google Drive dạng ?id=FILE_ID
+      const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w1200`;
+      // Đã là thumbnail
+      if (url.includes('drive.google.com/thumbnail')) return url;
+      // Các nguồn khác
+      return url;
+    }
+
+    function convertLogoUrl(url) {
+      if (!url || !url.trim()) return '';
+      url = url.trim();
+      const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w400`;
+      const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w400`;
+      if (url.includes('drive.google.com/thumbnail')) return url;
+      return url;
+    }
+
+    // ===== PREVIEW + TEST LOGO =====
+    function previewLogoUrl(rawUrl) {
+      const url         = convertLogoUrl(rawUrl);
+      const darkBox     = document.getElementById('logo-preview-dark');
+      const lightBox    = document.getElementById('logo-preview-light');
+      const imgDark     = document.getElementById('logo-preview-img-dark');
+      const imgLight    = document.getElementById('logo-preview-img-light');
+
+      if (url) {
+        darkBox.style.display  = 'flex';
+        lightBox.style.display = 'flex';
+        imgDark.src  = url;
+        imgLight.src = url;
+        imgDark.onerror = imgLight.onerror = () => {
+          darkBox.style.display  = 'none';
+          lightBox.style.display = 'none';
+        };
+      } else {
+        darkBox.style.display  = 'none';
+        lightBox.style.display = 'none';
+      }
+    }
+
+    function testLogoUrl() {
+      const raw = document.getElementById('site-logo-url')?.value.trim();
+      const url = convertLogoUrl(raw);
+      if (!url) { alert('⚠️ Chưa nhập link logo!'); return; }
+
+      const img = new Image();
+      img.onload  = () => {
+        previewLogoUrl(raw);
+        alert(`✅ Logo hợp lệ!\nKích thước: ${img.naturalWidth}×${img.naturalHeight}px`);
+      };
+      img.onerror = () => {
+        alert('❌ Không tải được ảnh!\n\nKiểm tra:\n1. Đúng link ảnh chưa?\n2. Google Drive đã đặt quyền "Bất kỳ ai có đường link" chưa?');
+      };
+      img.src = url;
+    }
+
+    function clearLogoUrl() {
+      const input = document.getElementById('site-logo-url');
+      if (input) input.value = '';
+      previewLogoUrl('');
+    }
+
     // ===== CẤU HÌNH CÁC TRANG =====
     const PAGES = [
       { key: 'home',    label: '🏠 Trang chủ',       desc: 'Ảnh nền lớn phần banner đầu trang' },
       { key: 'menu',    label: '🍽️ Trang Menu',      desc: 'Ảnh nền phần tiêu đề trang menu' },
       { key: 'order',   label: '🛒 Trang Đặt Món',   desc: 'Ảnh nền phần tiêu đề trang đặt món' },
-      { key: 'account', label: '👤 Trang Tài Khoản', desc: 'Ảnh nền phần tiêu đề trang tài khoản' },
-      { key: 'history', label: '📋 Lịch Sử Đơn',    desc: 'Ảnh nền phần tiêu đề trang lịch sử' },
-      { key: 'reviews', label: '⭐ Đánh Giá',         desc: 'Ảnh nền phần tiêu đề trang đánh giá' },
+      { key: 'account', label: '👤 Tài Khoản',        desc: 'Ảnh nền phần tiêu đề trang tài khoản' },
+      { key: 'history', label: '📋 Lịch Sử Đơn',     desc: 'Ảnh nền phần tiêu đề trang lịch sử' },
+      { key: 'reviews', label: '⭐ Đánh Giá',          desc: 'Ảnh nền phần tiêu đề trang đánh giá' },
     ];
-
-    let currentSettings = {};
 
     // ===== RENDER FORM BACKGROUND =====
     function renderBgSections(backgrounds = {}) {
       const container = document.getElementById('bg-sections');
       container.innerHTML = PAGES.map(page => {
-        const url = backgrounds[page.key] || '';
+        const raw       = typeof backgrounds[page.key] === 'object'
+          ? (backgrounds[page.key]?.url || '')
+          : (backgrounds[page.key] || '');
+        const opacity   = typeof backgrounds[page.key] === 'object'
+          ? (backgrounds[page.key]?.opacity ?? 30)
+          : 30;
+        const converted = convertImageUrl(raw);
+
         return `
-          <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #eee;">
+          <div style="margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #eee;">
             <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
 
-              <!-- Preview ảnh -->
-
+              <!-- Preview nhỏ -->
               <div id="preview-${page.key}"
                    style="width:140px;height:80px;border-radius:10px;flex-shrink:0;
-                          background:${url ? `url('${url}') center/cover` : 'linear-gradient(135deg,#c0392b,#e74c3c)'};
-                          border:2px solid #eee;position:relative;overflow:hidden;">
-                ${!url ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:0.75rem;">Mặc định</div>' : ''}
+                          border:2px solid #eee;position:relative;overflow:hidden;
+                          background:${converted
+                            ? `url('${converted}') center/cover no-repeat`
+                            : 'linear-gradient(135deg,#c0392b,#e74c3c)'};">
+                ${!converted
+                  ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);font-size:0.75rem;">Mặc định</div>'
+                  : ''}
               </div>
 
-
-              <!-- Input -->
-              <div style="flex:1;min-width:200px;">
-                <div style="font-weight:600;margin-bottom:4px;">${page.label}</div>
+              <!-- Form -->
+              <div style="flex:1;min-width:240px;">
+                <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">${page.label}</div>
                 <div style="font-size:0.8rem;color:#888;margin-bottom:8px;">${page.desc}</div>
+
                 <input type="text"
                        id="bg-${page.key}"
-                       value="${url}"
-                       placeholder="Dán link ảnh vào đây (để trống = dùng màu đỏ mặc định)"
+                       value="${raw}"
+                       placeholder="Dán link ảnh (để trống = màu đỏ mặc định)"
                        style="width:100%;padding:10px;border:2px solid #eee;border-radius:8px;
-                              font-size:0.9rem;font-family:inherit;"
+                              font-size:0.9rem;font-family:inherit;box-sizing:border-box;"
                        oninput="previewBg('${page.key}', this.value)">
-              <!-- Thêm vào sau ô input link ảnh -->
-<div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-  <label style="font-size:0.8rem;color:#555;white-space:nowrap;">Độ mờ overlay:</label>
-  <input type="range" id="overlay-${page.key}"
-         min="0" max="80" value="30" step="5"
-         style="flex:1;"
-         oninput="document.getElementById('overlay-val-${page.key}').textContent=this.value+'%'">
-  <span id="overlay-val-${page.key}" style="font-size:0.8rem;color:#888;min-width:36px;">30%</span>
-</div>
-<small style="color:#888;font-size:0.75rem;">0% = ảnh rõ hoàn toàn · 80% = tối nhiều</small>
 
-                <!-- Nút test + xóa -->
-                <div style="display:flex;gap:8px;margin-top:8px;">
+                <!-- Slider độ mờ -->
+                <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+                  <label style="font-size:0.8rem;color:#555;white-space:nowrap;">
+                    Độ mờ overlay:
+                  </label>
+                  <input type="range"
+                         id="overlay-${page.key}"
+                         min="0" max="80" value="${opacity}" step="5"
+                         style="flex:1;"
+                         oninput="document.getElementById('ov-val-${page.key}').textContent=this.value+'%'">
+                  <span id="ov-val-${page.key}"
+                        style="font-size:0.8rem;color:#888;min-width:36px;">
+                    ${opacity}%
+                  </span>
+                </div>
+                <small style="color:#aaa;font-size:0.72rem;">
+                  0% = ảnh rõ hoàn toàn · 80% = tối nhiều
+                </small>
+
+                <!-- Nút -->
+                <div style="display:flex;gap:8px;margin-top:10px;">
                   <button onclick="testBgUrl('${page.key}')"
-                    style="padding:6px 12px;background:#3498db;color:white;border:none;
-                           border-radius:6px;font-size:0.8rem;cursor:pointer;">
+                          style="padding:7px 14px;background:#3498db;color:white;border:none;
+                                 border-radius:6px;font-size:0.8rem;cursor:pointer;">
                     🔍 Test ảnh
                   </button>
                   <button onclick="clearBg('${page.key}')"
-                    style="padding:6px 12px;background:#eee;color:#555;border:none;
-                           border-radius:6px;font-size:0.8rem;cursor:pointer;">
+                          style="padding:7px 14px;background:#eee;color:#555;border:none;
+                                 border-radius:6px;font-size:0.8rem;cursor:pointer;">
                     🗑️ Xóa
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // ===== PREVIEW BACKGROUND KHI NHẬP =====
-     function previewBg(key, url) {
-  const preview  = document.getElementById(`preview-${key}`);
-  if (!preview) return;
-
-  const converted = convertImageUrl(url); // ← Chuyển đổi trước
-
-  if (converted) {
-    preview.style.background = `url('${converted}') center/cover no-repeat`;
-    preview.innerHTML = '';
-  } else {
-    preview.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
-    preview.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:0.75rem;">Mặc định</div>';
-  }
-}
+    // ===== PREVIEW BACKGROUND =====
+    function previewBg(key, rawUrl) {
+      const preview   = document.getElementById(`preview-${key}`);
+      const converted = convertImageUrl(rawUrl);
+      if (!preview) return;
+      if (converted) {
+        preview.style.background = `url('${converted}') center/cover no-repeat`;
+        preview.innerHTML = '';
+      } else {
+        preview.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
+        preview.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);font-size:0.75rem;">Mặc định</div>';
+      }
+    }
 
     // ===== TEST URL ẢNH =====
-   function testBgUrl(key) {
-  const raw       = document.getElementById(`bg-${key}`)?.value.trim();
-  const converted = convertImageUrl(raw);
+    function testBgUrl(key) {
+      const raw = document.getElementById(`bg-${key}`)?.value.trim();
+      const url = convertImageUrl(raw);
+      if (!url) { alert('⚠️ Chưa có link ảnh!'); return; }
 
-  if (!converted) { alert('Chưa có link ảnh!'); return; }
-
-  const img    = new Image();
-  img.onload  = () => {
-    // Cập nhật preview ngay
-    previewBg(key, raw);
-    alert(`✅ Ảnh hợp lệ!\nKích thước: ${img.naturalWidth}×${img.naturalHeight}px`);
-  };
-  img.onerror = () => {
-    alert('❌ Không tải được ảnh!\nKiểm tra:\n1. File có phải ảnh không?\n2. Đã đặt quyền "Bất kỳ ai có đường link" chưa?');
-  };
-  img.src = converted;
-}
-// Preview logo khi nhập URL
-const logoUrlInput = document.getElementById('site-logo-url');
-if (logoUrlInput) {
-  logoUrlInput.addEventListener('input', () => {
-    const url        = logoUrlInput.value.trim();
-    const previewBox = document.getElementById('logo-preview');
-    const previewImg = document.getElementById('logo-preview-img');
-    if (url && previewBox && previewImg) {
-      previewImg.src = url;
-      previewBox.style.display = 'block';
-      previewImg.onerror = () => previewBox.style.display = 'none';
-    } else if (previewBox) {
-      previewBox.style.display = 'none';
+      const img = new Image();
+      img.onload  = () => {
+        previewBg(key, raw);
+        alert(`✅ Ảnh hợp lệ!\nKích thước: ${img.naturalWidth}×${img.naturalHeight}px`);
+      };
+      img.onerror = () => {
+        alert('❌ Không tải được ảnh!\n\nKiểm tra:\n1. Đúng link ảnh chưa?\n2. Google Drive đặt quyền "Bất kỳ ai" chưa?');
+      };
+      img.src = url;
     }
-  });
-}
 
-    // ===== XÓA BACKGROUND =====
     function clearBg(key) {
       const input = document.getElementById(`bg-${key}`);
       if (input) input.value = '';
@@ -279,34 +366,31 @@ if (logoUrlInput) {
       try {
         const res  = await fetch(`${API_URL}/settings`);
         const data = await res.json();
-        currentSettings = data;
 
-        // Render backgrounds
         renderBgSections(data.backgrounds || {});
 
-        // Điền thông tin chung
-        const nameEl   = document.getElementById('site-name');
-        const sloganEl = document.getElementById('site-slogan');
-        const logoEl   = document.getElementById('site-logo');
-        const colorEl  = document.getElementById('site-color');
-        const hexEl    = document.getElementById('site-color-hex');
+        // Điền thông tin quán
+        const fields = {
+          'site-name':      data.siteName     || 'Cơm Tấm Mỹ Hạnh',
+          'site-slogan':    data.slogan        || '',
+          'site-logo':      data.logoEmoji     || '🍚',
+          'site-logo-url':  data.logoUrl       || '',
+          'site-color':     data.primaryColor  || '#c0392b',
+          'site-color-hex': data.primaryColor  || '#c0392b',
+        };
 
-        if (nameEl)   nameEl.value   = data.siteName   || 'Cơm Tấm Mỹ Hạnh';
-        if (sloganEl) sloganEl.value = data.slogan      || 'Hương vị đậm đà, giao tận nơi nhanh chóng';
-        if (logoEl)   logoEl.value   = data.logoEmoji   || '🍚';
-        if (colorEl)  colorEl.value  = data.primaryColor || '#c0392b';
-        if (hexEl)    hexEl.value    = data.primaryColor || '#c0392b';
+        Object.entries(fields).forEach(([id, val]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        });
 
-        // Sync color picker
-        if (colorEl) {
-          colorEl.addEventListener('input', () => {
-            if (hexEl) hexEl.value = colorEl.value;
-          });
-        }
+        // Preview logo nếu có
+        if (data.logoUrl) previewLogoUrl(data.logoUrl);
 
       } catch (err) {
         console.error('Lỗi tải settings:', err);
         renderBgSections({});
+        showMsg('bg-msg', '❌ Không kết nối được server!', 'error');
       }
     }
 
@@ -315,26 +399,23 @@ if (logoUrlInput) {
       const token = localStorage.getItem('adminToken');
       if (!token) { adminLogout(); return; }
 
-      const msg = document.getElementById('settings-msg');
-
-      // Lấy tất cả giá trị background - TỰ ĐỘNG CHUYỂN ĐỔI
+      // Lấy backgrounds
       const backgrounds = {};
-PAGES.forEach(page => {
-  const raw     = document.getElementById(`bg-${page.key}`)?.value.trim()    || '';
-  const opacity = document.getElementById(`overlay-${page.key}`)?.value      || '30';
-  backgrounds[page.key] = {
-    url:     convertImageUrl(raw),
-    opacity: parseInt(opacity)
-  };
-});
+      PAGES.forEach(page => {
+        const raw     = document.getElementById(`bg-${page.key}`)?.value.trim() || '';
+        const opacity = parseInt(document.getElementById(`overlay-${page.key}`)?.value || '30');
+        backgrounds[page.key] = {
+          url:     convertImageUrl(raw),
+          opacity: opacity
+        };
+      });
 
       const settings = {
         backgrounds,
-        siteName:     document.getElementById('site-name')?.value.trim()    || 'Cơm Tấm Mỹ Hạnh',
-        slogan:       document.getElementById('site-slogan')?.value.trim()  || '',
-        logoEmoji:    document.getElementById('site-logo')?.value.trim()    || '🍚'
-        ,
-        logoUrl:      document.getElementById('site-logo-url')?.value.trim() || '',
+        siteName:     document.getElementById('site-name')?.value.trim()     || 'Cơm Tấm Mỹ Hạnh',
+        slogan:       document.getElementById('site-slogan')?.value.trim()   || '',
+        logoEmoji:    document.getElementById('site-logo')?.value.trim()     || '🍚',
+        logoUrl:      convertLogoUrl(document.getElementById('site-logo-url')?.value.trim() || ''),
         primaryColor: document.getElementById('site-color-hex')?.value.trim() || '#c0392b'
       };
 
@@ -342,27 +423,38 @@ PAGES.forEach(page => {
         const res  = await fetch(`${API_URL}/settings`, {
           method:  'PUT',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':  'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(settings)
         });
         const data = await res.json();
 
-        if (!res.ok) {
-          msg.textContent = data.error || 'Lưu thất bại!';
-          msg.className   = 'account-msg error';
+        if (res.status === 401 || res.status === 403) {
+          alert('⚠️ Phiên đăng nhập hết hạn!');
+          adminLogout();
           return;
         }
 
-        msg.textContent = '✅ Đã lưu cài đặt giao diện!';
-        msg.className   = 'account-msg success';
-        setTimeout(() => msg.textContent = '', 3000);
+        if (!res.ok) {
+          showMsg('bg-msg', data.error || 'Lưu thất bại!', 'error');
+          return;
+        }
+
+        showMsg('bg-msg',   '✅ Đã lưu! Mở trang khách để xem kết quả.', 'success');
+        showMsg('info-msg', '✅ Đã lưu thông tin quán!',                   'success');
 
       } catch (err) {
-        msg.textContent = '❌ Không kết nối được server!';
-        msg.className   = 'account-msg error';
+        showMsg('bg-msg', '❌ Không kết nối được server!', 'error');
       }
+    }
+
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className   = `account-msg ${type}`;
+      setTimeout(() => el.textContent = '', 4000);
     }
 
     // ===== KHỞI ĐỘNG =====
