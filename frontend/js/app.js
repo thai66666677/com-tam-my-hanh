@@ -1137,34 +1137,83 @@ document.querySelectorAll('.star').forEach(star => {
   });
 });
 
-function submitReview() {
+// =====================
+// ĐÁNH GIÁ — FIRESTORE
+// =====================
+let selectedRating = 0;
+
+function enableReviewDemo() {
+  const prompt = document.getElementById('review-prompt');
+  const form   = document.getElementById('review-form');
+  if (prompt) prompt.style.display = 'none';
+  if (form)   form.style.display   = 'block';
+}
+
+document.querySelectorAll('.star').forEach(star => {
+  star.addEventListener('click', () => {
+    selectedRating = parseInt(star.dataset.value);
+    document.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.value) <= selectedRating);
+    });
+  });
+  star.addEventListener('mouseenter', () => {
+    document.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('hover', parseInt(s.dataset.value) <= parseInt(star.dataset.value));
+    });
+  });
+  star.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('hover'));
+  });
+});
+
+async function submitReview() {
   if (selectedRating === 0) { alert('Vui lòng chọn số sao!'); return; }
+
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    alert('Vui lòng đăng nhập để gửi đánh giá!');
+    return;
+  }
 
   const orderId    = document.getElementById('order-id')?.textContent.replace(' ✅ Đã copy!', '');
   const comment    = document.getElementById('review-comment')?.value.trim() || '';
-  const savedName  = sessionStorage.getItem('lastOrderCustomerName');
   const savedItems = JSON.parse(sessionStorage.getItem('lastOrderItems') || '[]');
 
-  const review = {
-    id:           'RV' + Date.now().toString().slice(-6),
-    orderId,
-    customerName: savedName ? maskName(savedName) : 'Khách hàng',
-    items:        savedItems.join(', '),
-    rating:       selectedRating,
-    comment,
-    createdAt:    new Date().toISOString()
-  };
+  const btn = document.querySelector('#review-form .btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang gửi...'; }
 
-  const reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
-  reviews.push(review);
-  localStorage.setItem('reviews', JSON.stringify(reviews));
+  try {
+    const res  = await fetch(`${API_URL}/reviews`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        orderId,
+        rating:  selectedRating,
+        comment,
+        items:   savedItems.join(', ')
+      })
+    });
+    const data = await res.json();
 
-  const formEl   = document.getElementById('review-form');
-  const thanksEl = document.getElementById('review-thanks');
-  if (formEl)   formEl.style.display   = 'none';
-  if (thanksEl) thanksEl.style.display = 'block';
+    if (!res.ok) {
+      alert(data.error || 'Gửi đánh giá thất bại!');
+      return;
+    }
+
+    const formEl   = document.getElementById('review-form');
+    const thanksEl = document.getElementById('review-thanks');
+    if (formEl)   formEl.style.display   = 'none';
+    if (thanksEl) thanksEl.style.display = 'block';
+
+  } catch (err) {
+    alert('Không kết nối được server!');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Gửi đánh giá'; }
+  }
 }
-
 function maskName(name) {
   const parts = name.trim().split(' ');
   if (parts.length <= 1) return name;
@@ -1177,39 +1226,45 @@ function maskName(name) {
 // =====================
 // TRANG REVIEWS.HTML
 // =====================
-function renderReviews() {
+async function renderReviews() {
   const list = document.getElementById('reviews-list');
   if (!list) return;
 
-  const reviews   = JSON.parse(localStorage.getItem('reviews') || '[]');
-  const noReviews = document.getElementById('no-reviews');
+  try {
+    const res     = await fetch(`${API_URL}/reviews`);
+    const reviews = await res.json();
+    const noReviews = document.getElementById('no-reviews');
 
-  if (reviews.length === 0) {
-    if (noReviews) noReviews.style.display = 'block';
-    renderSummary([]);
-    return;
-  }
+    if (!reviews || reviews.length === 0) {
+      if (noReviews) noReviews.style.display = 'block';
+      renderSummary([]);
+      return;
+    }
 
-  if (noReviews) noReviews.style.display = 'none';
+    if (noReviews) noReviews.style.display = 'none';
 
-  list.innerHTML = [...reviews].reverse().map(r => `
-    <div class="review-card">
-      <div class="review-header">
-        <div class="review-avatar">👤</div>
-        <div class="review-meta">
-          <strong>${r.customerName}</strong>
-          <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+    list.innerHTML = reviews.map(r => `
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">👤</div>
+          <div class="review-meta">
+            <strong>${r.customerName}</strong>
+            <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+          </div>
+          <span class="review-date">${formatReviewDate(r.createdAt)}</span>
         </div>
-        <span class="review-date">${formatReviewDate(r.createdAt)}</span>
+        ${r.items   ? `<div class="review-items">🍽️ ${r.items}</div>` : ''}
+        ${r.comment ? `<p class="review-comment">"${r.comment}"</p>`   : ''}
       </div>
-      ${r.items   ? `<div class="review-items">🍽️ ${r.items}</div>` : ''}
-      ${r.comment ? `<p class="review-comment">"${r.comment}"</p>`   : ''}
-    </div>
-  `).join('');
+    `).join('');
 
-  renderSummary(reviews);
+    renderSummary(reviews);
+
+  } catch (err) {
+    console.error('Lỗi tải reviews:', err);
+    list.innerHTML = '<p style="text-align:center;color:#999;">⚠️ Không tải được đánh giá</p>';
+  }
 }
-
 function renderSummary(reviews) {
   const avgEl   = document.getElementById('avg-score');
   const starsEl = document.getElementById('avg-stars');
