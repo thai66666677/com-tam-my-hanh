@@ -1,21 +1,21 @@
 // =====================
-// GIỜ MỞ/ĐÓNG CỬA TỰ ĐỘNG
+// GIỜ MỞ/ĐÓNG CỬA
 // =====================
 const BUSINESS_HOURS = {
-  0: { open: '06:00', close: '22:00' },
-  1: { open: '06:00', close: '22:00' },
-  2: { open: '06:00', close: '22:00' },
-  3: { open: '06:00', close: '22:00' },
-  4: { open: '06:00', close: '22:00' },
-  5: { open: '06:00', close: '22:00' },
-  6: { open: '06:00', close: '22:00' },
+  0: { open: '06:00', close: '21:00' },
+  1: { open: '06:00', close: '21:00' },
+  2: { open: '06:00', close: '21:00' },
+  3: { open: '06:00', close: '21:00' },
+  4: { open: '06:00', close: '21:00' },
+  5: { open: '06:00', close: '21:00' },
+  6: { open: '06:00', close: '21:00' },
 };
 
 function checkBusinessHours() {
   const now   = new Date();
   const day   = now.getDay();
   const hours = BUSINESS_HOURS[day];
-  if (!hours) return { isOpen: false, timeMsg: 'Hôm nay quán nghỉ' };
+  if (!hours) return { isOpen: false, openTime: '06:00', closeTime: '21:00', timeMsg: 'Hôm nay quán nghỉ' };
 
   const [openH,  openM]  = hours.open.split(':').map(Number);
   const [closeH, closeM] = hours.close.split(':').map(Number);
@@ -26,15 +26,13 @@ function checkBusinessHours() {
 
   let timeMsg = '';
   if (isOpen) {
-    const remaining = closeTime - nowTime;
-    const h = Math.floor(remaining / 60);
-    const m = remaining % 60;
+    const rem = closeTime - nowTime;
+    const h = Math.floor(rem / 60), m = rem % 60;
     timeMsg = h > 0 ? `Đóng cửa sau ${h} giờ ${m} phút` : `Đóng cửa sau ${m} phút`;
   } else {
     if (nowTime < openTime) {
       const wait = openTime - nowTime;
-      const h = Math.floor(wait / 60);
-      const m = wait % 60;
+      const h = Math.floor(wait / 60), m = wait % 60;
       timeMsg = h > 0 ? `Mở cửa sau ${h} giờ ${m} phút` : `Mở cửa sau ${m} phút`;
     } else {
       timeMsg = `Mở cửa lúc ${hours.open} ngày mai`;
@@ -105,7 +103,6 @@ function addToCart(name, price) {
     }
     return;
   }
-
   const existing = cart.find(item => item.name === name);
   if (existing) {
     existing.quantity += 1;
@@ -134,7 +131,7 @@ function formatPrice(price) {
 
 
 // =====================
-// TRANG ORDER.HTML — GIỎ HÀNG
+// TRANG ORDER.HTML
 // =====================
 function checkAuthForOrder() {
   const orderContent = document.getElementById('order-content');
@@ -227,10 +224,10 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
 });
 
 function generateQR() {
-  const total      = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
-  const orderId    = 'DH' + Date.now().toString().slice(-5);
-  const contentEl  = document.getElementById('qr-content');
-  const imgEl      = document.getElementById('qr-img');
+  const total     = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
+  const orderId   = 'DH' + Date.now().toString().slice(-5);
+  const contentEl = document.getElementById('qr-content');
+  const imgEl     = document.getElementById('qr-img');
   if (contentEl) contentEl.textContent = orderId;
 
   const BANK_ID      = 'VCB';
@@ -252,7 +249,6 @@ async function submitOrder() {
   const addressEl = document.getElementById('customer-address');
   const noteEl    = document.getElementById('order-note');
   const payEl     = document.querySelector('input[name="payment"]:checked');
-
   if (!nameEl || !phoneEl) return;
 
   const name    = nameEl.value.trim();
@@ -343,14 +339,12 @@ let lastTrackedStatus = null;
 
 function startOrderTracking(orderId) {
   lastTrackedStatus = 'new';
-
   const trackingEl   = document.getElementById('order-tracking');
   const trackingIdEl = document.getElementById('tracking-id');
-  if (trackingEl)   trackingEl.style.display   = 'block';
+  if (trackingEl)   trackingEl.style.display = 'block';
   if (trackingIdEl) trackingIdEl.textContent = orderId;
 
   updateTrackingUI({ id: orderId, status: 'new', createdAt: new Date().toISOString() });
-
   fetchOrderStatus(orderId);
   if (trackingInterval) clearInterval(trackingInterval);
   trackingInterval = setInterval(() => fetchOrderStatus(orderId), 10000);
@@ -366,16 +360,13 @@ async function fetchOrderStatus(orderId) {
       playStatusChangeSound(order.status);
       lastTrackedStatus = order.status;
     }
-
     updateTrackingUI(order);
 
     if (order.status === 'done' || order.status === 'cancelled') {
       clearInterval(trackingInterval);
       trackingInterval = null;
     }
-  } catch (err) {
-    console.log('Lỗi theo dõi đơn:', err.message);
-  }
+  } catch (err) {}
 }
 
 function updateTrackingUI(order) {
@@ -385,18 +376,16 @@ function updateTrackingUI(order) {
     done:      { active: 'step-done',      done: ['step-new','step-confirmed','step-cooking'] },
     cancelled: { active: null,              done: [] }
   };
-
   const cfg = steps[order.status] || steps.new;
+
   ['step-new','step-confirmed','step-cooking','step-done'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.className = 'tracking-step';
   });
-
   cfg.done.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('done');
   });
-
   if (order.status === 'cancelled') {
     ['step-new','step-confirmed','step-cooking','step-done'].forEach(id => {
       const el = document.getElementById(id);
@@ -406,8 +395,8 @@ function updateTrackingUI(order) {
     const el = document.getElementById(cfg.active);
     if (el) el.classList.add('active');
     if (order.status === 'confirmed') {
-      const cookEl = document.getElementById('step-cooking');
-      if (cookEl) cookEl.classList.add('active');
+      const c = document.getElementById('step-cooking');
+      if (c) c.classList.add('active');
     }
   }
 
@@ -421,16 +410,12 @@ function updateTrackingUI(order) {
   const messages = {
     new:       { text: '⏳ Đơn hàng đang chờ quán xác nhận...', cls: 'new' },
     confirmed: { text: '👨‍🍳 Quán đã xác nhận! Đang chuẩn bị món...', cls: 'confirmed' },
-    done:      { text: '🎉 Đơn hàng đã hoàn thành! Chúc ngon miệng!', cls: 'done' },
-    cancelled: { text: '❌ Đơn hàng đã bị hủy. Vui lòng liên hệ quán.', cls: 'cancelled' }
+    done:      { text: '🎉 Đơn hàng hoàn thành! Chúc ngon miệng!', cls: 'done' },
+    cancelled: { text: '❌ Đơn hàng bị hủy. Vui lòng liên hệ quán.', cls: 'cancelled' }
   };
-
   const msg   = messages[order.status] || messages.new;
   const msgEl = document.getElementById('tracking-status-msg');
-  if (msgEl) {
-    msgEl.textContent = msg.text;
-    msgEl.className   = `tracking-status-msg ${msg.cls}`;
-  }
+  if (msgEl) { msgEl.textContent = msg.text; msgEl.className = `tracking-status-msg ${msg.cls}`; }
 
   const infoEl = document.getElementById('tracking-info');
   if (infoEl && order.items) {
@@ -450,30 +435,27 @@ function playStatusChangeSound(status) {
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-
     if (status === 'done') {
       osc.frequency.setValueAtTime(523, ctx.currentTime);
       osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15);
       osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);
       gain.gain.setValueAtTime(0.5, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.7);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.7);
     } else {
       osc.frequency.setValueAtTime(880, ctx.currentTime);
       gain.gain.setValueAtTime(0.4, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
     }
   } catch (e) {}
 }
 
 
 // =====================
-// TÌM KIẾM + LỌC DANH MỤC MENU
+// TÌM KIẾM + LỌC MENU
 // =====================
-let currentCategory  = 'all';
+let currentCategory   = 'all';
 let currentSearchTerm = '';
 
 function applyMenuFilters() {
@@ -485,21 +467,14 @@ function applyMenuFilters() {
     const category = card.dataset.category;
     const nameEl   = card.querySelector('h3');
     const name     = nameEl ? nameEl.textContent.toLowerCase() : '';
+    const matchCat    = currentCategory === 'all' || category === currentCategory;
+    const matchSearch = currentSearchTerm === '' || name.includes(currentSearchTerm);
 
-    const matchCategory = currentCategory === 'all' || category === currentCategory;
-    const matchSearch   = currentSearchTerm === '' || name.includes(currentSearchTerm);
-
-    if (matchCategory && matchSearch) {
-      card.style.display = 'block';
-      visibleCount++;
-    } else {
-      card.style.display = 'none';
-    }
+    if (matchCat && matchSearch) { card.style.display = 'block'; visibleCount++; }
+    else                          { card.style.display = 'none'; }
   });
 
-  if (noResultEl) {
-    noResultEl.style.display = visibleCount === 0 ? 'block' : 'none';
-  }
+  if (noResultEl) noResultEl.style.display = visibleCount === 0 ? 'block' : 'none';
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -513,13 +488,10 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 const searchInput    = document.getElementById('menu-search');
 const searchClearBtn = document.getElementById('search-clear');
-
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     currentSearchTerm = searchInput.value.trim().toLowerCase();
-    if (searchClearBtn) {
-      searchClearBtn.style.display = currentSearchTerm ? 'block' : 'none';
-    }
+    if (searchClearBtn) searchClearBtn.style.display = currentSearchTerm ? 'block' : 'none';
     applyMenuFilters();
   });
 }
@@ -533,7 +505,7 @@ function clearSearch() {
 
 
 // =====================
-// LOAD MENU TỪ API + SMART POLLING
+// LOAD MENU TỪ FIRESTORE + SMART POLLING
 // =====================
 let menuPollInterval  = null;
 let menuCacheSnapshot = {};
@@ -546,7 +518,6 @@ async function loadMenu() {
   try {
     const res   = await fetch(`${API_URL}/menu`);
     const items = await res.json();
-
     if (loading) loading.style.display = 'none';
     grid.style.display = 'grid';
 
@@ -558,9 +529,7 @@ async function loadMenu() {
     renderMenuGrid(items);
     items.forEach(item => { menuCacheSnapshot[item.id] = item.available !== false; });
     startMenuPolling();
-
   } catch (err) {
-    console.error('Lỗi tải menu:', err);
     if (loading) loading.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Không tải được thực đơn!</p>';
   }
 }
@@ -574,31 +543,24 @@ function renderMenuGrid(items) {
 
 function buildMenuCard(item) {
   const isAvailable = item.available !== false;
-  const images = (item.images && item.images.length > 0)
-    ? item.images
-    : item.imageUrl ? [item.imageUrl] : [];
+  const images      = (item.images && item.images.length > 0) ? item.images : item.imageUrl ? [item.imageUrl] : [];
   const hasMultiple = images.length > 1;
 
   return `
     <div class="menu-card ${!isAvailable ? 'menu-card-sold-out' : ''}"
-         data-category="${item.category}"
-         data-item-id="${item.id}">
+         data-category="${item.category}" data-item-id="${item.id}">
       <div class="menu-img-wrap" style="position:relative;overflow:hidden;">
-
         ${hasMultiple ? `
           <div class="img-carousel" id="carousel-${item.id}">
             ${images.map((url, i) => `
-              <img src="${url}"
-                   class="carousel-img ${i === 0 ? 'active' : ''}"
-                   alt="${item.name}"
-                   style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}"
+              <img src="${url}" class="carousel-img ${i === 0 ? 'active' : ''}"
+                   alt="${item.name}" style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}"
                    onerror="this.style.display='none'">
             `).join('')}
           </div>
           <div class="carousel-dots">
             ${images.map((_, i) => `
-              <span class="dot ${i === 0 ? 'active' : ''}"
-                    onclick="goToSlide('${item.id}', ${i})"></span>
+              <span class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide('${item.id}', ${i})"></span>
             `).join('')}
           </div>
           <button class="carousel-btn prev" onclick="changeSlide('${item.id}', -1)">&#8249;</button>
@@ -609,21 +571,13 @@ function buildMenuCard(item) {
                alt="${item.name}" class="menu-img-real"
                style="${!isAvailable ? 'filter:grayscale(0.7)' : ''}">
         `}
-
-        ${item.badge && isAvailable
-          ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>`
-          : ''}
-        ${!isAvailable
-          ? `<span class="badge badge-sold-out">😢 Hết hàng</span>`
-          : ''}
+        ${item.badge && isAvailable ? `<span class="badge badge-${item.badge}">${getBadgeLabel(item.badge)}</span>` : ''}
+        ${!isAvailable ? `<span class="badge badge-sold-out">😢 Hết hàng</span>` : ''}
       </div>
-
       <div class="menu-info">
         <h3>${item.name}</h3>
         <p>${item.desc || ''}</p>
-        ${item.soldCount > 0 && isAvailable
-          ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>`
-          : ''}
+        ${item.soldCount > 0 && isAvailable ? `<div class="order-count">🛒 Đã bán ${item.soldCount} lần hôm nay</div>` : ''}
         <div class="menu-footer">
           <div class="price-wrap">
             <span class="price">${formatPrice(item.price)}</span>
@@ -642,32 +596,28 @@ function getBadgeLabel(badge) {
   return { hot: '🔥 Bán chạy', new: '⭐ Nổi bật', special: '🎁 Đặc biệt', fresh: '✨ Mới có' }[badge] || '';
 }
 
-// Carousel functions
 const carouselState = {};
-
-function changeSlide(itemId, direction) {
-  const carousel = document.getElementById(`carousel-${itemId}`);
-  if (!carousel) return;
-  const imgs  = carousel.querySelectorAll('.carousel-img');
-  const dots  = carousel.parentElement.querySelectorAll('.dot');
+function changeSlide(itemId, dir) {
+  const car   = document.getElementById(`carousel-${itemId}`);
+  if (!car) return;
+  const imgs  = car.querySelectorAll('.carousel-img');
+  const dots  = car.parentElement.querySelectorAll('.dot');
   const total = imgs.length;
-  carouselState[itemId] = ((carouselState[itemId] || 0) + direction + total) % total;
+  carouselState[itemId] = ((carouselState[itemId] || 0) + dir + total) % total;
   const idx = carouselState[itemId];
   imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
   dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
 }
-
 function goToSlide(itemId, index) {
-  const carousel = document.getElementById(`carousel-${itemId}`);
-  if (!carousel) return;
-  const imgs = carousel.querySelectorAll('.carousel-img');
-  const dots = carousel.parentElement.querySelectorAll('.dot');
+  const car  = document.getElementById(`carousel-${itemId}`);
+  if (!car) return;
+  const imgs = car.querySelectorAll('.carousel-img');
+  const dots = car.parentElement.querySelectorAll('.dot');
   carouselState[itemId] = index;
   imgs.forEach((img, i) => img.classList.toggle('active', i === index));
   dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
 }
 
-// Smart polling — chỉ cập nhật card thay đổi
 function startMenuPolling() {
   if (menuPollInterval) return;
   menuPollInterval = setInterval(async () => {
@@ -680,15 +630,14 @@ function startMenuPolling() {
       let hasChange = false;
       items.forEach(item => {
         const newAvail = item.available !== false;
-        const oldAvail = menuCacheSnapshot[item.id];
-        if (oldAvail !== newAvail) {
+        if (menuCacheSnapshot[item.id] !== newAvail) {
           updateMenuCard(item, newAvail);
           menuCacheSnapshot[item.id] = newAvail;
           hasChange = true;
         }
       });
       if (hasChange) showMenuUpdateToast();
-    } catch (err) {}
+    } catch (e) {}
   }, 30000);
 }
 
@@ -700,13 +649,13 @@ function updateMenuCard(item, isAvailable) {
   if (img) img.style.filter = isAvailable ? '' : 'grayscale(0.7)';
   const imgWrap = card.querySelector('.menu-img-wrap');
   if (imgWrap) {
-    const oldBadge = imgWrap.querySelector('.badge-sold-out');
-    if (oldBadge) oldBadge.remove();
+    const old = imgWrap.querySelector('.badge-sold-out');
+    if (old) old.remove();
     if (!isAvailable) {
-      const badge = document.createElement('span');
-      badge.className = 'badge badge-sold-out';
-      badge.textContent = '😢 Hết hàng';
-      imgWrap.appendChild(badge);
+      const b = document.createElement('span');
+      b.className = 'badge badge-sold-out';
+      b.textContent = '😢 Hết hàng';
+      imgWrap.appendChild(b);
     }
   }
   const btnArea = card.querySelector('.menu-footer');
@@ -730,13 +679,13 @@ function updateMenuCard(item, isAvailable) {
 function showMenuUpdateToast() {
   const toast = document.getElementById('toast');
   if (!toast) return;
-  const original = toast.textContent;
+  const orig = toast.textContent;
   toast.textContent = '🔄 Menu vừa được cập nhật!';
   toast.style.background = '#3498db';
   toast.classList.add('show');
   setTimeout(() => {
     toast.classList.remove('show');
-    toast.textContent  = original;
+    toast.textContent      = orig;
     toast.style.background = '';
   }, 3000);
 }
@@ -751,47 +700,33 @@ async function loadMiniMenu() {
   const grid    = document.getElementById('mini-menu-grid');
   const loading = document.getElementById('mini-menu-loading');
   if (!grid) return;
-
   try {
     const res   = await fetch(`${API_URL}/menu`);
-    const items = await res.json();
-    miniMenuItems = items;
+    miniMenuItems = await res.json();
     if (loading) loading.style.display = 'none';
     grid.style.display = 'grid';
-    renderMiniMenu(items);
+    renderMiniMenu(miniMenuItems);
   } catch (err) {
-    if (loading) loading.textContent = '⚠️ Không tải được món. Vui lòng thử lại!';
+    if (loading) loading.textContent = '⚠️ Không tải được món!';
   }
 }
 
 function renderMiniMenu(items) {
   const grid = document.getElementById('mini-menu-grid');
   if (!grid) return;
-
   if (!items || items.length === 0) {
     grid.innerHTML = '<p style="color:#999;padding:10px">Chưa có món nào</p>';
     return;
   }
-
   grid.innerHTML = items.map(item => {
     const isAvailable = item.available !== false;
-    const thumbUrl    = (item.images && item.images[0])
-      ? item.images[0]
-      : item.imageUrl || '';
-
+    const thumbUrl    = (item.images && item.images[0]) || item.imageUrl || '';
     return `
-      <div class="mini-item ${!isAvailable ? 'mini-item-sold-out' : ''}"
-           data-cat="${item.category}">
-        ${thumbUrl ? `
-          <img src="${thumbUrl}" alt="${item.name}"
-               style="width:44px;height:44px;border-radius:8px;object-fit:cover;
-                      flex-shrink:0;${!isAvailable ? 'filter:grayscale(1);opacity:0.5;' : ''}"
-               onerror="this.style.display='none'">
-        ` : `<span>${item.icon || '🍽️'}</span>`}
-        <span>
-          ${item.name}
-          ${!isAvailable ? '<small style="color:#e74c3c;font-weight:600;">(Hết hàng)</small>' : ''}
-        </span>
+      <div class="mini-item ${!isAvailable ? 'mini-item-sold-out' : ''}" data-cat="${item.category}">
+        ${thumbUrl ? `<img src="${thumbUrl}" alt="${item.name}"
+          style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;${!isAvailable?'filter:grayscale(1);opacity:0.5;':''}"
+          onerror="this.style.display='none'">` : `<span>${item.icon || '🍽️'}</span>`}
+        <span>${item.name}${!isAvailable ? '<small style="color:#e74c3c;font-weight:600;">(Hết)</small>' : ''}</span>
         <div class="mini-item-right">
           <span class="price">${formatPrice(item.price)}</span>
           ${isAvailable
@@ -820,17 +755,14 @@ document.querySelectorAll('.mini-filter-btn').forEach(btn => {
 function initOrderPage() {
   const orderContent = document.getElementById('order-content');
   if (!orderContent) return;
-
   const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
   if (!user) return;
 
   const nameEl  = document.getElementById('customer-name');
   const phoneEl = document.getElementById('customer-phone');
   const addrEl  = document.getElementById('customer-address');
-
   if (nameEl  && !nameEl.value)  nameEl.value  = user.name;
   if (phoneEl && !phoneEl.value) phoneEl.value = user.phone;
-
   const savedAddr = localStorage.getItem(`lastAddress_${user.phone}`);
   if (addrEl && savedAddr && !addrEl.value) addrEl.value = savedAddr;
 }
@@ -846,10 +778,8 @@ function switchTab(tab) {
   });
   const target = document.getElementById(`tab-${tab}`);
   if (target) target.style.display = 'block';
-
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-    btn.classList.toggle('active',
-      (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+    btn.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
   });
 }
 
@@ -867,18 +797,16 @@ async function handleRegister() {
   const password = document.getElementById('reg-password')?.value;
   const confirm  = document.getElementById('reg-confirm')?.value;
 
-  if (!name || !phone || !password) { showAccountMsg('Vui lòng điền đầy đủ thông tin!', 'error'); return; }
-  if (password.length < 6)          { showAccountMsg('Mật khẩu tối thiểu 6 ký tự!', 'error');    return; }
-  if (password !== confirm)          { showAccountMsg('Mật khẩu không khớp!', 'error');            return; }
+  if (!name || !phone || !password) { showAccountMsg('Vui lòng điền đầy đủ!', 'error'); return; }
+  if (password.length < 6)          { showAccountMsg('Mật khẩu tối thiểu 6 ký tự!', 'error'); return; }
+  if (password !== confirm)          { showAccountMsg('Mật khẩu không khớp!', 'error'); return; }
 
   const btn = document.querySelector('#tab-register .btn-submit');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xử lý...'; }
-
   try {
     const res  = await fetch(`${API_URL}/auth/register`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ name, phone, password })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, password })
     });
     const data = await res.json();
     if (!res.ok) { showAccountMsg(data.error || 'Đăng ký thất bại!', 'error'); return; }
@@ -894,20 +822,17 @@ async function handleRegister() {
 async function handleLogin() {
   const phone    = document.getElementById('login-phone')?.value.trim();
   const password = document.getElementById('login-password')?.value;
-
-  if (!phone || !password) { showAccountMsg('Vui lòng nhập đầy đủ thông tin!', 'error'); return; }
+  if (!phone || !password) { showAccountMsg('Vui lòng nhập đầy đủ!', 'error'); return; }
 
   const btn = document.querySelector('#tab-login .btn-submit');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; }
-
   try {
     const res  = await fetch(`${API_URL}/auth/login`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ phone, password })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
     });
     const data = await res.json();
-    if (!res.ok) { showAccountMsg(data.error || 'Sai số điện thoại hoặc mật khẩu!', 'error'); return; }
+    if (!res.ok) { showAccountMsg(data.error || 'Sai thông tin đăng nhập!', 'error'); return; }
     localStorage.setItem('currentUser', JSON.stringify(data.user));
     localStorage.setItem('authToken',   data.token);
     showAccountMsg('Đăng nhập thành công!');
@@ -925,19 +850,17 @@ async function showLoggedIn(user) {
     if (el) el.style.display = 'none';
   });
   document.querySelectorAll('.tab-btn').forEach(b => b.style.display = 'none');
-
   const loggedIn = document.getElementById('tab-logged-in');
   if (loggedIn) loggedIn.style.display = 'block';
 
-  const nameEl    = document.getElementById('user-name-display');
-  const phoneEl   = document.getElementById('user-phone-display');
-  const infoName  = document.getElementById('info-name');
-  const infoPhone = document.getElementById('info-phone');
-
-  if (nameEl)    nameEl.textContent    = user.name;
-  if (phoneEl)   phoneEl.textContent   = user.phone;
-  if (infoName)  infoName.textContent  = user.name;
-  if (infoPhone) infoPhone.textContent = user.phone;
+  ['user-name-display','info-name'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = user.name;
+  });
+  ['user-phone-display','info-phone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = user.phone;
+  });
 
   const savedAddr   = localStorage.getItem(`lastAddress_${user.phone}`);
   const addrRow     = document.getElementById('info-address-row');
@@ -951,36 +874,29 @@ async function showLoggedIn(user) {
 
   const params   = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect');
-  if (redirect === 'order') {
-    setTimeout(() => window.location.href = 'order.html', 800);
-  }
+  if (redirect === 'order') setTimeout(() => window.location.href = 'order.html', 800);
 }
 
 async function loadUserStats(user) {
-  const statOrders = document.getElementById('stat-total-orders');
-  const statSpent  = document.getElementById('stat-total-spent');
-  const statDone   = document.getElementById('stat-done-orders');
-  if (!statOrders) return;
-
+  const s1 = document.getElementById('stat-total-orders');
+  const s2 = document.getElementById('stat-total-spent');
+  const s3 = document.getElementById('stat-done-orders');
+  if (!s1) return;
   try {
-    const token = localStorage.getItem('authToken');
-    const res   = await fetch(`${API_URL}/orders/my-orders`, {
+    const token  = localStorage.getItem('authToken');
+    const res    = await fetch(`${API_URL}/orders/my-orders`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const orders = await res.json();
     if (!Array.isArray(orders)) return;
-
     const done  = orders.filter(o => o.status === 'done');
     const spent = done.reduce((sum, o) => sum + (o.total || 0), 0);
-
-    statOrders.textContent = orders.length;
-    statDone.textContent   = done.length;
-    statSpent.textContent  = spent >= 1000000
+    s1.textContent = orders.length;
+    s3.textContent = done.length;
+    s2.textContent = spent >= 1000000
       ? (spent / 1000000).toFixed(1) + 'tr'
       : (spent / 1000).toFixed(0) + 'k';
-  } catch (err) {
-    console.log('Lỗi tải thống kê user:', err.message);
-  }
+  } catch (err) {}
 }
 
 function handleLogout() {
@@ -991,7 +907,6 @@ function handleLogout() {
 
 function checkLoginStatus() {
   const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-
   if (!user) {
     const params   = new URLSearchParams(window.location.search);
     const preName  = params.get('prefill_name');
@@ -1005,7 +920,6 @@ function checkLoginStatus() {
     }
     return;
   }
-
   const el = document.getElementById('tab-logged-in');
   if (el) showLoggedIn(user);
 }
@@ -1022,20 +936,18 @@ async function renderHistory() {
 
   const user  = JSON.parse(localStorage.getItem('currentUser') || 'null');
   const token = localStorage.getItem('authToken');
-
   if (!user || !token) {
     if (historyLoginRequired) historyLoginRequired.style.display = 'block';
     return;
   }
 
-  historyList.innerHTML = '<p style="text-align:center;color:#999;padding:20px">⏳ Đang tải lịch sử...</p>';
+  historyList.innerHTML = '<p style="text-align:center;color:#999;padding:20px">⏳ Đang tải...</p>';
 
   try {
     let orders = null;
     const res1 = await fetch(`${API_URL}/orders/my-orders`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-
     if (res1.status === 401) {
       localStorage.removeItem('currentUser');
       localStorage.removeItem('authToken');
@@ -1043,15 +955,11 @@ async function renderHistory() {
       if (historyLoginRequired) historyLoginRequired.style.display = 'block';
       return;
     }
-
     if (res1.ok) {
       orders = await res1.json();
       if (orders.length === 0) {
         const res2 = await fetch(`${API_URL}/orders/phone/${user.phone}`);
-        if (res2.ok) {
-          const fb = await res2.json();
-          if (fb.length > 0) orders = fb;
-        }
+        if (res2.ok) { const fb = await res2.json(); if (fb.length > 0) orders = fb; }
       }
     } else {
       const res2 = await fetch(`${API_URL}/orders/phone/${user.phone}`);
@@ -1077,9 +985,7 @@ async function renderHistory() {
       <div class="history-card">
         <div class="history-header">
           <span class="order-id">Mã đơn: <strong>${order.id}</strong></span>
-          <span class="order-status status-${order.status}">
-            ${statusLabel[order.status] || order.status}
-          </span>
+          <span class="order-status status-${order.status}">${statusLabel[order.status] || order.status}</span>
         </div>
         <div class="history-items">
           ${order.items.map(item => `
@@ -1097,7 +1003,6 @@ async function renderHistory() {
     `).join('');
 
   } catch (err) {
-    console.error('❌ Lỗi tải lịch sử:', err);
     historyList.innerHTML = '';
     if (historyEmpty) {
       historyEmpty.style.display = 'block';
@@ -1107,35 +1012,6 @@ async function renderHistory() {
   }
 }
 
-
-// =====================
-// ĐÁNH GIÁ SAU ĐẶT MÓN
-// =====================
-let selectedRating = 0;
-
-function enableReviewDemo() {
-  const prompt = document.getElementById('review-prompt');
-  const form   = document.getElementById('review-form');
-  if (prompt) prompt.style.display = 'none';
-  if (form)   form.style.display   = 'block';
-}
-
-document.querySelectorAll('.star').forEach(star => {
-  star.addEventListener('click', () => {
-    selectedRating = parseInt(star.dataset.value);
-    document.querySelectorAll('.star').forEach(s => {
-      s.classList.toggle('active', parseInt(s.dataset.value) <= selectedRating);
-    });
-  });
-  star.addEventListener('mouseenter', () => {
-    document.querySelectorAll('.star').forEach(s => {
-      s.classList.toggle('hover', parseInt(s.dataset.value) <= parseInt(star.dataset.value));
-    });
-  });
-  star.addEventListener('mouseleave', () => {
-    document.querySelectorAll('.star').forEach(s => s.classList.remove('hover'));
-  });
-});
 
 // =====================
 // ĐÁNH GIÁ — FIRESTORE
@@ -1185,23 +1061,11 @@ async function submitReview() {
   try {
     const res  = await fetch(`${API_URL}/reviews`, {
       method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        orderId,
-        rating:  selectedRating,
-        comment,
-        items:   savedItems.join(', ')
-      })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ orderId, rating: selectedRating, comment, items: savedItems.join(', ') })
     });
     const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || 'Gửi đánh giá thất bại!');
-      return;
-    }
+    if (!res.ok) { alert(data.error || 'Gửi đánh giá thất bại!'); return; }
 
     const formEl   = document.getElementById('review-form');
     const thanksEl = document.getElementById('review-thanks');
@@ -1214,18 +1078,7 @@ async function submitReview() {
     if (btn) { btn.disabled = false; btn.textContent = '📤 Gửi đánh giá'; }
   }
 }
-function maskName(name) {
-  const parts = name.trim().split(' ');
-  if (parts.length <= 1) return name;
-  return parts.map((p, i) =>
-    (i === 0 || i === parts.length - 1) ? p : p[0] + '.'
-  ).join(' ');
-}
 
-
-// =====================
-// TRANG REVIEWS.HTML
-// =====================
 async function renderReviews() {
   const list = document.getElementById('reviews-list');
   if (!list) return;
@@ -1261,10 +1114,11 @@ async function renderReviews() {
     renderSummary(reviews);
 
   } catch (err) {
-    console.error('Lỗi tải reviews:', err);
     list.innerHTML = '<p style="text-align:center;color:#999;">⚠️ Không tải được đánh giá</p>';
+    renderSummary([]);
   }
 }
+
 function renderSummary(reviews) {
   const avgEl   = document.getElementById('avg-score');
   const starsEl = document.getElementById('avg-stars');
@@ -1288,13 +1142,11 @@ function renderSummary(reviews) {
   if (breakEl) {
     breakEl.innerHTML = [5,4,3,2,1].map(star => {
       const count   = reviews.filter(r => r.rating === star).length;
-      const percent = (count / reviews.length) * 100;
+      const percent = reviews.length ? (count / reviews.length) * 100 : 0;
       return `
         <div class="breakdown-row">
           <span>${star} ★</span>
-          <div class="breakdown-bar">
-            <div class="breakdown-fill" style="width:${percent}%"></div>
-          </div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:${percent}%"></div></div>
           <span>${count}</span>
         </div>
       `;
@@ -1318,20 +1170,17 @@ function formatReviewDate(dateStr) {
 // =====================
 const navToggle = document.getElementById('nav-toggle');
 const mainNav   = document.getElementById('main-nav');
-
 if (navToggle && mainNav) {
   navToggle.addEventListener('click', () => {
     mainNav.classList.toggle('open');
     navToggle.textContent = mainNav.classList.contains('open') ? '✕' : '☰';
   });
-
   mainNav.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       mainNav.classList.remove('open');
       navToggle.textContent = '☰';
     });
   });
-
   document.addEventListener('click', e => {
     if (!e.target.closest('.header')) {
       mainNav.classList.remove('open');
@@ -1342,7 +1191,7 @@ if (navToggle && mainNav) {
 
 
 // =====================
-// LOAD SITE SETTINGS & ÁP DỤNG BACKGROUND
+// LOAD SITE SETTINGS + BACKGROUND + LOGO
 // =====================
 function convertDriveUrl(url) {
   if (!url) return '';
@@ -1357,7 +1206,6 @@ async function loadSiteSettings() {
     const settings = await res.json();
     if (!settings) return;
 
-    // Áp dụng background
     const path    = window.location.pathname;
     const pageKey =
       path.includes('menu.html')    ? 'menu'    :
@@ -1373,35 +1221,27 @@ async function loadSiteSettings() {
       if (url) applyBackground(url, opacity);
     }
 
-    // Cập nhật logo + tên trên TẤT CẢ CÁC TRANG
+    // Cập nhật logo + tên
     const imgEl  = document.getElementById('logo-img');
     const textEl = document.getElementById('logo-text');
-
     if (textEl && settings.siteName) {
-      // Luôn cập nhật tên quán
       textEl.textContent = (settings.logoEmoji || '🍚') + ' ' + settings.siteName;
       textEl.style.display = 'inline';
     }
-
     if (imgEl && settings.logoUrl) {
       let url = settings.logoUrl;
       const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
       if (m) url = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`;
-
       imgEl.src = url;
       imgEl.style.display = 'inline-block';
       imgEl.onerror = () => { imgEl.style.display = 'none'; };
     }
 
-    // Cập nhật hero title + slogan
-    if (settings.siteName) {
-      const titleEl  = document.getElementById('hero-title');
-      if (titleEl) titleEl.textContent = settings.siteName;
-    }
-    if (settings.slogan) {
-      const sloganEl = document.getElementById('hero-slogan');
-      if (sloganEl) sloganEl.textContent = settings.slogan;
-    }
+    // Hero title + slogan
+    const titleEl  = document.getElementById('hero-title');
+    const sloganEl = document.getElementById('hero-slogan');
+    if (titleEl  && settings.siteName) titleEl.textContent  = settings.siteName;
+    if (sloganEl && settings.slogan)   sloganEl.textContent = settings.slogan;
 
   } catch (err) {
     console.log('Không tải được settings:', err.message);
@@ -1411,7 +1251,9 @@ async function loadSiteSettings() {
 function applyBackground(url, overlayOpacity = 30) {
   if (!url) return;
   const bgUrl  = convertDriveUrl(url);
-  const heroEl = document.querySelector('.hero, .page-title');
+  const heroEl = document.getElementById('hero-section')
+               || document.querySelector('.hero')
+               || document.querySelector('.page-title');
   if (!heroEl) return;
 
   heroEl.style.backgroundImage    = `url('${bgUrl}')`;
@@ -1419,11 +1261,12 @@ function applyBackground(url, overlayOpacity = 30) {
   heroEl.style.backgroundPosition = 'center';
   heroEl.style.backgroundRepeat   = 'no-repeat';
   heroEl.style.position           = 'relative';
+  heroEl.style.overflow           = 'hidden';
 
-  const oldOverlay = heroEl.querySelector('.bg-overlay');
-  if (oldOverlay) oldOverlay.remove();
+  const old = heroEl.querySelector('.bg-overlay');
+  if (old) old.remove();
 
-  const alpha   = overlayOpacity / 100;
+  const alpha   = Math.min(Math.max(overlayOpacity, 0), 80) / 100;
   const overlay = document.createElement('div');
   overlay.className = 'bg-overlay';
   overlay.style.cssText = `
@@ -1432,7 +1275,6 @@ function applyBackground(url, overlayOpacity = 30) {
     z-index:0;pointer-events:none;
   `;
   heroEl.insertBefore(overlay, heroEl.firstChild);
-
   Array.from(heroEl.children).forEach(child => {
     if (!child.classList.contains('bg-overlay')) {
       child.style.position = 'relative';
@@ -1441,47 +1283,6 @@ function applyBackground(url, overlayOpacity = 30) {
   });
 }
 
-function applyBackground(url, overlayOpacity = 30) {
-  if (!url) return;
-  const bgUrl = convertDriveUrl(url);
-
-  // Tìm hero section theo id trước, fallback về class
-  const heroEl = document.getElementById('hero-section')
-               || document.querySelector('.hero')
-               || document.querySelector('.page-title');
-  if (!heroEl) return;
-
-  heroEl.style.backgroundImage    = `url('${bgUrl}')`;
-  heroEl.style.backgroundSize     = 'cover';
-  heroEl.style.backgroundPosition = 'center top';
-  heroEl.style.backgroundRepeat   = 'no-repeat';
-  heroEl.style.position           = 'relative';
-  heroEl.style.overflow           = 'hidden';
-
-  // Xóa overlay cũ tránh chồng lớp
-  const oldOverlay = heroEl.querySelector('.bg-overlay');
-  if (oldOverlay) oldOverlay.remove();
-
-  const alpha   = Math.min(Math.max(overlayOpacity, 0), 80) / 100;
-  const overlay = document.createElement('div');
-  overlay.className = 'bg-overlay';
-  overlay.style.cssText = `
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,${alpha});
-    z-index:0;
-    pointer-events:none;
-  `;
-  heroEl.insertBefore(overlay, heroEl.firstChild);
-
-  // Đẩy tất cả nội dung lên trên overlay
-  Array.from(heroEl.children).forEach(child => {
-    if (!child.classList.contains('bg-overlay')) {
-      child.style.position = 'relative';
-      child.style.zIndex   = '1';
-    }
-  });
-}
 
 // =====================
 // KHỞI ĐỘNG TẤT CẢ
