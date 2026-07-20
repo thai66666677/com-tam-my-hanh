@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://com-tam-my-hanh.vercel.app/frontend/sitemap.xml
