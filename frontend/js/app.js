@@ -99,7 +99,7 @@ function addToCart(name, price) {
   const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
   if (!user) {
     if (confirm('Vui lòng đăng nhập để đặt món!\nBấm OK để đến trang đăng nhập.')) {
-      window.location.href = 'account.html?redirect=order';
+      window.location.href = '/account?redirect=order';
     }
     return;
   }
@@ -874,7 +874,7 @@ async function showLoggedIn(user) {
 
   const params   = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect');
-  if (redirect === 'order') setTimeout(() => window.location.href = 'order.html', 800);
+  if (redirect === 'order') setTimeout(() => window.location.href = '/order', 800);
 }
 
 async function loadUserStats(user) {

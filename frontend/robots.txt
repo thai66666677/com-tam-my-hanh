@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://com-tam-my-hanh.vercel.app/frontend/sitemap.xml
+# Chặn admin khỏi Google
+Disallow: /admin
+Disallow: /admin/
+
+Sitemap: https://com-tam-my-hanh.vercel.app/sitemap.xml
