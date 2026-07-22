@@ -2354,3 +2354,50 @@ a { text-decoration: none; color: inherit; }
   .info-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .why-grid  { grid-template-columns: 1fr 1fr; gap: 12px; }
 }
+/* ===== QR THANH TOÁN ===== */
+.qr-section {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+  text-align: center;
+  border: 1px solid #eee;
+}
+
+.qr-img-wrap {
+  margin: 16px auto;
+  max-width: 220px;
+}
+
+.qr-image {
+  width: 100%;
+  max-width: 220px;
+  border-radius: 10px;
+  border: 3px solid white;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.qr-info-box {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  text-align: left;
+  display: inline-block;
+  min-width: 220px;
+}
+
+.qr-info {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.qr-note {
+  font-size: 0.9rem;
+  color: #856404;
+  background: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}

@@ -223,22 +223,45 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
   });
 });
 
+
 function generateQR() {
   const total     = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
   const orderId   = 'DH' + Date.now().toString().slice(-5);
   const contentEl = document.getElementById('qr-content');
   const imgEl     = document.getElementById('qr-img');
+  const loadingEl = document.getElementById('qr-loading');
+  const fallbackEl = document.getElementById('qr-fallback');
+
   if (contentEl) contentEl.textContent = orderId;
 
-  const BANK_ID      = 'VCB';
-  const ACCOUNT_NO   = '1234567890';
-  const ACCOUNT_NAME = 'NGUYEN VAN A';
+  const BANK_ID      = 'TPBank';
+  const ACCOUNT_NO   = '18248672888';
+  const ACCOUNT_NAME = 'HA THI MINH TU';
 
   const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png` +
-    `?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
-  if (imgEl) imgEl.src = qrUrl;
-}
+    `?amount=${total}` +
+    `&addInfo=${encodeURIComponent(orderId)}` +
+    `&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
+  if (imgEl) {
+    // Reset trạng thái
+    if (loadingEl)  loadingEl.style.display  = 'block';
+    if (fallbackEl) fallbackEl.style.display = 'none';
+    imgEl.style.display = 'none';
+
+    imgEl.src = qrUrl;
+
+    imgEl.onload = () => {
+      if (loadingEl)  loadingEl.style.display  = 'none';
+      imgEl.style.display = 'block';
+    };
+
+    imgEl.onerror = () => {
+      if (loadingEl)  loadingEl.style.display  = 'none';
+      if (fallbackEl) fallbackEl.style.display = 'block';
+    };
+  }
+}
 
 // =====================
 // GỬI ĐƠN HÀNG
@@ -1279,6 +1302,18 @@ function applyBackground(url, overlayOpacity = 30) {
     if (!child.classList.contains('bg-overlay')) {
       child.style.position = 'relative';
       child.style.zIndex   = '1';
+    }
+  });
+}
+function copyQrContent() {
+  const content = document.getElementById('qr-content')?.textContent;
+  const msg     = document.getElementById('qr-copy-msg');
+  if (!content || content === 'DH-XXXXX') return;
+
+  navigator.clipboard.writeText(content).then(() => {
+    if (msg) {
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 2000);
     }
   });
 }
