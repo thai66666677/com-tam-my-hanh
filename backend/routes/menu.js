@@ -16,19 +16,19 @@ const defaultMenu = [
 ];
 
 // Khởi tạo dữ liệu mặc định nếu Firestore chưa có
-async function initDefaultMenu() {
-  const snapshot = await menuRef.get();
-  if (snapshot.empty) {
-    console.log('📦 Khởi tạo menu mặc định vào Firestore...');
-    const batch = db.batch();
-    defaultMenu.forEach(item => {
-      batch.set(menuRef.doc(item.id), item);
-    });
-    await batch.commit();
-    console.log('✅ Menu mặc định đã được tạo!');
-  }
-}
-initDefaultMenu();
+//async function initDefaultMenu() {
+  //const snapshot = await menuRef.get();
+  //if (snapshot.empty) {
+    //console.log('📦 Khởi tạo menu mặc định vào Firestore...');
+    //const batch = db.batch();
+    //defaultMenu.forEach(item => {
+      //batch.set(menuRef.doc(item.id), item);
+    //});
+    //await batch.commit();
+    //console.log('✅ Menu mặc định đã được tạo!');
+  //}
+//}
+//initDefaultMenu();
 
 // ===== 1. LẤY TOÀN BỘ MENU =====
 // GET /api/menu
