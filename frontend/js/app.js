@@ -238,7 +238,7 @@ function generateQR() {
   const ACCOUNT_NO   = '18248672888';
   const ACCOUNT_NAME = 'HA THI MINH TU';
 
-  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png` +
+  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png ` +
     `?amount=${total}` +
     `&addInfo=${encodeURIComponent(orderId)}` +
     `&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
