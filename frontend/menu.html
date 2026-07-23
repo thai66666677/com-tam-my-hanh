@@ -84,152 +84,21 @@
 
   
    <!-- GRID MÓN ĂN - LOAD ĐỘNG TỪ API -->
+<!-- MENU SECTION - CHỈ LOAD TỪ FIRESTORE -->
 <section class="menu-section">
   <div class="container">
 
     <!-- Loading state -->
-    <div id="menu-loading" style="text-align:center;padding:40px;color:#999;">
-      <p>⏳ Đang tải thực đơn...</p>
+    <div id="menu-loading"
+         style="text-align:center;padding:60px;color:#999;">
+      <p style="font-size:1.1rem;">⏳ Đang tải thực đơn...</p>
     </div>
 
-    <div class="menu-grid" id="menu-grid" style="display:none;">
-      <!-- JS sẽ render vào đây -->
-    </div>
+    <!-- JS render vào đây - KHÔNG CÓ card cứng nào -->
+    <div class="menu-grid" id="menu-grid" style="display:none;"></div>
 
   </div>
 </section>
-  
-
-        <!-- 🔥 MÓN BÁN CHẠY -->
-        <div class="menu-card" data-category="com">
-          <div class="menu-img-wrap">
-            <img src="images/com-tam-suon-bi.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Com_tam.jpg/640px-Com_tam.jpg'"
-                 alt="Cơm Tấm Sườn Bì" class="menu-img-real">
-            <span class="badge badge-hot">🔥 Bán chạy</span>
-          </div>
-          <div class="menu-info">
-            <h3>Cơm Tấm Sườn Bì</h3>
-            <p>Sườn nướng mềm, bì trộn thơm, kèm cơm tấm dẻo</p>
-            <div class="order-count">🛒 Đã bán 128 lần hôm nay</div>
-            <div class="menu-footer">
-              <span class="price">35.000đ</span>
-              <button class="btn-add" onclick="addToCart('Cơm Tấm Sườn Bì', 35000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⭐ MÓN NỔI BẬT -->
-        <div class="menu-card" data-category="com">
-          <div class="menu-img-wrap">
-            <img src="images/com-ga-xoi-mo.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Hainanese_chicken_rice.jpg/640px-Hainanese_chicken_rice.jpg'"
-                 alt="Cơm Gà Xối Mỡ" class="menu-img-real">
-            <span class="badge badge-new">⭐ Nổi bật</span>
-          </div>
-          <div class="menu-info">
-            <h3>Cơm Gà Xối Mỡ</h3>
-            <p>Gà chiên giòn, cơm trắng dẻo, rau sống tươi</p>
-            <div class="menu-footer">
-              <span class="price">40.000đ</span>
-              <button class="btn-add" onclick="addToCart('Cơm Gà Xối Mỡ', 40000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 🎁 MÓN ĐẶC BIỆT + GIÁ CŨ -->
-        <div class="menu-card" data-category="com">
-          <div class="menu-img-wrap">
-            <img src="images/com-tam-dac-biet.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Com_tam.jpg/640px-Com_tam.jpg'"
-                 alt="Cơm Tấm Đặc Biệt" class="menu-img-real">
-            <span class="badge badge-special">🎁 Đặc biệt</span>
-          </div>
-          <div class="menu-info">
-            <h3>Cơm Tấm Đặc Biệt</h3>
-            <p>Sườn + bì + chả trứng + cơm tấm đặc biệt</p>
-            <div class="menu-footer">
-              <div class="price-wrap">
-                <span class="price">50.000đ</span>
-                <span class="price-old">65.000đ</span>
-              </div>
-              <button class="btn-add" onclick="addToCart('Cơm Tấm Đặc Biệt', 50000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bún & Mì -->
-        <div class="menu-card" data-category="bun-mi">
-          <div class="menu-img-wrap">
-            <img src="images/bun-bo-hue.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Bun_bo_Hue.jpg/640px-Bun_bo_Hue.jpg'"
-                 alt="Bún Bò Huế" class="menu-img-real">
-            <span class="badge badge-hot">🔥 Bán chạy</span>
-          </div>
-          <div class="menu-info">
-            <h3>Bún Bò Huế</h3>
-            <p>Nước lèo đậm đà, thịt bò mềm, chả cua thơm</p>
-            <div class="order-count">🛒 Đã bán 64 lần hôm nay</div>
-            <div class="menu-footer">
-              <span class="price">40.000đ</span>
-              <button class="btn-add" onclick="addToCart('Bún Bò Huế', 40000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="menu-card" data-category="bun-mi">
-          <div class="menu-img-wrap">
-            <img src="images/mi-xao-hai-san.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Stir_fried_noodles.jpg/640px-Stir_fried_noodles.jpg'"
-                 alt="Mì Xào Hải Sản" class="menu-img-real">
-          </div>
-          <div class="menu-info">
-            <h3>Mì Xào Hải Sản</h3>
-            <p>Tôm, mực, nghêu xào mì vàng giòn hấp dẫn</p>
-            <div class="menu-footer">
-              <span class="price">45.000đ</span>
-              <button class="btn-add" onclick="addToCart('Mì Xào Hải Sản', 45000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Nước uống -->
-        <div class="menu-card" data-category="nuoc">
-          <div class="menu-img-wrap">
-            <img src="images/nuoc-mia.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sugarcane_juice.jpg/640px-Sugarcane_juice.jpg'"
-                 alt="Nước Mía" class="menu-img-real">
-          </div>
-          <div class="menu-info">
-            <h3>Nước Mía</h3>
-            <p>Nước mía tươi mát, thêm tắc tùy chọn</p>
-            <div class="menu-footer">
-              <span class="price">15.000đ</span>
-              <button class="btn-add" onclick="addToCart('Nước Mía', 15000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="menu-card" data-category="nuoc">
-          <div class="menu-img-wrap">
-            <img src="images/tra-sua.jpg"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Bubble_tea_assortment.jpg/640px-Bubble_tea_assortment.jpg'"
-                 alt="Trà Sữa Trân Châu" class="menu-img-real">
-            <span class="badge badge-new">✨ Mới có</span>
-          </div>
-          <div class="menu-info">
-            <h3>Trà Sữa Trân Châu</h3>
-            <p>Trà sữa béo ngậy, trân châu đen dai mềm</p>
-            <div class="menu-footer">
-              <span class="price">25.000đ</span>
-              <button class="btn-add" onclick="addToCart('Trà Sữa Trân Châu', 25000)">+ Thêm</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
 
   <!-- THÔNG BÁO THÊM GIỎ HÀNG -->
   <div class="toast" id="toast">✅ Đã thêm vào giỏ hàng!</div>
