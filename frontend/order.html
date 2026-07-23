@@ -150,51 +150,63 @@
             <div class="form-group">
               <label>Thanh toán</label>
               <div class="payment-options">
-                <label class="payment-opt">
-                  <input type="radio" name="payment" value="cod" checked>
-                  <span>💵 Tiền mặt khi nhận hàng</span>
-                </label>
-                <label class="payment-opt">
-                  <input type="radio" name="payment" value="qr">
-                  <span>📱 Chuyển khoản QR</span>
-                </label>
-              </div>
+  <label class="payment-opt">
+    <input type="radio" name="payment" value="cod" checked>
+    <span>💵 Tiền mặt khi nhận hàng</span>
+  </label>
+  <label class="payment-opt">
+    <input type="radio" name="payment" value="qr">
+    <span>
+      <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
+           style="height:18px;vertical-align:middle;margin-right:4px;">
+      Thanh toán MoMo (loa tự báo)
+    </span>
+  </label>
+</div>
             </div>
 
            <div class="qr-section" id="qr-section" style="display:none;">
-  <h3>📱 Quét QR để thanh toán</h3>
+  <h3>📱 Quét QR MoMo để thanh toán</h3>
 
-  <!-- QR Code tự động -->
-  <div class="qr-img-wrap">
-    <img id="qr-img" src="" alt="QR thanh toán" class="qr-image"
-         style="display:none;">
-
-    <!-- Loading khi QR đang tải -->
-    <div id="qr-loading" style="text-align:center;padding:20px;color:#999;">
-      ⏳ Đang tạo mã QR...
-    </div>
-
-    <!-- Fallback nếu ảnh lỗi -->
-    <div id="qr-fallback" style="display:none;text-align:center;
-         padding:16px;background:#fff3cd;border-radius:10px;">
-      <p>⚠️ Không tải được mã QR</p>
-      <a href="https://img.vietqr.io/image/TPBank-18248672888-compact2.png?amount=50000&addInfo=DH12345&accountName=HA%20THI%20MINH%20TU"
-         target="_blank" style="color:#c0392b;font-weight:600;">
-        Bấm đây để xem QR →
-      </a>
-    </div>
+  <!-- Logo MoMo -->
+  <div style="display:flex;align-items:center;justify-content:center;
+              gap:8px;margin-bottom:12px;">
+    <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
+         alt="MoMo" style="height:32px;width:auto;">
+    <span style="font-weight:700;color:#a50064;font-size:1.1rem;">MoMo</span>
   </div>
 
-  <div class="qr-info-box">
-    <p class="qr-info">🏦 Ngân hàng: <strong>TPBank</strong></p>
-    <p class="qr-info">💳 Số TK: <strong>18248672888</strong></p>
-    <p class="qr-info">👤 Tên: <strong>HA THI MINH TU</strong></p>
-    <p class="qr-note">
-      ⚠️ Nội dung CK:
-      <strong id="qr-content" style="color:#c0392b;cursor:pointer;"
-              title="Bấm để copy" onclick="copyQrContent()">DH-XXXXX</strong>
-      <span id="qr-copy-msg" style="color:#27ae60;font-size:0.8rem;display:none;">✅ Đã copy!</span>
+  <!-- Ảnh QR tĩnh từ project -->
+  <div class="qr-img-wrap">
+    <img src="/frontend/images/momo-qr.jpg"
+         alt="QR MoMo thanh toán"
+         class="qr-image"
+         onerror="this.src='/frontend/images/momo-qr.png'">
+  </div>
+
+  <!-- Hướng dẫn -->
+  <div class="qr-info-box" style="background:#fff0f9;border:1px solid #f9a8d4;">
+    <p style="color:#a50064;font-weight:700;text-align:center;margin-bottom:10px;">
+      📣 Loa MoMo tự báo khi nhận được tiền!
     </p>
+    <p class="qr-info">💰 Số tiền: <strong id="qr-amount" style="color:#c0392b;">--</strong></p>
+    <p class="qr-info">📝 Nội dung CK:
+      <strong id="qr-content" style="color:#a50064;cursor:pointer;"
+              title="Bấm để copy" onclick="copyQrContent()">DH-XXXXX</strong>
+      <span id="qr-copy-msg"
+            style="color:#27ae60;font-size:0.8rem;display:none;">✅ Đã copy!</span>
+    </p>
+  </div>
+
+  <!-- Các bước thực hiện -->
+  <div style="margin-top:14px;text-align:left;font-size:0.85rem;
+              background:white;border-radius:10px;padding:14px;
+              border:1px solid #eee;">
+    <p style="font-weight:700;margin-bottom:8px;color:#555;">Cách thực hiện:</p>
+    <p style="margin-bottom:6px;color:#666;">1️⃣ Mở app MoMo → Quét mã QR trên</p>
+    <p style="margin-bottom:6px;color:#666;">2️⃣ Nhập đúng số tiền: <strong id="qr-amount-2" style="color:#c0392b;">--</strong></p>
+    <p style="margin-bottom:6px;color:#666;">3️⃣ Nội dung CK: <strong id="qr-content-2" style="color:#a50064;">DH-XXXXX</strong></p>
+    <p style="color:#666;">4️⃣ Xác nhận thanh toán → Loa báo ngay! 🔊</p>
   </div>
 </div>
 

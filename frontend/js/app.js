@@ -225,42 +225,35 @@ document.querySelectorAll('input[name="payment"]').forEach(radio => {
 
 
 function generateQR() {
-  const total     = cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 15000;
+  const subtotal  = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total     = subtotal + 15000;
   const orderId   = 'DH' + Date.now().toString().slice(-5);
-  const contentEl = document.getElementById('qr-content');
-  const imgEl     = document.getElementById('qr-img');
-  const loadingEl = document.getElementById('qr-loading');
-  const fallbackEl = document.getElementById('qr-fallback');
 
-  if (contentEl) contentEl.textContent = orderId;
+  // Cập nhật mã đơn
+  const contentEl  = document.getElementById('qr-content');
+  const contentEl2 = document.getElementById('qr-content-2');
+  if (contentEl)  contentEl.textContent  = orderId;
+  if (contentEl2) contentEl2.textContent = orderId;
 
-  const BANK_ID      = 'TPBank';
-  const ACCOUNT_NO   = '18248672888';
-  const ACCOUNT_NAME = 'HA THI MINH TU';
+  // Cập nhật số tiền
+  const amountEl  = document.getElementById('qr-amount');
+  const amountEl2 = document.getElementById('qr-amount-2');
+  const amountStr = total.toLocaleString('vi-VN') + 'đ';
+  if (amountEl)  amountEl.textContent  = amountStr;
+  if (amountEl2) amountEl2.textContent = amountStr;
+}
 
-  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png ` +
-    `?amount=${total}` +
-    `&addInfo=${encodeURIComponent(orderId)}` +
-    `&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+function copyQrContent() {
+  const content = document.getElementById('qr-content')?.textContent;
+  const msg     = document.getElementById('qr-copy-msg');
+  if (!content || content === 'DH-XXXXX') return;
 
-  if (imgEl) {
-    // Reset trạng thái
-    if (loadingEl)  loadingEl.style.display  = 'block';
-    if (fallbackEl) fallbackEl.style.display = 'none';
-    imgEl.style.display = 'none';
-
-    imgEl.src = qrUrl;
-
-    imgEl.onload = () => {
-      if (loadingEl)  loadingEl.style.display  = 'none';
-      imgEl.style.display = 'block';
-    };
-
-    imgEl.onerror = () => {
-      if (loadingEl)  loadingEl.style.display  = 'none';
-      if (fallbackEl) fallbackEl.style.display = 'block';
-    };
-  }
+  navigator.clipboard.writeText(content).then(() => {
+    if (msg) {
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 2000);
+    }
+  });
 }
 
 // =====================

@@ -2401,3 +2401,44 @@ a { text-decoration: none; color: inherit; }
   border-radius: 8px;
   margin-top: 10px;
 }
+/* ===== QR MOMO ===== */
+.qr-section {
+  background: linear-gradient(135deg, #fff0f9, #fdf2ff);
+  border: 2px solid #f9a8d4;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.qr-section h3 {
+  color: #a50064;
+  margin-bottom: 12px;
+}
+
+.qr-img-wrap {
+  margin: 12px auto;
+  max-width: 220px;
+}
+
+.qr-image {
+  width: 100%;
+  max-width: 220px;
+  border-radius: 12px;
+  border: 4px solid white;
+  box-shadow: 0 4px 20px rgba(165,0,100,0.2);
+}
+
+.qr-info-box {
+  border-radius: 10px;
+  padding: 14px;
+  margin: 12px auto;
+  max-width: 280px;
+  text-align: left;
+}
+
+.qr-info {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 8px;
+}
