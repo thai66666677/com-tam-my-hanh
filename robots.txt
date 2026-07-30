@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 
-# Chặn admin khỏi Google
 Disallow: /admin
 Disallow: /admin/
 

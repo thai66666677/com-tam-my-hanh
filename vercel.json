@@ -10,9 +10,6 @@
     { "source": "/admin/dashboard",    "destination": "/admin/dashboard.html" },
     { "source": "/admin/menu-manager", "destination": "/admin/menu-manager.html" },
     { "source": "/admin/stats",        "destination": "/admin/stats.html" },
-    { "source": "/admin/settings",     "destination": "/admin/settings.html" },
-
-    { "source": "/sitemap.xml",        "destination": "/frontend/sitemap.xml" },
-    { "source": "/robots.txt",         "destination": "/frontend/robots.txt" }
+    { "source": "/admin/settings",     "destination": "/admin/settings.html" }
   ]
 }
