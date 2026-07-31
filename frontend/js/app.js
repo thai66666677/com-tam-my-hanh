@@ -2,20 +2,20 @@
 // GIỜ MỞ/ĐÓNG CỬA
 // =====================
 const BUSINESS_HOURS = {
-  0: { open: '06:00', close: '21:00' },
-  1: { open: '06:00', close: '21:00' },
-  2: { open: '06:00', close: '21:00' },
-  3: { open: '06:00', close: '21:00' },
-  4: { open: '06:00', close: '21:00' },
-  5: { open: '06:00', close: '21:00' },
-  6: { open: '06:00', close: '21:00' },
+  0: { open: '09:00', close: '17:00' },
+  1: { open: '09:00', close: '17:00' },
+  2: { open: '09:00', close: '17:00' },
+  3: { open: '09:00', close: '17:00' },
+  4: { open: '09:00', close: '17:00' },
+  5: { open: '09:00', close: '17:00' },
+  6: { open: '09:00', close: '17:00' },
 };
 
 function checkBusinessHours() {
   const now   = new Date();
   const day   = now.getDay();
   const hours = BUSINESS_HOURS[day];
-  if (!hours) return { isOpen: false, openTime: '06:00', closeTime: '21:00', timeMsg: 'Hôm nay quán nghỉ' };
+  if (!hours) return { isOpen: false, openTime: '09:00', closeTime: '17:00', timeMsg: 'Hôm nay quán nghỉ' };
 
   const [openH,  openM]  = hours.open.split(':').map(Number);
   const [closeH, closeM] = hours.close.split(':').map(Number);
